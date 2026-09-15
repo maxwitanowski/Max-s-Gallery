@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Astral Coder · Max's Gallery</title>
+  <meta name="description" content="Astral Coder: one desktop console for every coding agent. Claude Code, Codex, Gemini CLI and local models in projects, workspaces and sessions, with a native chat for Claude. Interactive preview." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Astral · dark theme, ported from the app's styles.css ──
+       Near-black surfaces, one accent (orange) for "working", agent colours
+       from the registry, system sans at 13px, Cascadia for anything typed. */
+    :root {
+      --bg: #141416; --bg-2: #19191c; --bg-3: #202024; --bg-4: #2a2a2f; --sidebar: #111113; --panel: #17171a; --card: #1c1c20;
+      --fg: #ececec; --fg-2: #b4b4bb; --fg-3: #7e7e88; --fg-4: #55555e; --border: #26262b; --border-2: #303036; --ring: #3d3d45;
+      --primary: #ececec; --primary-fg: #141416; --accent: #f97316; --accent-bg: #3a2416; --ok: #4ade80; --ok-bg: #12301e; --warn: #fbbf24; --warn-bg: #3a2c10;
+      --bad: #f87171; --bad-bg: #3b1a1a; --info: #60a5fa; --info-bg: #172338; --purple: #a78bfa; --diff-add-fg: #4ade80; --diff-del-fg: #f87171;
+      --diff-add-bg: rgba(74,222,128,.08); --diff-del-bg: rgba(248,113,113,.08); --diff-hunk: #1c2230;
+      --hover: rgba(255,255,255,.06); --selected: rgba(255,255,255,.1); --claude: #d97757; --codex: #10a37f; --gemini: #8e75b2; --shell: #5391fe;
+      --sans: Inter, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; --mono: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
+      --radius: 6px; --radius-lg: 10px; --sidebar-w: 228px; --panel-w: 292px; --drawer-h: 150px; --shadow: 0 12px 40px rgba(0,0,0,.45);
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--bg); }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.55 var(--sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; border-radius: var(--radius); }
+    button:disabled { cursor: default; opacity: .5; }
+    input, textarea, select { font: inherit; color: inherit; }
+    svg { display: block; }
+    a { color: var(--info); text-decoration: none; } a:hover { text-decoration: underline; }
+    code { font-family: var(--mono); font-size: .92em; background: var(--bg-3); border-radius: 4px; padding: 0 5px; }
+    kbd { font: 10.5px var(--sans); color: var(--fg-3); background: var(--bg-3); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; line-height: 16px; white-space: nowrap; }
+    ::selection { background: rgba(249,115,22,.35); }
+    * { scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
+    *::-webkit-scrollbar { width: 10px; height: 10px; } *::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 6px; border: 3px solid transparent; background-clip: padding-box; } *::-webkit-scrollbar-track { background: transparent; }
+    .i { width: 15px; height: 15px; flex: none; } .i-sm { width: 13px; height: 13px; flex: none; }
+    .ag { display: inline-grid; place-items: center; color: var(--ag-color, var(--fg-2)); } .ag svg { width: 100%; height: 100%; }
+    .hint { color: var(--fg-3); font-size: 12px; }
+    .stats { display: inline-flex; gap: 5px; font-family: var(--mono); font-size: 11px; white-space: nowrap; } .stats .a { color: var(--diff-add-fg); } .stats .d { color: var(--diff-del-fg); }
+    @keyframes breathe { 0%, 100% { opacity: .3; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.1); } }
+    @keyframes pop { from { opacity: 0; transform: translateY(4px) scale(.985); } to { opacity: 1; transform: none; } }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    @keyframes blink { 50% { opacity: 0; } }
+    @keyframes glow { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+
+    /* ── shared controls (same as the app) ── */
+    .btn { height: 30px; padding: 0 11px; display: inline-flex; align-items: center; gap: 6px; border-radius: var(--radius); border: 1px solid var(--border-2); background: var(--card); color: var(--fg); font-size: 12.5px; font-weight: 500; white-space: nowrap; text-decoration: none; }
+    .btn:hover { background: var(--bg-3); text-decoration: none; }
+    .btn.primary { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); } .btn.primary:hover { filter: brightness(1.15); }
+    .btn.ghost { border-color: transparent; background: transparent; color: var(--fg-2); } .btn.ghost:hover { background: var(--hover); color: var(--fg); }
+    .btn.lg { height: 36px; padding: 0 16px; font-size: 13.5px; } .btn.sm { height: 26px; padding: 0 8px; font-size: 12px; } .btn kbd { margin-left: 4px; }
+    .btn .ag { width: 14px; height: 14px; }
+    .icon-btn { width: 28px; height: 28px; display: grid; place-items: center; color: var(--fg-2); border-radius: var(--radius); } .icon-btn:hover { background: var(--hover); color: var(--fg); } .icon-btn.is-on { background: var(--selected); color: var(--fg); }
+    .pill-btn { height: 28px; display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--border-2); color: var(--fg-2); font-size: 12px; font-weight: 500; white-space: nowrap; background: var(--card); }
+    .pill-btn:hover { background: var(--bg-3); color: var(--fg); } .pill-btn.primary { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); } .pill-btn.is-live { background: var(--bad-bg); color: var(--bad); border-color: transparent; }
+    .chip-btn { height: 24px; display: inline-flex; align-items: center; gap: 5px; padding: 0 8px; border-radius: 999px; color: var(--fg-2); font-size: 11.5px; border: 1px solid transparent; }
+    .chip-btn:hover { background: var(--hover); color: var(--fg); } .chip-btn.is-plan { background: var(--info-bg); color: var(--info); } .chip-btn.is-set { color: var(--fg); }
+    .run { display: inline-flex; gap: 3px; align-items: center; height: 14px; flex: none; } .run i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: .35; animation: breathe 1.2s ease-in-out infinite; } .run i:nth-child(2) { animation-delay: .2s; } .run i:nth-child(3) { animation-delay: .4s; }
+    .wk { display: inline-flex; align-items: center; gap: 6px; min-width: 0; color: var(--ag-color, var(--accent)); }
+    .wk .sp { display: inline-block; min-width: 1em; text-align: center; font-size: 13px; line-height: 1; flex: none; } .wk.glyph .sp { width: 14px; }
+    .wk .ph { color: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .wk .el { color: var(--fg-3); white-space: nowrap; }
+    .wk .sp.mono { font-family: var(--mono); font-size: 10px; letter-spacing: -1px; min-width: 0; }
+
+    /* ── gallery chrome around the preview ── */
+    .gbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; height: 44px; padding: 0 20px; border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--fg-3); background: var(--sidebar); position: sticky; top: 0; z-index: 20; }
+    .gbar a { color: var(--fg-2); } .gbar a:hover { color: var(--fg); text-decoration: none; } .gbar .links { display: inline-flex; gap: 18px; } .gbar .cap { display: inline-flex; align-items: center; gap: 8px; } .gbar .cap img { width: 16px; height: 16px; }
+    .phero { max-width: 1180px; margin: 0 auto; padding: 64px 28px 30px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 32px; align-items: end; }
+    .eyebrow { font-size: 12px; color: var(--fg-3); margin: 0 0 16px; letter-spacing: .02em; }
+    .phero h1 { display: flex; align-items: center; gap: 18px; font-size: clamp(44px, 6.4vw, 78px); font-weight: 700; letter-spacing: -.035em; line-height: 1; margin: 0 0 20px; }
+    .phero h1 img { width: .92em; height: .92em; border-radius: 22%; box-shadow: 0 0 0 1px var(--border-2), 0 0 60px rgba(249,115,22,.18); }
+    .phero-lead { font-size: 17px; line-height: 1.6; color: var(--fg-2); max-width: 700px; margin: 0 0 22px; } .phero-lead b { color: var(--fg); font-weight: 600; }
+    .phero-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; } .phero-actions a { text-decoration: none; }
+    .phero-meta { display: flex; flex-wrap: wrap; gap: 6px; } .phero-meta span { height: 24px; display: inline-flex; align-items: center; gap: 6px; padding: 0 9px; border-radius: 999px; background: var(--bg-3); color: var(--fg-2); font-size: 11.5px; font-family: var(--mono); }
+    .agents { display: grid; gap: 6px; justify-items: end; align-self: end; }
+    .agents .lbl { font-size: 11px; color: var(--fg-3); text-transform: uppercase; letter-spacing: .08em; }
+    .agents .row { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; max-width: 380px; }
+    .agents .row > span { height: 28px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--border-2); background: var(--card); font-size: 12px; color: var(--fg-2); } .agents .row .ag { width: 13px; height: 13px; }
+    .preview { max-width: 1180px; margin: 0 auto; padding: 0 28px 24px; }
+    .preview-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 14px; }
+    .preview-head h2 { font-size: 24px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 4px; } .preview-head p { margin: 0; max-width: 720px; }
+    .tour { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .tour .eyebrow { margin: 0 6px 0 0; }
+    .window { border: 1px solid var(--border-2); border-radius: 10px; background: var(--bg); overflow: hidden; box-shadow: var(--shadow), 0 0 0 1px rgba(0,0,0,.4); position: relative; isolation: isolate; }
+    .titlebar { height: 34px; display: flex; align-items: center; gap: 12px; padding: 0 12px; border-bottom: 1px solid var(--border); background: var(--sidebar); font-size: 12px; color: var(--fg-3); }
+    .titlebar .dots { display: inline-flex; gap: 6px; } .titlebar .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-4); }
+    .titlebar .cap { flex: 1; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 7px; } .titlebar .cap img { width: 14px; height: 14px; }
+    .titlebar .sim { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); font-size: 11.5px; } .titlebar .sim i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: glow 1.6s ease-in-out infinite; }
+    .viewport { height: 752px; zoom: .85; position: relative; overflow: hidden; transform: translateZ(0); user-select: none; font-size: 13px; line-height: 1.5; }
+    .callouts { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 24px; margin: 22px 0 0; }
+    .callouts li { display: grid; grid-template-columns: 26px 1fr; gap: 8px; font-size: 13px; color: var(--fg-2); line-height: 1.55; }
+    .callouts li b { width: 20px; height: 20px; border-radius: 50%; background: var(--accent-bg); color: var(--accent); font-size: 11px; font-weight: 600; display: grid; place-items: center; margin-top: 1px; } .callouts strong { color: var(--fg); font-weight: 600; }
+    .how { max-width: 1180px; margin: 0 auto; padding: 44px 28px 20px; border-top: 1px solid var(--border); }
+    .how-head { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; flex-wrap: wrap; margin-bottom: 20px; } .how-head h2 { font-size: 28px; font-weight: 700; letter-spacing: -.02em; margin: 0; }
+    .feat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+    .feat { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; transition: border-color .15s; } .feat:hover { border-color: var(--ring); }
+    .feat .tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--fg-3); text-transform: uppercase; letter-spacing: .08em; } .feat .tag .ag { width: 12px; height: 12px; }
+    .feat h3 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; margin: 0; }
+    .feat p { font-size: 13px; line-height: 1.6; color: var(--fg-2); margin: 0; flex: 1; } .feat .btn { align-self: flex-start; }
+    .install { max-width: 1180px; margin: 0 auto; padding: 30px 28px 40px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 40px; border-top: 1px solid var(--border); }
+    .install h2 { font-size: 24px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 8px; }
+    .install p { color: var(--fg-2); font-size: 13.5px; line-height: 1.6; max-width: 560px; }
+    .install pre { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 16px; font: 12.5px/1.65 var(--mono); overflow-x: auto; margin: 10px 0 16px; color: var(--fg); } .install pre .c { color: var(--fg-3); } .install pre .p { color: var(--ok); }
+    .install ol { padding-left: 20px; color: var(--fg-2); font-size: 13.5px; line-height: 1.6; } .install li { margin: 4px 0; }
+    .install table { width: 100%; border-collapse: collapse; font-size: 13px; } .install th, .install td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: top; } .install th { color: var(--fg-3); font-weight: 500; font-size: 12px; } .install td:first-child { white-space: nowrap; }
+    .install ul.spec { list-style: none; padding: 0; margin: 0; } .install ul.spec li { display: grid; grid-template-columns: 130px 1fr; gap: 12px; padding: 9px 0; border-top: 1px solid var(--border); font-size: 13px; color: var(--fg-2); line-height: 1.55; } .install ul.spec b { color: var(--fg); font-weight: 600; }
+    .foot { max-width: 1180px; margin: 0 auto; padding: 16px 28px 40px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--fg-3); border-top: 1px solid var(--border); }
+
+    /* ── the app shell (inside the frame) ── */
+    #app { position: absolute; inset: 0; display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr) var(--panel-w); transition: grid-template-columns .18s cubic-bezier(.2,.8,.2,1); background: var(--bg); }
+    #app.side-closed { grid-template-columns: 0px minmax(0, 1fr) var(--panel-w); } #app.panel-closed { grid-template-columns: var(--sidebar-w) minmax(0, 1fr) 0px; } #app.side-closed.panel-closed { grid-template-columns: 0px minmax(0, 1fr) 0px; }
+    #app.side-closed .sidebar, #app.panel-closed .panel { visibility: hidden; }
+    .sidebar { background: var(--sidebar); border-right: 1px solid var(--border); display: grid; grid-template-rows: 44px minmax(0, 1fr) auto; min-width: 0; overflow: hidden; }
+    .side-top { display: flex; align-items: center; gap: 2px; padding: 0 8px 0 12px; }
+    .side-top .logo { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; font-size: 13px; color: var(--fg); flex: 1; } .side-top .logo .mark { width: 19px; height: 19px; display: block; }
+    .side-scroll { overflow-y: auto; padding: 2px 8px 8px; }
+    .repo { margin-top: 6px; }
+    .repo-row { width: 100%; height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 6px; border-radius: var(--radius); color: var(--fg); font-weight: 600; font-size: 12.5px; } .repo-row:hover { background: var(--hover); }
+    .avatar { width: 18px; height: 18px; border-radius: 5px; background: var(--bg-4); color: var(--fg-2); font-size: 10.5px; font-weight: 700; display: grid; place-items: center; flex: none; }
+    .repo-row .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; } .repo-row .base { font-weight: 400; color: var(--fg-3); font-size: 11px; font-family: var(--mono); } .repo-row .chev { color: var(--fg-4); }
+    .ws-row { width: 100%; display: grid; grid-template-columns: 3px minmax(0, 1fr) auto; gap: 9px; align-items: center; padding: 6px 8px 6px 4px; border-radius: var(--radius); text-align: left; margin: 1px 0; position: relative; }
+    .ws-row:hover { background: var(--hover); } .ws-row.is-active { background: var(--selected); }
+    .ws-row .stripe { width: 3px; height: 30px; border-radius: 2px; background: var(--border-2); }
+    .ws-row .stripe.dirty { background: var(--warn); } .ws-row .stripe.pr { background: var(--info); } .ws-row .stripe.merged { background: var(--purple); } .ws-row .stripe.working { background: var(--accent); } .ws-row .stripe.clean { background: var(--ok); }
+    .ws-row .lines { display: grid; gap: 1px; min-width: 0; }
+    .ws-row .t { font-size: 12.5px; font-weight: 500; color: var(--fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ws-row.unread .t { font-weight: 700; }
+    .ws-row .t .local { margin-left: 6px; font-size: 10px; font-weight: 500; color: var(--fg-3); border: 1px solid var(--border-2); border-radius: 3px; padding: 0 4px; }
+    .ws-row .s { font-size: 11px; color: var(--fg-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ws-row .s .wk { display: inline; gap: 0; } .ws-row .s .wk .ph { color: var(--ag-color, var(--accent)); } .ws-row .s .wk .el { margin-left: 4px; }
+    .ws-row .right { display: flex; align-items: center; gap: 6px; color: var(--accent); } .ws-row .right .wk.glyph .sp { font-size: 12px; } .ws-row .right .ag { width: 13px; height: 13px; }
+    .dot-unread { width: 7px; height: 7px; border-radius: 50%; background: var(--info); }
+    .add-repo-row { width: 100%; height: 28px; display: flex; align-items: center; gap: 6px; padding: 0 8px; color: var(--fg-3); font-size: 12px; margin-top: 10px; border-radius: var(--radius); } .add-repo-row:hover { background: var(--hover); color: var(--fg); }
+    .side-foot { border-top: 1px solid var(--border); padding: 8px; display: grid; gap: 4px; }
+    .btn-new { height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-radius: var(--radius); background: var(--primary); color: var(--primary-fg); font-weight: 600; font-size: 12.5px; } .btn-new:hover { filter: brightness(1.15); }
+    .btn-new kbd { margin-left: auto; background: rgba(0,0,0,.12); border-color: transparent; color: inherit; opacity: .8; }
+    .side-links { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .nav-row { height: 28px; display: flex; align-items: center; gap: 7px; padding: 0 8px; border-radius: var(--radius); color: var(--fg-2); font-size: 12px; } .nav-row:hover { background: var(--hover); color: var(--fg); } .nav-row.is-active { background: var(--selected); color: var(--fg); }
+    .main { display: grid; grid-template-rows: 44px 36px minmax(0, 1fr) auto auto; grid-template-columns: minmax(0, 1fr); min-width: 0; min-height: 0; background: var(--bg); position: relative; overflow: hidden; }
+    .topbar { height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 0 0 12px; border-bottom: 1px solid var(--border); min-width: 0; }
+    .ws-title { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 0; overflow: hidden; } .ws-title .name { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 60px; }
+    .chip { height: 24px; display: inline-flex; align-items: center; gap: 5px; padding: 0 8px; border-radius: 999px; background: var(--bg-3); color: var(--fg-2); font-size: 11.5px; font-family: var(--mono); max-width: 170px; min-width: 0; flex: 0 1 auto; white-space: nowrap; } .chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; } .chip:hover { background: var(--bg-4); color: var(--fg); } .chip .ab { color: var(--fg-3); font-size: 10.5px; }
+    .chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .chip.branch { max-width: 210px; }
+    .chip.pr { font-family: var(--sans); font-weight: 600; background: var(--info-bg); color: var(--info); }
+    .topbar .actions { display: flex; align-items: center; gap: 6px; padding-right: 4px; flex: none; }
+    .topbar .tools { display: flex; align-items: center; gap: 2px; padding: 0 2px 0 6px; flex: none; border-left: 1px solid var(--border); height: 100%; }
+    .winctl { display: flex; height: 100%; } .winctl button { width: 36px; height: 44px; display: grid; place-items: center; color: var(--fg-2); border-radius: 0; } .winctl button svg { width: 10px; height: 10px; } .winctl button:hover { background: var(--hover); color: var(--fg); } .winctl button.close:hover { background: #e81123; color: #fff; }
+    .tabs-row { height: 36px; display: flex; align-items: center; gap: 4px; padding: 0 8px; border-bottom: 1px solid var(--border); min-width: 0; background: var(--bg); } .tabs-row .tabs { display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0; overflow: hidden; }
+    .tab { height: 28px; display: inline-flex; align-items: center; gap: 6px; padding: 0 6px 0 9px; border-radius: var(--radius); color: var(--fg-2); font-size: 12px; max-width: 220px; min-width: 0; position: relative; flex: 0 1 auto; }
+    .tab:hover { background: var(--hover); color: var(--fg); } .tab.is-active { background: var(--selected); color: var(--fg); font-weight: 500; }
+    .tab .ag { width: 13px; height: 13px; } .tab .wk.glyph .sp { font-size: 12px; } .tab .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tab .close { width: 18px; height: 18px; display: grid; place-items: center; border-radius: 4px; color: var(--fg-3); opacity: 0; } .tab:hover .close, .tab.is-active .close { opacity: 1; } .tab .close:hover { background: var(--bg-4); color: var(--fg); }
+    .dot-need { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+    .tab-add { height: 28px; display: inline-flex; align-items: center; gap: 5px; padding: 0 9px; border-radius: var(--radius); color: var(--fg-3); font-size: 12px; white-space: nowrap; flex: none; } .tab-add:hover { background: var(--hover); color: var(--fg); }
+    .view-tabs { display: flex; align-items: center; gap: 2px; flex: none; }
+    .vtab { height: 28px; display: inline-flex; align-items: center; gap: 5px; padding: 0 9px; border-radius: var(--radius); color: var(--fg-2); font-size: 12px; } .vtab:hover { background: var(--hover); color: var(--fg); } .vtab.is-active { background: var(--selected); color: var(--fg); } .vtab .run { color: var(--accent); }
+    .content { position: relative; min-height: 0; overflow: hidden; }
+    .chat { position: absolute; inset: 0; overflow-y: auto; padding: 18px 0 24px; user-select: text; scroll-behavior: smooth; }
+    .chat > * { max-width: 820px; margin-left: auto; margin-right: auto; padding-left: 24px; padding-right: 24px; }
+    .msg { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; padding-top: 10px; padding-bottom: 10px; font-size: 13.5px; line-height: 1.6; animation: rise .25s ease both; }
+    .msg.user { display: block; padding-top: 14px; }
+    .msg.user .bubble { background: var(--bg-3); border-radius: 12px 12px 4px 12px; padding: 10px 14px; margin-left: 14%; white-space: pre-wrap; word-break: break-word; color: var(--fg); }
+    .msg .who { padding-top: 5px; } .msg.assistant .who .ag { width: 18px; height: 18px; color: var(--claude); }
+    .msg.assistant .who .wk.glyph { width: 18px; height: 18px; justify-content: center; color: var(--claude); } .msg.assistant .who .wk.glyph .sp { font-size: 17px; }
+    .msg .body { min-width: 0; }
+    .working { display: inline-flex; align-items: center; gap: 8px; color: var(--fg-3); font-size: 12.5px; padding: 4px 0; } .working .wk { font-size: 12.5px; } .working .wk .sp { font-size: 15px; }
+    .md p { margin: 0 0 10px; word-break: break-word; } .md > *:last-child { margin-bottom: 0; } .md code { color: var(--fg); }
+    .md pre { margin: 8px 0 12px; padding: 10px 14px; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow-x: auto; font: 12px/1.55 var(--mono); position: relative; } .md pre code { background: none; padding: 0; font-size: inherit; }
+    .md pre[data-lang]::before { content: attr(data-lang); position: absolute; top: 6px; right: 10px; font: 10px var(--sans); color: var(--fg-4); text-transform: uppercase; letter-spacing: .06em; }
+    .md ul, .md ol { margin: 0 0 10px; padding-left: 22px; } .md li { margin: 2px 0; } .md strong { font-weight: 600; }
+    .md li.task { list-style: none; margin-left: -18px; } .md li.task::before { content: '☐ '; color: var(--fg-3); } .md li.task.done::before { content: '☑ '; color: var(--ok); }
+    details.think { margin: 4px 0 8px; font-size: 12.5px; color: var(--fg-3); }
+    details.think summary { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; list-style: none; color: var(--fg-3); font-style: italic; } details.think summary::-webkit-details-marker { display: none; }
+    details.think div { margin-top: 6px; padding: 8px 12px; border-left: 2px solid var(--border-2); white-space: pre-wrap; font-style: italic; max-height: 260px; overflow: auto; }
+    .think summary .wk.glyph { width: 14px; justify-content: center; color: var(--claude); } .think summary .wk.glyph .sp { font-size: 13px; } .think.is-live summary { color: var(--fg-2); }
+    .steps { display: grid; gap: 2px; margin: 4px 0 10px; }
+    .tool { border-radius: var(--radius); font-size: 12.5px; overflow: hidden; animation: rise .2s ease both; }
+    .tool .th { display: flex; align-items: center; gap: 8px; padding: 3px 8px; cursor: pointer; color: var(--fg-2); border-radius: var(--radius); } .tool .th:hover { background: var(--hover); }
+    .tool .th .i-sm, .tool .th .run { color: var(--fg-3); } .tool.pending .th .run, .tool.pending .th .i-sm { color: var(--claude); } .tool.pending .th { opacity: .8; }
+    .tool .th .verb { color: var(--fg-3); min-width: 40px; } .tool .th .target { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg); font-family: var(--mono); font-size: 12px; }
+    .tool .th .subn { font-size: 10.5px; color: var(--fg-3); border: 1px solid var(--border); border-radius: 999px; padding: 0 6px; margin-left: 4px; white-space: nowrap; }
+    .tool .th .chev { width: 12px; height: 12px; color: var(--fg-4); transition: transform .12s; } .tool.is-open .th .chev { transform: rotate(90deg); }
+    .tool .sub-live { font-size: 11.5px; color: var(--fg-3); padding: 0 10px 6px 30px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .tool .sub-live .tg { color: var(--fg-2); font-family: var(--mono); font-size: 11px; }
+    .tool .out { display: none; margin: 2px 0 6px 28px; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-2); max-height: 300px; overflow: auto; white-space: pre-wrap; word-break: break-word; color: var(--fg-2); font: 11.5px/1.5 var(--mono); }
+    .tool .out .cmd { color: var(--fg); margin-bottom: 6px; } .tool.is-open .out { display: block; }
+    .todos-card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 8px 12px; margin: 4px 0; background: var(--card); }
+    .todos-card .th { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12px; margin-bottom: 4px; } .todos-card .th .n { margin-left: auto; color: var(--fg-3); font-weight: 400; font-size: 11px; }
+    .todo { display: flex; align-items: center; gap: 8px; font-size: 12.5px; padding: 2px 0; color: var(--fg-2); } .todo .i-sm { color: var(--fg-4); } .todo.completed { color: var(--fg-3); text-decoration: line-through; } .todo.completed .i-sm { color: var(--ok); } .todo.in_progress { color: var(--fg); } .todo.in_progress .i-sm { color: var(--claude); }
+    .turn { display: flex; align-items: center; gap: 12px; padding-top: 2px; padding-bottom: 8px; font-size: 11.5px; color: var(--fg-3); } .turn .t { display: inline-flex; align-items: center; gap: 5px; } .turn .t .i-sm { color: var(--ok); }
+    .turn-diff { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border-radius: 999px; border: 1px solid var(--border-2); color: var(--fg-2); font-size: 11px; } .turn-diff:hover { background: var(--hover); color: var(--fg); } .turn-diff .a { color: var(--diff-add-fg); font-family: var(--mono); } .turn-diff .d { color: var(--diff-del-fg); font-family: var(--mono); }
+    .perm { border: 1px solid var(--warn); background: var(--warn-bg); border-radius: var(--radius-lg); padding: 10px 14px; margin: 8px auto; display: grid; gap: 8px; font-size: 13px; animation: pop .15s both; }
+    .perm.ask { border-color: var(--info); background: var(--info-bg); }
+    .perm .q { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .perm .q .i { color: var(--warn); } .perm.ask .q .i { color: var(--info); }
+    .perm .q .what { color: var(--fg-2); font-family: var(--mono); font-size: 12px; } .perm .q .res { margin-left: auto; color: var(--fg-3); font-size: 11.5px; }
+    .perm pre { margin: 0; padding: 6px 10px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); font: 11.5px/1.5 var(--mono); white-space: pre-wrap; word-break: break-word; }
+    .perm .acts { margin-top: 0; } .perm.resolved .acts { display: none; }
+    .acts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+    .empty { position: absolute; inset: 0; display: grid; place-items: center; overflow: auto; }
+    .hero { max-width: 560px; padding: 24px; text-align: center; display: grid; gap: 14px; justify-items: center; }
+    .hero .mark { width: 52px; height: 52px; border-radius: 14px; background: var(--primary); display: grid; place-items: center; overflow: hidden; } .hero .mark img { width: 52px; height: 52px; }
+    .hero h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.01em; } .hero p { margin: 0; color: var(--fg-2); font-size: 13.5px; line-height: 1.55; }
+    .hero.small h1 { font-size: 18px; } .agent-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; } .agent-row .ag { width: 14px; height: 14px; }
+    .term-main { position: absolute; inset: 0; background: #0f0f11; padding: 8px 12px; font: 12px/1.5 var(--mono); color: #d4d4d8; white-space: pre-wrap; overflow: auto; user-select: text; }
+    .term-main .dim { color: var(--fg-3); } .term-main .pr { color: var(--ok); } .term-main .cx { color: var(--codex); } .term-main .gm { color: var(--gemini); } .term-main .cursor { display: inline-block; width: 7px; height: 13px; background: #d4d4d8; vertical-align: -2px; animation: blink 1s steps(2) infinite; }
+    .page { position: absolute; inset: 0; overflow-y: auto; } .page-inner { max-width: 860px; margin: 0 auto; padding: 28px 32px 60px; }
+    .page-head { display: grid; gap: 4px; margin-bottom: 16px; } .page-head h2 { margin: 0; font-size: 18px; font-weight: 700; } .page-head .sub { color: var(--fg-3); font-size: 12.5px; }
+    .notes { position: absolute; inset: 0; display: grid; grid-template-rows: 40px minmax(0, 1fr); }
+    .notes-head { display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 12.5px; } .notes-head .grow { flex: 1; }
+    .notes textarea { border: 0; outline: 0; resize: none; padding: 18px 24px; background: var(--bg); color: var(--fg); font: 13.5px/1.6 var(--sans); user-select: text; }
+    .script-page { max-width: 720px; margin: 0 auto; padding: 32px; display: grid; gap: 12px; } .sp-head { display: flex; align-items: center; gap: 10px; } .sp-head h2 { margin: 0; font-size: 18px; } .script-page .sub { color: var(--fg-2); margin: 0; line-height: 1.6; }
+    .cmd-box { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-2); font-family: var(--mono); font-size: 12.5px; user-select: text; } .cmd-box .mark { color: var(--ok); font-weight: 700; } .cmd-box code { background: none; padding: 0; }
+    .env-list { margin-top: 12px; display: grid; gap: 3px; font-size: 12px; } .env-list .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--fg-3); margin-bottom: 4px; } .env-list div { display: grid; grid-template-columns: 200px 1fr; gap: 10px; color: var(--fg-2); } .env-list code { color: var(--fg); }
+    .drawer { height: var(--drawer-h); border-top: 1px solid var(--border); display: grid; grid-template-rows: 30px minmax(0, 1fr); background: #0f0f11; }
+    .drawer-bar { display: flex; align-items: center; gap: 4px; padding: 0 6px 0 4px; background: var(--bg-2); border-bottom: 1px solid var(--border); }
+    .dtabs { display: flex; align-items: center; gap: 2px; min-width: 0; overflow: hidden; flex: 1; }
+    .dtab { height: 24px; display: inline-flex; align-items: center; gap: 5px; padding: 0 8px; border-radius: 4px; color: var(--fg-2); font-size: 11.5px; cursor: pointer; } .dtab:hover { background: var(--hover); color: var(--fg); } .dtab.is-active { background: var(--selected); color: var(--fg); } .dtab .dead { color: var(--fg-4); } .dtab.add { padding: 0 6px; }
+    .drawer-host { position: relative; overflow: auto; padding: 6px 12px; font: 11.5px/1.5 var(--mono); color: #d4d4d8; white-space: pre-wrap; user-select: text; } .drawer-host .dim { color: var(--fg-3); } .drawer-host .ok { color: var(--ok); } .drawer-host .acc { color: var(--accent); } .drawer-host .cursor { display: inline-block; width: 7px; height: 12px; background: #d4d4d8; vertical-align: -2px; animation: blink 1s steps(2) infinite; }
+    .composer-wrap { padding: 8px 16px 14px; background: var(--bg); }
+    .composer { max-width: 820px; margin: 0 auto; border: 1px solid var(--border-2); border-radius: 14px; background: var(--card); padding: 8px 10px 6px 14px; display: grid; gap: 4px; transition: border-color .12s, box-shadow .12s; }
+    .composer:focus-within { border-color: var(--ring); box-shadow: 0 0 0 3px rgba(255,255,255,.04); }
+    .composer textarea { width: 100%; resize: none; background: transparent; border: 0; outline: none; color: var(--fg); font-size: 13.5px; line-height: 20px; padding: 4px 0; user-select: text; overflow-y: auto; max-height: 120px; font-family: var(--sans); } .composer textarea::placeholder { color: var(--fg-3); }
+    .composer .row { display: flex; align-items: center; gap: 4px; } .composer .hint { font-size: 11px; color: var(--fg-4); margin-right: 6px; margin-left: auto; }
+    .composer .send { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--bg-3); color: var(--fg-3); transition: background .12s, color .12s; flex: none; } .composer .send.ready { background: var(--primary); color: var(--primary-fg); } .composer .send.stop { background: var(--bad-bg); color: var(--bad); margin-right: 2px; } .composer .send .i { width: 15px; height: 15px; }
+    .composer .queue { display: grid; gap: 2px; padding: 4px 0 2px; border-bottom: 1px dashed var(--border); margin-bottom: 4px; }
+    .composer .q { display: flex; align-items: center; gap: 8px; font-size: 12.5px; } .composer .q .n { width: 18px; height: 18px; border-radius: 50%; background: var(--bg-3); color: var(--fg-3); font-size: 10.5px; display: grid; place-items: center; flex: none; } .composer .q .qt { flex: 1; min-width: 0; color: var(--fg-2); padding: 2px 4px; white-space: pre-wrap; }
+    .composer .qh { font-size: 11px; color: var(--fg-4); padding: 2px 0 2px 26px; }
+    .panel { background: var(--panel); border-left: 1px solid var(--border); display: grid; grid-template-rows: 44px minmax(0, 1fr); min-width: 0; overflow: hidden; }
+    .panel-tabs { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--border); padding: 8px 8px 0; gap: 2px; }
+    .panel-tab { display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--fg-3); font-size: 12px; font-weight: 500; height: 32px; border-radius: var(--radius) var(--radius) 0 0; border-bottom: 2px solid transparent; } .panel-tab:hover { color: var(--fg); background: var(--hover); } .panel-tab.is-active { color: var(--fg); border-bottom-color: var(--fg); }
+    .panel-tab .n { font-size: 10.5px; color: var(--fg-3); background: var(--bg-3); border-radius: 999px; padding: 0 6px; } .panel-tab .n.bad { background: var(--bad-bg); color: var(--bad); }
+    .panel-body { overflow-y: auto; min-height: 0; display: flex; flex-direction: column; }
+    .sec { padding: 12px 14px; border-bottom: 1px solid var(--border); } .sec-h { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12.5px; margin-bottom: 8px; } .sec-h .n { margin-left: auto; color: var(--fg-3); font-weight: 400; font-size: 11px; }
+    .kv { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 8px; font-size: 12px; padding: 2px 0; } .kv span { color: var(--fg-3); } .kv b { font-weight: 500; font-family: var(--mono); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dfile { display: flex; align-items: center; gap: 6px; padding: 3px 4px 3px 2px; font-size: 12.5px; cursor: pointer; min-width: 0; border-radius: 4px; } .dfile:hover { background: var(--hover); } .dfile.is-sel { background: var(--selected); }
+    .dfile .chk { width: 16px; height: 16px; border: 1px solid var(--border-2); border-radius: 4px; display: grid; place-items: center; color: var(--ok); flex: none; background: var(--card); } .dfile .chk svg { width: 11px; height: 11px; }
+    .dfile .kind { font-family: var(--mono); font-size: 10px; width: 14px; text-align: center; color: var(--fg-3); } .dfile .kind.A { color: var(--diff-add-fg); } .dfile .kind.M { color: var(--warn); } .dfile .kind.D { color: var(--diff-del-fg); }
+    .dfile .f { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .dfile .dir { color: var(--fg-4); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 40%; }
+    .dv-body { font: 11.5px/1.55 var(--mono); user-select: text; padding: 6px 0 4px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); margin-top: 8px; overflow: hidden; }
+    .hunk .hh { padding: 3px 10px; background: var(--diff-hunk); color: var(--info); font-size: 11px; }
+    .dl { display: grid; grid-template-columns: 30px 30px 14px minmax(0, 1fr); align-items: start; min-height: 18px; } .dl .g { text-align: right; padding-right: 6px; color: var(--fg-4); user-select: none; font-size: 10.5px; line-height: 18px; } .dl .s { color: var(--fg-4); user-select: none; line-height: 18px; } .dl .c { white-space: pre; overflow: hidden; text-overflow: ellipsis; padding-right: 10px; line-height: 18px; }
+    .dl.add { background: var(--diff-add-bg); } .dl.add .g, .dl.add .s { color: var(--diff-add-fg); } .dl.del { background: var(--diff-del-bg); } .dl.del .g, .dl.del .s { color: var(--diff-del-fg); }
+    .pr-card { display: grid; gap: 8px; } .pr-title { font-weight: 600; font-size: 13px; color: var(--fg); }
+    .pr-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 11.5px; color: var(--fg-3); font-family: var(--mono); }
+    .badge { font-family: var(--sans); font-size: 10.5px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--bg-3); color: var(--fg-2); } .badge.open { background: var(--ok-bg); color: var(--ok); } .badge.draft { background: var(--bg-3); color: var(--fg-2); } .badge.merged { background: #2a1d45; color: var(--purple); }
+    .checks { display: grid; gap: 2px; } .check { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 2px 0; } .check .cn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ck { display: grid; } .ck.ok { color: var(--ok); } .ck.bad { color: var(--bad); } .ck.pending { color: var(--warn); } .ck.pending svg { animation: spin 1.2s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
+    .cline { padding: 3px 0; font-size: 12px; color: var(--fg-2); } .cline b { font-family: var(--mono); font-weight: 500; color: var(--fg); }
+    .panel-empty { padding: 28px 18px; color: var(--fg-3); font-size: 12.5px; text-align: center; line-height: 1.6; } .panel-empty.small { padding: 4px 0 0; text-align: left; } .panel-empty .acts { justify-content: center; } .panel-empty.small .acts { justify-content: flex-start; }
+    .tree { padding: 6px 6px 20px; } .tree-root { display: flex; align-items: center; gap: 6px; padding: 4px 6px; font-size: 12px; font-weight: 600; }
+    .tree-row { height: 24px; display: flex; align-items: center; gap: 5px; padding: 0 8px; width: 100%; text-align: left; border-radius: 4px; font-size: 12.5px; color: var(--fg-2); } .tree-row:hover { background: var(--hover); color: var(--fg); }
+    .tree-row .chev { width: 12px; height: 12px; color: var(--fg-4); transition: transform .12s; display: grid; flex: none; } .tree-row.is-open .chev { transform: rotate(90deg); } .tree-row .f { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tree-node .tree-children { display: none; } .tree-node.is-open > .tree-children { display: block; }
+    .ctx { position: absolute; z-index: 60; min-width: 220px; background: var(--card); border: 1px solid var(--border-2); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 4px; animation: pop .1s both; }
+    .ctx hr { border: 0; border-top: 1px solid var(--border); margin: 4px 0; } .ctx .ctx-title { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--fg-3); padding: 6px 10px 4px; }
+    .ctx button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px 10px; font-size: 12.5px; border-radius: 5px; } .ctx button:hover { background: var(--hover); }
+    .ctx button .lbl { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ctx button .sub { color: var(--fg-3); font-size: 11px; white-space: nowrap; } .ctx button .tick { width: 14px; display: grid; color: var(--ok); } .ctx button .ag { width: 14px; height: 14px; } .ctx button kbd { margin-left: auto; }
+    .overlay { position: absolute; inset: 0; z-index: 50; background: rgba(0,0,0,.4); display: grid; place-items: center; animation: fade .12s both; }
+    .modal { width: 520px; max-width: 92%; max-height: 88%; overflow-y: auto; background: var(--card); border: 1px solid var(--border-2); border-radius: 14px; box-shadow: var(--shadow); padding: 20px 22px; display: grid; gap: 12px; animation: pop .12s both; }
+    .modal h3 { margin: 0; font-size: 16px; font-weight: 700; } .modal .sub { margin: -6px 0 0; color: var(--fg-2); font-size: 12.5px; line-height: 1.5; }
+    .field { display: grid; gap: 5px; } .field label { font-size: 11.5px; font-weight: 600; color: var(--fg-2); display: flex; gap: 8px; align-items: baseline; } .field label .hint { font-weight: 400; }
+    .field input { width: 100%; height: 32px; padding: 0 10px; background: var(--bg); border: 1px solid var(--border-2); border-radius: var(--radius); outline: none; user-select: text; font-size: 12.5px; } .field input:focus { border-color: var(--fg-3); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 4px; }
+    .palette { width: 560px; max-width: 92%; background: var(--card); border: 1px solid var(--border-2); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; animation: pop .12s both; align-self: start; margin-top: 60px; }
+    .palette input { width: 100%; height: 46px; padding: 0 16px; background: transparent; border: 0; border-bottom: 1px solid var(--border); outline: none; font-size: 14px; user-select: text; }
+    .palette .scope { display: flex; gap: 2px; padding: 6px 8px 2px; border-bottom: 1px solid var(--border); } .palette .scope button { font-size: 11.5px; padding: 3px 10px; border-radius: 999px; color: var(--fg-2); } .palette .scope button.is-on { background: var(--selected); color: var(--fg); }
+    .palette .list { max-height: 320px; overflow-y: auto; padding: 6px; }
+    .palette .item { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; text-align: left; padding: 8px 10px; border-radius: 6px; font-size: 13px; } .palette .item.is-hi, .palette .item:hover { background: var(--selected); }
+    .palette .item .ag { width: 15px; height: 15px; } .palette .item .sub { color: var(--fg-3); font-size: 11.5px; white-space: nowrap; } .palette .item .lines { display: grid; min-width: 0; gap: 1px; } .palette .item .lines .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .palette .item .lines .p { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-3); font-size: 11.5px; }
+    .palette .none { padding: 16px; color: var(--fg-3); font-size: 12.5px; }
+    .settings { display: grid; grid-template-columns: 180px minmax(0, 1fr); min-height: 100%; }
+    .snav { padding: 20px 12px; border-right: 1px solid var(--border); display: grid; align-content: start; gap: 2px; } .snav button { height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-radius: var(--radius); color: var(--fg-2); font-size: 12.5px; } .snav button:hover { background: var(--hover); color: var(--fg); } .snav button.is-active { background: var(--selected); color: var(--fg); font-weight: 500; }
+    .sbody { padding: 24px 28px 60px; max-width: 760px; } .sgroup { margin-bottom: 26px; } .sgroup h3 { margin: 0 0 10px; font-size: 14px; font-weight: 700; }
+    .srow { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); } .srow > div:first-child { flex: 1; min-width: 0; } .sl { font-size: 13px; font-weight: 500; } .ss { font-size: 12px; color: var(--fg-3); line-height: 1.5; }
+    .toggle { width: 34px; height: 20px; border-radius: 999px; background: var(--border-2); position: relative; transition: background .15s; flex: none; } .toggle span { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.3); } .toggle.is-on { background: var(--ok); } .toggle.is-on span { transform: translateX(14px); }
+    .seg { display: inline-flex; background: var(--bg-3); border-radius: var(--radius); padding: 2px; gap: 2px; } .seg button { height: 26px; padding: 0 10px; display: inline-flex; align-items: center; gap: 5px; border-radius: 4px; color: var(--fg-2); font-size: 12px; } .seg button.is-on { background: var(--card); color: var(--fg); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+    .plugin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+    .plugin { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--card); padding: 12px; display: grid; gap: 8px; }
+    .plugin .top { display: flex; align-items: center; gap: 10px; } .plugin .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--bg-3); display: grid; place-items: center; } .plugin .logo .ag { width: 16px; height: 16px; }
+    .plugin .title { font-weight: 600; font-size: 12.5px; } .plugin .vendor { font-size: 11px; color: var(--fg-3); }
+    .plugin .state { margin-left: auto; font-size: 10.5px; color: var(--fg-3); border: 1px solid var(--border); border-radius: 999px; padding: 1px 7px; white-space: nowrap; } .plugin .state.ok { color: var(--ok); border-color: transparent; background: var(--ok-bg); }
+    .plugin .ver { display: flex; flex-wrap: wrap; gap: 10px; font-size: 11px; color: var(--fg-3); } .plugin .ver b { color: var(--fg); font-weight: 500; }
+    .kbd-table { border-collapse: collapse; width: 100%; font-size: 12.5px; } .kbd-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); } .kbd-table td:last-child { text-align: right; }
+    .toast { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 70; background: var(--primary); color: var(--primary-fg); border-radius: 999px; padding: 8px 16px; font-size: 12.5px; box-shadow: var(--shadow); animation: toast-in .2s cubic-bezier(.34,1.56,.64,1) both; max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+    .toast.out { opacity: 0; transition: opacity .25s; }
+
+    @media (max-width: 960px) {
+      .phero { grid-template-columns: 1fr; } .agents { justify-items: start; } .agents .row { justify-content: flex-start; }
+      .callouts { grid-template-columns: 1fr 1fr; } .install { grid-template-columns: 1fr; gap: 24px; }
+      :root { --panel-w: 0px; --sidebar-w: 0px; } .viewport { height: 660px; } .panel, .sidebar { display: none; } .main { grid-column: 2; }
+      .gbar { height: auto; min-height: 44px; padding: 6px 20px; }
+      .composer .hint { display: none; }
+    }
+    @media (max-width: 600px) { .callouts { grid-template-columns: 1fr; } .phero h1 { font-size: 40px; } .viewport { height: 610px; } .gbar { position: static; }
+      .titlebar .cap { display: none; } .titlebar .sim { margin-left: auto; } .view-tabs, .tab .close, .tab-add span, .chip.branch .ab { display: none; } .tab { padding-right: 9px; } .tab-add { padding: 0 6px; } .composer-wrap { padding: 8px 10px 12px; } .topbar .actions .pill-btn:not(.primary), .winctl { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="gbar">
+    <a href="../index.html">← Max's Gallery</a>
+    <span class="cap"><img src="media/astral-mark.png" alt="" />Astral Coder · one console for every coding agent</span>
+    <span class="links"><a href="#how">How it works ↓</a><a href="https://github.com/maxwitanowski/Astral-Coder" target="_blank" rel="noopener">Source on GitHub ↗</a></span>
+  </div>
+
+  <header class="phero">
+    <div>
+      <p class="eyebrow">05 / Desktop console for coding agents · 2026 · open source · Windows</p>
+      <h1><img src="media/astral-mark.png" alt="" />Astral Coder</h1>
+      <p class="phero-lead">One window for every coding agent. <b>Claude Code, Codex, Gemini CLI, Grok, Copilot, Aider</b> and local models each run untouched inside a real terminal, sorted into projects, workspaces and sessions. Claude Code also gets a proper chat: streamed replies, thinking, expandable tool calls, permission prompts, and the CLI's own sparkle while it works.</p>
+      <div class="phero-actions"><a class="btn primary" href="https://github.com/maxwitanowski/Astral-Coder" target="_blank" rel="noopener">Source on GitHub ↗</a><a class="btn" href="#preview">Play with it ↓</a><a class="btn" href="#install">Install it ↓</a></div>
+      <div class="phero-meta"><span>Electron 44</span><span>Vite 8</span><span>vanilla JS, no framework</span><span>node-pty + xterm.js</span><span>git worktrees</span><span>GitHub CLI</span></div>
+    </div>
+    <div class="agents" aria-label="Agents Astral can host" id="agent-list"></div>
+  </header>
+
+  <section class="preview" id="preview">
+    <div class="preview-head">
+      <div><h2>Interactive preview</h2><p class="hint">The real interface with a pretend repository. Send Claude a message and watch a scripted turn play out with thinking, tool steps and a permission prompt. Switch tabs to see how Codex and a shell look, poke the Diff, Checks and Files panels, open Settings. Nothing here runs a real agent.</p></div>
+      <div class="tour"><span class="eyebrow">Try</span><button class="btn" data-do="ask">Send a message</button><button class="btn" data-do="tab:codex">Codex tab</button><button class="btn" data-do="panel:checks">Checks</button><button class="btn" data-do="palette">Ctrl+K</button><button class="btn" data-do="settings">Settings</button></div>
+    </div>
+    <div class="window">
+      <div class="titlebar"><span class="dots"><i></i><i></i><i></i></span><span class="cap"><img src="media/astral-mark.png" alt="" />Astral — night-desk · fix-chart-tooltip</span><span class="sim"><i></i>preview, no agents are running</span></div>
+      <div class="viewport" id="viewport"><div id="app"></div><div id="layer"></div></div>
+    </div>
+    <ol class="callouts">
+      <li><b>1</b><span><strong>Repositories and workspaces</strong> on the left. A coloured stripe says what's going on in each one: orange working, blue has a PR, yellow uncommitted, green clean.</span></li>
+      <li><b>2</b><span><strong>Sessions as tabs.</strong> One agent per tab, each with its own logo and, while it works, the spinner that CLI draws in its own terminal. Notes, Setup, Run and Terminal views sit on the right.</span></li>
+      <li><b>3</b><span><strong>The chat</strong> is Astral's own UI over Claude Code's stream. Thinking folds away, tool calls expand, permission prompts are cards you answer, and every turn ends with a time, a cost and a diff pill.</span></li>
+      <li><b>4</b><span><strong>The panel</strong> on the right: the git diff with per-file counts, the pull request with its checks, and the workspace files. The terminal drawer underneath shows every git command Astral runs.</span></li>
+    </ol>
+  </section>
+
+  <section class="how" id="how">
+    <div class="how-head"><h2>How it works</h2><p class="hint">Each card drives the preview above.</p></div>
+    <div class="feat-grid" id="feat-grid">
+      <article class="feat"><span class="tag" data-ag="claude">Chat UI</span><h3>Claude Code, drawn by Astral.</h3><p>Claude runs headless with <code>--output-format stream-json</code> and Astral draws the conversation: streamed markdown, a folded "Thinking" block, tool calls you can expand to see the command and its output, permission prompts as cards with Allow and Deny. Enter sends, Shift+Enter adds a line, Esc interrupts.</p><button class="btn" data-do="ask">Send a message</button></article>
+      <article class="feat"><span class="tag" data-ag="codex">Terminal UI</span><h3>Every other CLI, untouched.</h3><p>Codex, Gemini CLI, Grok, Copilot, OpenCode, Qwen Code, Kimi, Aider and local models open in a real ConPTY terminal with their own interface. Astral never patches a CLI. It launches the vendor's binary exactly as you would from PowerShell and watches its output for the working state.</p><button class="btn" data-do="tab:codex">Open the Codex tab</button></article>
+      <article class="feat"><span class="tag">Spinners</span><h3>Each agent's own working indicator.</h3><p>Claude Code's sparkle and random verb ("Combobulating…", "Clauding…"), Codex's braille spinner with elapsed time, Aider's scanner bar. The same indicator shows in the tab and in the sidebar row, so you can see what every workspace is doing from anywhere.</p><button class="btn" data-do="working">Show them working</button></article>
+      <article class="feat"><span class="tag">Workspaces</span><h3>Worktrees, so agents don't collide.</h3><p>Every repository gets a "local" workspace that is the folder itself. New workspace (Ctrl+N) makes an isolated git worktree on its own branch, so an agent can rewrite half the app while your checkout stays clean. Alt+Left and Alt+Right walk back through the ones you visited.</p><button class="btn" data-do="newws">New workspace</button></article>
+      <article class="feat"><span class="tag">Queue</span><h3>Messages queue while Claude is busy.</h3><p>Send while a turn is running and the message waits above the input, delivered when the turn ends. Ctrl+Enter interrupts and sends now instead. Work done through Claude's Agent tool streams back under its step with a live line and a step count.</p><button class="btn" data-do="queue">Queue a message</button></article>
+      <article class="feat"><span class="tag">Handoff</span><h3>Switch agents mid-project.</h3><p>Open Codex in a workspace that already has a Claude conversation and Astral writes a brief of it (what was asked, files changed, recent commands, last replies) to <code>.astral/handoff.md</code>. The new agent's first message tells it to read that before anything else.</p><button class="btn" data-do="handoff">See the handoff</button></article>
+      <article class="feat"><span class="tag">Git</span><h3>Diff, PR and checks in the panel.</h3><p>Diff shows git status with line counts and lets you leave review comments that go to the agent. Checks shows the open PR, its CI, and a merge button. Commit and push, pull latest and create PR live in the … menu, and every git step runs in a visible shell in the drawer.</p><button class="btn" data-do="panel:diff">Open the diff</button></article>
+      <article class="feat"><span class="tag">Resume</span><h3>Pick up any conversation.</h3><p>Chat history is saved, so a relaunch shows everything. Ctrl+Shift+R opens a resume picker that reads the transcripts Claude Code and Codex already write, including conversations started outside Astral, from any folder on the machine.</p><button class="btn" data-do="resume">Resume picker</button></article>
+      <article class="feat"><span class="tag">Settings</span><h3>Agents, scripts, shortcuts.</h3><p>Settings lists every supported CLI with installed and latest versions and an install button that runs the vendor's own command in a visible terminal. Repositories get setup and run scripts (they become tabs). The full key list is under Shortcuts.</p><button class="btn" data-do="settings">Open settings</button></article>
+    </div>
+  </section>
+
+  <section class="install" id="install">
+    <div>
+      <h2>Install it</h2>
+      <p>Windows only for now (it uses ConPTY and PowerShell). You need Node 22 or newer, Git on the PATH, and at least one coding CLI.</p>
+      <pre><span class="c"># a CLI to host, for example Claude Code</span>
+npm install -g @anthropic-ai/claude-code
+claude          <span class="c"># run once to log in</span>
+
+<span class="c"># the app</span>
+git clone https://github.com/maxwitanowski/Astral-Coder.git
+cd Astral-Coder
+npm install
+npm start</pre>
+      <ol>
+        <li><code>npm start</code> builds the interface and opens the app. After that, <code>Astral.vbs</code> launches it without a console window (make a shortcut for the taskbar).</li>
+        <li>Optional: the GitHub CLI for pull requests and checks. Astral can install it from the Checks tab, then run <code>gh auth login</code>.</li>
+        <li>Every other supported CLI can be installed from Settings → Agents, which runs the vendor's install command in a visible terminal.</li>
+      </ol>
+      <h2 style="margin-top:26px">Where things live</h2>
+      <ul class="spec">
+        <li><b>astral.json</b><span>Projects, workspaces, sessions and settings in <code>%APPDATA%\Astral</code>, with a .bak of the last good copy beside it.</span></li>
+        <li><b>chats\</b><span>Chat history per Claude session, one JSON file each.</span></li>
+        <li><b>handoff.md</b><span>The brief for the next agent, in <code>&lt;workspace&gt;\.astral\</code>, excluded from git automatically.</span></li>
+        <li><b>worktrees</b><span>Isolated workspaces live in <code>%USERPROFILE%\conductor\workspaces</code>.</span></li>
+      </ul>
+    </div>
+    <div>
+      <h2>Keys</h2>
+      <table>
+        <tr><th>Key</th><th>Action</th></tr>
+        <tr><td><kbd>Ctrl+N</kbd> / <kbd>Ctrl+Shift+N</kbd></td><td>New workspace / add repository</td></tr>
+        <tr><td><kbd>Ctrl+K</kbd></td><td>Search and quick open</td></tr>
+        <tr><td><kbd>Ctrl+Shift+R</kbd></td><td>Resume a past conversation</td></tr>
+        <tr><td><kbd>Ctrl+Tab</kbd> / <kbd>Ctrl+1..9</kbd></td><td>Switch sessions / workspaces</td></tr>
+        <tr><td><kbd>Ctrl+B</kbd> / <kbd>Ctrl+\</kbd> / <kbd>Ctrl+`</kbd></td><td>Toggle sidebar / right panel / terminal drawer</td></tr>
+        <tr><td><kbd>Ctrl+Shift+D</kbd> / <kbd>E</kbd> / <kbd>C</kbd></td><td>Diff / Files / Checks panel</td></tr>
+        <tr><td><kbd>Ctrl+Shift+Y</kbd> / <kbd>L</kbd> / <kbd>P</kbd></td><td>Commit and push / pull latest / create PR</td></tr>
+        <tr><td><kbd>Ctrl+Shift+T</kbd></td><td>Big terminal mode</td></tr>
+        <tr><td><kbd>Ctrl+Shift+Backspace</kbd></td><td>Stop the active agent</td></tr>
+        <tr><td><kbd>Alt+←</kbd> / <kbd>Alt+→</kbd></td><td>Back / forward through visited workspaces</td></tr>
+      </table>
+      <h2 style="margin-top:26px">Under the hood</h2>
+      <ul class="spec">
+        <li><b>Terminals</b><span>node-pty (ConPTY) in the Electron main process, xterm.js in the window. CLIs start through PowerShell with a UTF-8 console.</span></li>
+        <li><b>Claude chat</b><span><code>claude -p --input-format stream-json --output-format stream-json --permission-prompts host</code>, with a known session id so the transcript path is known, and model, effort and add-dir flags only when you set them.</span></li>
+        <li><b>Live status</b><span><code>~/.claude/sessions/*.json</code> for Claude Code; output activity for everything else.</span></li>
+        <li><b>Transcripts</b><span>Claude's and Codex's own JSONL transcripts are read for history, the resume picker and the handoff brief. Nothing is ever written to them.</span></li>
+        <li><b>Environment</b><span><code>CLAUDE_*</code> variables are stripped from child processes, so an Astral launched from inside a Claude Code session doesn't confuse the CLI it starts.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span>Astral Coder · one of Max's projects · <a href="https://github.com/maxwitanowski/Astral-Coder" target="_blank" rel="noopener">github.com/maxwitanowski/Astral-Coder</a></span>
+    <span><a href="../index.html">← Back to the gallery</a></span>
+  </footer>
+
+  <script>
+  (() => {
+    // ── icons (lucide-style, same paths as the app's icons.js) ──
+    const wrap = (p, extra = '') => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" ${extra}>${p}</svg>`;
+    const I = {
+      panelLeft: wrap('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/>'), panelRight: wrap('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M15 3v18"/>'),
+      plus: wrap('<path d="M5 12h14M12 5v14"/>', 'stroke-width="2.25"'), search: wrap('<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>'),
+      folderPlus: wrap('<path d="M12 10v6M9 13h6"/><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>'),
+      folder: wrap('<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>'),
+      file: wrap('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>'),
+      gitBranch: wrap('<path d="M6 3v12"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>'),
+      gitCompare: wrap('<circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7M11 18H8a2 2 0 0 1-2-2V9"/>'),
+      gitPullRequest: wrap('<circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7M6 9v12"/>'), gitCommit: wrap('<circle cx="12" cy="12" r="3"/><path d="M3 12h6M15 12h6"/>'),
+      gitMerge: wrap('<circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 0 0 9 9"/>'),
+      chevronDown: wrap('<path d="m6 9 6 6 6-6"/>'), chevronRight: wrap('<path d="m9 18 6-6-6-6"/>'), externalLink: wrap('<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>'),
+      arrowUp: wrap('<path d="m5 12 7-7 7 7M12 19V5"/>', 'stroke-width="2.25"'), arrowDown: wrap('<path d="M12 5v14m7-7-7 7-7-7"/>', 'stroke-width="2.25"'), arrowRight: wrap('<path d="M5 12h14m-7-7 7 7-7 7"/>'),
+      square: wrap('<rect x="4" y="4" width="16" height="16" rx="2"/>'), terminal: wrap('<path d="m4 17 6-6-6-6M12 19h8"/>'), check2: wrap('<path d="M20 6 9 17l-5-5"/>', 'stroke-width="2.25"'), play: wrap('<path d="m6 3 14 9-14 9z"/>'),
+      sparkles: wrap('<path d="M9.94 14.34 12 20l2.06-5.66L20 12l-5.94-2.34L12 4 9.94 9.66 4 12z"/>'), history: wrap('<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/>'),
+      cog: wrap('<path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2M12 22v-2M17 20.66l-1-1.73M11 10.27 7 3.34M20.66 17l-1.73-1M3.34 7l1.73 1M14 12h8M2 12h2M20.66 7l-1.73 1M3.34 17l1.73-1M17 3.34l-1 1.73M11 13.73l-4 6.93"/>'),
+      download: wrap('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>'), x: wrap('<path d="M18 6 6 18M6 6l12 12"/>'), ellipsis: wrap('<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>'),
+      cpu: wrap('<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>'), gauge: wrap('<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>'),
+      paperclip: wrap('<path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>'), book: wrap('<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>'),
+      brain: wrap('<path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4M12 18v-5"/>'),
+      zap: wrap('<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>'), eye: wrap('<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>'), pencil: wrap('<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>'),
+      message: wrap('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'), alertCircle: wrap('<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>'),
+      checkCircle: wrap('<path d="M21.8 10A10 10 0 1 1 17 3.34"/><path d="m9 11 3 3L22 4"/>'), xCircle: wrap('<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/>'), circle: wrap('<circle cx="12" cy="12" r="10"/>'),
+      listTodo: wrap('<rect x="3" y="5" width="6" height="6" rx="1"/><path d="m3 17 2 2 4-4M13 6h8M13 12h8M13 18h8"/>'), notebook: wrap('<path d="M2 6h4M2 10h4M2 14h4M2 18h4"/><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M16 2v20"/>'),
+      wrench: wrap('<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>'), clock: wrap('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'),
+      loader: wrap('<path d="M21 12a9 9 0 1 1-6.22-8.56"/>'), globe: wrap('<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/>'), code: wrap('<path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/>'),
+      winMin: '<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><path d="M0 5h10"/></svg>', winMax: '<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><rect x=".5" y=".5" width="9" height="9" rx="1.5"/></svg>', winClose: '<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1"><path d="m0 0 10 10M10 0 0 10"/></svg>',
+    };
+    const ic = (n, cls = 'i') => (I[n] || I.zap).replace('<svg ', `<svg class="${cls}" `);
+    // brand marks (simple-icons paths, as in the app)
+    const brand = (p) => `<svg viewBox="0 0 24 24" fill="currentColor"><path d="${p}"/></svg>`;
+    const BRAND = {
+      claude: brand('m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0182 2.8535-.6071 1.5422-.2793 1.8396-.3157.8318.3885.0911.3946-.3278.8074-1.9672.4857-2.3071.4614-3.436.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.6212l3.0175.2247.7893.5221.4736.6376-.079.4857-1.2143.6193-1.6393-.3886-3.8248-.9107-1.3114-.3278h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.6211h-.1275v.17l.4432.6496 2.3436 3.5211.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9247L14.1 19.166l-1.1414-1.9429-.1396.079-.6740 7.2551-.3157.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9247.3157-1.5301.2853-1.9004.17-.6314-.0121-.0425-.1396.0182-1.4328 1.9672-2.1795 2.9445-1.7243 1.8457-.4129.1639-.7164-.3703.0668-.6618.4008-.5889 2.386-3.0357 1.4389-1.8822.929-1.0868-.0061-.1579h-.0546l-6.3385 4.1155-1.1293.1457-.4857-.4554.0607-.7468.2308-.2429 1.9064-1.3114z'),
+      openai: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.28 9.82a5.98 5.98 0 0 0-.52-4.91 6.05 6.05 0 0 0-6.51-2.9A6.07 6.07 0 0 0 4.98 4.18a5.98 5.98 0 0 0-4 2.9 6.05 6.05 0 0 0 .74 7.1 5.98 5.98 0 0 0 .51 4.91 6.05 6.05 0 0 0 6.51 2.9A5.98 5.98 0 0 0 13.26 24a6.06 6.06 0 0 0 5.77-4.21 5.99 5.99 0 0 0 4-2.9 6.06 6.06 0 0 0-.75-7.07zM13.26 22.43a4.48 4.48 0 0 1-2.88-1.04l.14-.08 4.78-2.76a.8.8 0 0 0 .39-.68v-6.74l2.02 1.17a.07.07 0 0 1 .04.05v5.58a4.5 4.5 0 0 1-4.49 4.5zM3.6 18.3a4.47 4.47 0 0 1-.54-3.01l.14.09 4.78 2.76a.77.77 0 0 0 .78 0l5.84-3.37v2.33a.08.08 0 0 1-.03.06L9.74 19.95a4.5 4.5 0 0 1-6.14-1.65zM2.34 7.9a4.49 4.49 0 0 1 2.37-1.97V11.6a.77.77 0 0 0 .39.68l5.81 3.35-2.02 1.17a.08.08 0 0 1-.07 0L4 14.03a4.5 4.5 0 0 1-1.66-6.13zm16.6 3.86-5.84-3.4 2.02-1.16a.08.08 0 0 1 .07 0l4.83 2.79a4.49 4.49 0 0 1-.7 8.1v-5.68a.79.79 0 0 0-.38-.65zm2.01-3.03-.14-.09-4.77-2.78a.78.78 0 0 0-.78 0L9.42 9.23V6.9a.07.07 0 0 1 .03-.06l4.83-2.79a4.5 4.5 0 0 1 6.68 4.66zM8.32 12.86 6.3 11.7a.08.08 0 0 1-.04-.06V6.07a4.5 4.5 0 0 1 7.38-3.45l-.14.08-4.78 2.76a.79.79 0 0 0-.39.68zm1.1-2.37 2.6-1.5 2.6 1.5v3l-2.6 1.5-2.6-1.5z"/></svg>',
+      gemini: brand('M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81'),
+      x: brand('M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z'),
+      terminal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3M12 15h5"/></svg>',
+      copilot: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10c0-3.5 3.6-6 8-6s8 2.5 8 6v5.5c-2 2-5 3.5-8 3.5s-6-1.5-8-3.5z"/><path d="M9 12v2M15 12v2"/><path d="M8.5 8.5c1-.8 2.2-1 3.5-1s2.5.2 3.5 1"/></svg>',
+      qwen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 3.5 6h7l-3.5 6 3.5 6h-7L12 21l-3.5-6-3.5 6h7"/><path d="M8.5 9 5 3h7"/></svg>',
+      cpu: wrap('<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>'),
+    };
+    const AGENTS = {
+      claude: { name: 'Claude Code', vendor: 'Anthropic', icon: 'claude', color: '#DA7756', model: 'Fable 5.1', cmd: 'claude', ver: '2.1.0' },
+      codex: { name: 'Codex', vendor: 'OpenAI', icon: 'openai', color: '#10A37F', model: 'GPT-5 Codex', cmd: 'codex', ver: '0.42.0' },
+      gemini: { name: 'Gemini CLI', vendor: 'Google', icon: 'gemini', color: '#8E75B2', model: 'Gemini 2.5 Pro', cmd: 'gemini', ver: '0.9.1' },
+      grok: { name: 'Grok CLI', vendor: 'xAI', icon: 'x', color: '#E7E9EA', model: 'Grok 4', cmd: 'grok', ver: null },
+      copilot: { name: 'Copilot CLI', vendor: 'GitHub', icon: 'copilot', color: '#E7E9EA', model: 'Claude Sonnet 4.5', cmd: 'copilot', ver: null },
+      qwen: { name: 'Qwen Code', vendor: 'Alibaba', icon: 'qwen', color: '#6950EF', model: 'Qwen3 Coder Plus', cmd: 'qwen', ver: null },
+      aider: { name: 'Aider', vendor: 'Aider', icon: 'terminal', color: '#14B8A6', model: 'Claude Sonnet 4.5', cmd: 'aider', ver: '0.86.1' },
+      ollama: { name: 'Ollama', vendor: 'Local models', icon: 'cpu', color: '#E7E9EA', model: 'llama3.2', cmd: 'ollama', ver: '0.12.3' },
+      shell: { name: 'PowerShell', vendor: 'Microsoft', icon: 'terminal', color: '#5391FE', model: '', cmd: 'pwsh', ver: '7.5' },
+    };
+    const ag = (id, cls = 'ag') => { const a = AGENTS[id] || AGENTS.shell; return `<span class="${cls}" style="--ag-color:${a.color}">${BRAND[a.icon] || BRAND.terminal}</span>`; };
+    const RUN = () => '<span class="run"><i></i><i></i><i></i></span>';
+    const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const $ = (id) => document.getElementById(id);
+
+    // ── spinners, same frames and timings as the app's spinners.js ──
+    const BRAILLE = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+    const CLAUDE_FRAMES = ['·', '✢', '✳', '✶', '✻', '✽', '✻', '✶', '✳', '✢'];
+    const scanner = (w, b) => { const out = []; for (let p = 0; p <= w - b; p++) out.push('░'.repeat(p) + '█'.repeat(b) + '░'.repeat(w - b - p)); for (let p = w - b - 1; p > 0; p--) out.push('░'.repeat(p) + '█'.repeat(b) + '░'.repeat(w - b - p)); return out; };
+    const AIDER_FRAMES = scanner(10, 3), AIDER_SMALL = scanner(4, 2);
+    const CLAUDE_VERBS = ['Accomplishing', 'Actualizing', 'Baking', 'Brewing', 'Calculating', 'Cerebrating', 'Churning', 'Clauding', 'Coalescing', 'Cogitating', 'Combobulating', 'Computing', 'Conjuring', 'Cooking', 'Crafting', 'Crunching', 'Deliberating', 'Discombobulating', 'Elucidating', 'Envisioning', 'Finagling', 'Flibbertigibbeting', 'Forging', 'Generating', 'Hatching', 'Ideating', 'Inferring', 'Manifesting', 'Marinating', 'Musing', 'Noodling', 'Percolating', 'Pondering', 'Puzzling', 'Ruminating', 'Schlepping', 'Simmering', 'Spelunking', 'Stewing', 'Synthesizing', 'Thinking', 'Tinkering', 'Transmuting', 'Vibing', 'Whirring'];
+    const STYLES = {
+      claude: { frames: CLAUDE_FRAMES, ms: 120, phrases: CLAUDE_VERBS, suffix: '…', elapsed: (t, hint) => `(${t}${hint ? ' · esc to interrupt' : ''})` },
+      codex: { frames: BRAILLE, ms: 80, phrases: ['Working'], elapsed: (t, hint) => `(${t}${hint ? ' • esc to interrupt' : ''})` },
+      gemini: { frames: BRAILLE, ms: 80, phrases: ['Reticulating splines...', 'Warming up the AI hamsters...', 'Counting electrons...'], elapsed: (t, hint) => `(${hint ? 'esc to cancel, ' : ''}${t})` },
+      aider: { frames: AIDER_FRAMES, glyphFrames: AIDER_SMALL, ms: 90, mono: true, phrases: ['Waiting for LLM'], elapsed: () => '' },
+    };
+    const phrases = new Map();
+    const phraseFor = (style, key) => { let p = phrases.get(key); if (!p) { p = style.phrases[Math.floor(Math.random() * style.phrases.length)]; phrases.set(key, p); } return p + (style.suffix || ''); };
+    const frameFor = (style, now, small) => { const f = (small && style.glyphFrames) || style.frames; return f[Math.floor(now / style.ms) % f.length]; };
+    const fmtElapsed = (since, now) => { const s = Math.max(0, Math.round((now - since) / 1000)); return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`; };
+    function WORK(agent, { mode = 'glyph', key = agent, since = 0, hint = false, glyph = true } = {}) {
+      const style = STYLES[agent];
+      if (!style) return mode === 'glyph' ? `${ag(agent)}${RUN()}` : `<span class="wk plain">${ag(agent)}${RUN()}<span class="ph">Working…</span></span>`;
+      const now = Date.now(), color = AGENTS[agent].color;
+      const sp = `<span class="sp ${style.mono ? 'mono' : ''}">${esc(frameFor(style, now, mode === 'glyph'))}</span>`;
+      if (mode === 'glyph') return `<span class="wk glyph" data-agent="${agent}" style="--ag-color:${color}">${sp}</span>`;
+      const el = since ? style.elapsed(fmtElapsed(since, now), hint) : '';
+      return `<span class="wk line" data-agent="${agent}" data-key="${key}" data-since="${since}" ${hint ? 'data-hint="1"' : ''} style="--ag-color:${color}">${glyph ? sp : ''}<span class="ph">${esc(phraseFor(style, key))}</span>${el ? `<span class="el">${esc(el)}</span>` : ''}</span>`;
+    }
+    setInterval(() => {
+      const now = Date.now();
+      document.querySelectorAll('.wk[data-agent]').forEach((el) => {
+        const style = STYLES[el.dataset.agent]; if (!style) return;
+        const sp = el.querySelector('.sp'); if (sp) { const f = frameFor(style, now, el.classList.contains('glyph')); if (sp.textContent !== f) sp.textContent = f; }
+        const since = +el.dataset.since || 0, elx = el.querySelector('.el');
+        if (since && elx) { const t = style.elapsed(fmtElapsed(since, now), !!el.dataset.hint); if (elx.textContent !== t) elx.textContent = t; }
+      });
+    }, 80);
+
+    // ── pretend state ──
+    const REPOS = [
+      { id: 'nd', name: 'night-desk', base: 'main', ws: [
+        { id: 'nd-fix', title: 'fix-chart-tooltip', name: 'night-desk', stripe: 'working', sub: 'claude', when: 'now', active: true, stats: { a: 48, d: 12 } },
+        { id: 'nd-local', title: 'night-desk', local: true, stripe: 'dirty', text: '3 changed', when: '2h ago' },
+        { id: 'nd-pr', title: 'asx-price-feed', name: 'night-desk', stripe: 'pr', text: 'PR #41', when: 'yesterday', unread: true },
+      ] },
+      { id: 'np', name: 'Notepad', base: 'main', ws: [
+        { id: 'np-local', title: 'Notepad', local: true, stripe: 'clean', text: 'clean', when: '3d ago' },
+        { id: 'np-ink', title: 'ink-recogniser', name: 'Notepad', stripe: 'merged', text: 'merged', when: 'last week' },
+      ] },
+      { id: 'mb', name: 'Minebro', base: 'master', ws: [
+        { id: 'mb-local', title: 'Minebro', local: true, stripe: 'dirty', text: '1 changed', when: '5d ago' },
+      ] },
+    ];
+    const S = {
+      panel: 'diff', view: 'chat', tab: 'claude', drawer: true, sideOpen: true, panelOpen: true,
+      working: false, turnStart: 0, draft: '', queue: [], perm: 'auto', model: 'Default', effort: 'Default',
+      sessions: [
+        { id: 'claude', agent: 'claude', name: 'Chart tooltip', status: 'idle' },
+        { id: 'codex', agent: 'codex', name: 'Feed retry', status: 'idle' },
+        { id: 'shell', agent: 'shell', name: 'PowerShell', status: 'idle' },
+      ],
+      msgs: [
+        { kind: 'user', text: 'The compare chart tooltip is stuck at the wrong x position when the mouse leaves the chart. It should hide on mouseleave and follow the nearest tick while hovering.' },
+        { kind: 'assistant', blocks: [
+          { type: 'thinking', text: 'The tooltip is positioned from the last mousemove event and nothing resets it. I need to find where the chart handles pointer events, add a mouseleave that hides the tooltip, and snap x to the nearest data index instead of the raw mouse x.' },
+          { type: 'tools', tools: [
+            { verb: 'Search', target: 'tooltip in web/src', out: 'web/src/components/CompareChart.jsx:88  const [tip, setTip] = useState(null)\nweb/src/components/CompareChart.jsx:142 onMouseMove={(e) => setTip(...)}\nweb/src/index.css:301 .chart-tip { position: absolute; …' },
+            { verb: 'Read', target: 'web/src/components/CompareChart.jsx', out: '(210 lines) hover state lives in the SVG wrapper; there is no onMouseLeave and x comes straight from e.nativeEvent.offsetX.' },
+            { verb: 'Edit', target: 'web/src/components/CompareChart.jsx', out: '@@ -138,9 +138,14 @@\n-  onMouseMove={(e) => setTip({ x: e.nativeEvent.offsetX, i: idx(e) })}\n+  onMouseMove={(e) => { const i = idx(e); setTip({ x: xFor(i), i }); }}\n+  onMouseLeave={() => setTip(null)}' },
+          ] },
+          { type: 'md', html: '<p>Two things were wrong. The tooltip x came straight from the mouse instead of the nearest tick, and nothing cleared it when the pointer left the SVG.</p><ul><li>Added <code>onMouseLeave</code> that clears the hover state.</li><li>Snapped x to the tick at the nearest index with the existing <code>xFor()</code> helper.</li></ul><p>Running the tests next.</p>' },
+          { type: 'tools', tools: [
+            { verb: 'Bash', target: 'npm test -- CompareChart', cmd: 'npm test -- CompareChart', out: '> night-desk@0.4.1 test\n> vitest run CompareChart\n\n ✓ web/src/components/CompareChart.test.jsx (6 tests) 412ms\n\n Test Files  1 passed (1)\n      Tests  6 passed (6)' },
+          ] },
+          { type: 'md', html: '<p>All six tests pass, including the new <code>hides on mouseleave</code> case. Want me to commit this as <code>fix: chart tooltip snaps to ticks and hides on leave</code>?</p>' },
+        ] },
+        { kind: 'turn', ms: 38200, cost: 0.14, diff: { files: 2, a: 48, d: 12 } },
+      ],
+      codexLog: null, shellLog: null,
+    };
+    const PROMPTS = [
+      'Commit that with a sensible message and push.',
+      'Add a test for the tooltip hiding when the mouse leaves.',
+      'Can you also make the tooltip fade out instead of vanishing?',
+    ];
+
+    // ── render ──
+    const app = $('app'), layer = $('layer');
+    function render() {
+      const ws = REPOS[0].ws[0];
+      app.className = (S.sideOpen ? '' : 'side-closed ') + (S.panelOpen ? '' : 'panel-closed');
+      app.innerHTML = `
+        <aside class="sidebar">
+          <div class="side-top"><span class="logo"><img class="mark" src="media/astral-mark.png" alt="" draggable="false"><span>Astral</span></span><button class="icon-btn" data-act="palette" title="Search (Ctrl+K)">${ic('search')}</button><button class="icon-btn" data-act="toggle-side" title="Toggle sidebar (Ctrl+B)">${ic('panelLeft')}</button></div>
+          <div class="side-scroll">${REPOS.map((r) => `<div class="repo"><button class="repo-row" data-act="repo-menu" data-repo="${r.id}"><span class="avatar">${r.name[0].toUpperCase()}</span><span class="name">${esc(r.name)}</span><span class="base">${r.base}</span>${ic('chevronDown', 'i-sm chev')}</button>
+            ${r.ws.map((w) => `<button class="ws-row ${w.active ? 'is-active' : ''} ${w.unread ? 'unread' : ''}" data-act="ws" data-ws="${w.id}"><span class="stripe ${w.active && S.working ? 'working' : w.stripe === 'working' && !S.working ? 'dirty' : w.stripe}"></span>
+              <span class="lines"><span class="t">${esc(w.title)}${w.local ? '<span class="local">local</span>' : ''}</span><span class="s">${w.local ? '' : esc(w.name) + ' · '}${w.active ? (S.working ? WORK('claude', { mode: 'line', key: 'side', since: S.turnStart, glyph: false }) : '3 changed') : esc(w.text || '')} · ${esc(w.when)}</span></span>
+              <span class="right">${w.active && S.working ? WORK('claude') : w.unread ? '<span class="dot-unread"></span>' : ''}${w.stats ? `<span class="stats"><span class="a">+${w.stats.a}</span><span class="d">−${w.stats.d}</span></span>` : ''}</span></button>`).join('')}</div>`).join('')}
+            <button class="add-repo-row" data-act="add-repo">${ic('plus', 'i-sm')}<span>Add repository</span></button></div>
+          <div class="side-foot"><button class="btn-new" data-act="new-ws">${ic('plus')}<span>New workspace</span><kbd>Ctrl+N</kbd></button>
+            <div class="side-links"><button class="nav-row" data-act="resume">${ic('history', 'i-sm')}<span>History</span></button><button class="nav-row ${S.view === 'settings' ? 'is-active' : ''}" data-act="settings">${ic('cog', 'i-sm')}<span>Settings</span></button></div></div>
+        </aside>
+        <div class="main">
+          <div class="topbar">
+            <div class="ws-title"><span class="name">${esc(ws.title)}</span><button class="chip branch" title="Branch · click to rename">${ic('gitBranch', 'i-sm')}<span>max/fix-chart-tooltip</span><span class="ab">↑2</span></button><button class="chip pr" data-act="panel:checks" title="Tooltip snaps to ticks">${ic('gitPullRequest', 'i-sm')}<span>#43</span></button></div>
+            <div class="actions"><button class="pill-btn" data-act="open-in">${ic('externalLink', 'i-sm')}<span>Open in</span>${ic('chevronDown', 'i-sm')}</button><button class="pill-btn" data-act="run">${ic('play', 'i-sm')}<span>Run</span></button><button class="icon-btn" data-act="more" title="More">${ic('ellipsis')}</button></div>
+            <div class="tools"><button class="icon-btn ${S.panelOpen ? '' : ''}" data-act="toggle-panel" title="Toggle panel (Ctrl+\\)">${ic('panelRight')}</button><div class="winctl"><button data-act="win">${I.winMin}</button><button data-act="win">${I.winMax}</button><button class="close" data-act="win-close">${I.winClose}</button></div></div>
+          </div>
+          <div class="tabs-row">
+            <div class="tabs">${S.sessions.map((s) => `<button class="tab ${S.view === 'chat' && S.tab === s.id ? 'is-active' : ''}" data-act="tab" data-tab="${s.id}" title="${AGENTS[s.agent].name}">${s.status === 'working' ? WORK(s.agent) : ag(s.agent)}<span class="t">${esc(s.name)}</span>${s.status === 'attention' ? '<span class="dot-need"></span>' : ''}<span class="close" data-act="close-tab" data-tab="${s.id}">${ic('x', 'i-sm')}</span></button>`).join('')}<button class="tab-add" data-act="new-chat">${ic('plus', 'i-sm')}<span>New chat</span></button></div>
+            <div class="view-tabs">${[['notes', 'notebook', 'Notes'], ['setup', 'download', 'Setup'], ['run', 'play', 'Run'], ['terminal', 'terminal', 'Terminal']].map(([k, i, l]) => `<button class="vtab ${S.view === k ? 'is-active' : ''}" data-act="view" data-view="${k}">${ic(i, 'i-sm')}<span>${l}</span></button>`).join('')}</div>
+          </div>
+          <div class="content" id="content">${renderContent()}</div>
+          ${S.drawer ? `<div class="drawer"><div class="drawer-bar"><div class="dtabs"><button class="dtab is-active">${ic('gitBranch', 'i-sm')}<span>git</span></button><button class="dtab">${ic('terminal', 'i-sm')}<span>shell 1</span><span class="dead">·</span></button><button class="dtab add">${ic('plus', 'i-sm')}</button></div><button class="icon-btn sm" data-act="toggle-drawer" title="Hide (Ctrl+\`)">${ic('chevronDown', 'i-sm')}</button></div>
+            <div class="drawer-host" id="drawer-host">${drawerText()}</div></div>` : ''}
+          ${S.view === 'chat' && S.tab === 'claude' ? `<div class="composer-wrap"><div class="composer ${S.working ? 'is-working' : ''}">
+            ${S.queue.length ? `<div class="queue">${S.queue.map((q, i) => `<div class="q"><span class="n">${i + 1}</span><span class="qt">${esc(q)}</span><button class="icon-btn sm" data-act="unqueue" data-i="${i}">${ic('x', 'i-sm')}</button></div>`).join('')}<div class="qh">Queued · sent when this turn ends · Ctrl+Enter interrupts and sends now</div></div>` : ''}
+            <textarea id="ta" rows="1" placeholder="${S.working ? 'Message Claude (queued until the turn ends)' : 'Message Claude Code'}">${esc(S.draft)}</textarea>
+            <div class="row"><button class="chip-btn" data-act="menu:model">${ic('cpu', 'i-sm')}<span>${esc(S.model)}</span>${ic('chevronDown', 'i-sm')}</button><button class="chip-btn ${S.perm === 'plan' ? 'is-plan' : ''}" data-act="menu:perm">${ic(S.perm === 'plan' ? 'book' : 'check2', 'i-sm')}<span>${permLabel(S.perm)}</span>${ic('chevronDown', 'i-sm')}</button><button class="chip-btn ${S.effort !== 'Default' ? 'is-set' : ''}" data-act="menu:effort">${ic('gauge', 'i-sm')}<span>${esc(S.effort)}</span>${ic('chevronDown', 'i-sm')}</button><button class="chip-btn" data-act="attach">${ic('paperclip', 'i-sm')}</button>
+              <span class="hint">${S.working ? 'Esc to interrupt · Enter queues' : 'Enter to send · Shift+Enter new line'}</span>${S.working ? `<button class="send stop" data-act="interrupt" title="Stop (Esc)">${ic('square')}</button>` : ''}<button class="send ${S.draft.trim() ? 'ready' : ''}" id="send" data-act="send" title="Send (Enter)">${ic('arrowUp')}</button></div>
+          </div></div>` : ''}
+        </div>
+        <aside class="panel">
+          <div class="panel-tabs">${[['diff', 'gitCompare', 'Diff', '<span class="n">2</span>'], ['checks', 'checkCircle', 'Checks', '<span class="n">3</span>'], ['files', 'folder', 'Files', '']].map(([k, i, l, x]) => `<button class="panel-tab ${S.panel === k ? 'is-active' : ''}" data-act="panel:${k}">${ic(i, 'i-sm')}<span>${l}</span>${x}</button>`).join('')}</div>
+          <div class="panel-body">${renderPanel()}</div>
+        </aside>`;
+      const ta = $('ta');
+      if (ta) { ta.addEventListener('input', () => { S.draft = ta.value; $('send').classList.toggle('ready', !!S.draft.trim()); autosize(ta); }); ta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } if (e.key === 'Escape' && S.working) interrupt(); }); autosize(ta); }
+      if (S.view === 'chat' && S.tab === 'claude') { const c = $('chat'); if (c) c.scrollTop = c.scrollHeight; }
+    }
+    const autosize = (ta) => { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; };
+    const permLabel = (p) => ({ auto: 'Auto', accept: 'Accept edits', ask: 'Ask', plan: 'Plan', bypass: 'Bypass' }[p] || p);
+
+    function renderContent() {
+      if (S.view === 'settings') return renderSettings();
+      if (S.view === 'notes') return `<div class="notes"><div class="notes-head">${ic('notebook')}<span>Notes for fix-chart-tooltip</span><span class="grow"></span><span class="hint">Private to this workspace, never committed.</span></div><textarea placeholder="Plans, links, things to remember. Drag a note into the composer to send it to the agent.">- tooltip x should snap to ticks, not follow the mouse
+- hide on leave (currently sticks at the last x)
+- later: fade instead of vanish?</textarea></div>`;
+      if (S.view === 'setup' || S.view === 'run') { const run = S.view === 'run'; return `<div class="page"><div class="script-page"><div class="sp-head">${ic(run ? 'play' : 'download')}<h2>${run ? 'Run' : 'Setup'} script</h2></div><p class="sub">${run ? 'Runs the app for this workspace on its own port. The Run button in the top bar starts and stops it.' : 'Runs once after a workspace is created, in a visible terminal.'} Set per repository in Settings → Repositories, saved to <code>.conductor/settings.toml</code>.</p><div class="cmd-box"><span class="mark">$</span><code>${run ? 'npm run dev -- --port $env:CONDUCTOR_PORT' : 'npm install'}</code></div><div class="env-list"><div class="lbl">Environment</div><div><code>CONDUCTOR_PORT</code><span>a free port reserved for this workspace</span></div><div><code>CONDUCTOR_WORKSPACE_NAME</code><span>fix-chart-tooltip</span></div><div><code>CONDUCTOR_ROOT_PATH</code><span>C:\\Users\\max\\conductor\\workspaces\\night-desk\\fix-chart-tooltip</span></div></div><div class="acts"><button class="btn primary" data-act="run">${ic('play', 'i-sm')}<span>${run ? 'Run now' : 'Run setup'}</span><kbd>Ctrl+R</kbd></button><button class="btn ghost" data-act="settings">${ic('cog', 'i-sm')}<span>Edit script</span></button></div></div></div>`; }
+      if (S.view === 'terminal') return `<div class="term-main"><span class="dim">PS C:\\Users\\max\\conductor\\workspaces\\night-desk\\fix-chart-tooltip&gt;</span> git status --short
+ M web/src/components/CompareChart.jsx
+ A web/src/components/CompareChart.test.jsx
+<span class="dim">PS C:\\Users\\max\\conductor\\workspaces\\night-desk\\fix-chart-tooltip&gt;</span> <span class="cursor"></span></div>`;
+      if (S.tab === 'codex') return `<div class="term-main">${S.codexLog || `<span class="cx">${esc(box([' >_ OpenAI Codex (v0.42.0)', '', ' model:     gpt-5-codex   /model to change', ' directory: ~\\conductor\\workspaces\\night-desk'], 46))}</span>
+
+<span class="dim">Tip: press ? for shortcuts</span>
+
+<span class="pr">›</span> Read .astral/handoff.md first, then continue: the price feed
+  should retry with backoff when Yahoo returns a 429.
+
+<span class="dim">•</span> Reading .astral/handoff.md
+<span class="dim">•</span> Explored 3 files · <span class="dim">server/feed.js, server/yahoo.js, server/cache.js</span>
+
+  I'll wrap the Yahoo fetch in a retry helper with jittered
+  backoff (250ms, 500ms, 1s) and surface a "rate limited"
+  state to the desk instead of throwing.
+
+<span class="dim">•</span> Edited server/yahoo.js <span class="pr">+31</span> <span style="color:var(--bad)">-4</span>
+
+<span class="pr">›</span> <span class="cursor"></span>`}</div>`;
+      if (S.tab === 'shell') return `<div class="term-main"><span class="dim">Windows PowerShell 7.5
+PS C:\\Users\\max\\conductor\\workspaces\\night-desk\\fix-chart-tooltip&gt;</span> npm test -- CompareChart
+
+&gt; night-desk@0.4.1 test
+&gt; vitest run CompareChart
+
+ <span class="pr">✓</span> web/src/components/CompareChart.test.jsx (6 tests) 412ms
+
+ Test Files  <span class="pr">1 passed</span> (1)
+      Tests  <span class="pr">6 passed</span> (6)
+
+<span class="dim">PS C:\\Users\\max\\conductor\\workspaces\\night-desk\\fix-chart-tooltip&gt;</span> <span class="cursor"></span></div>`;
+      return `<div class="chat" id="chat">${S.msgs.map(renderMsg).join('')}${S.working && S.msgs[S.msgs.length - 1].kind === 'user' ? `<div class="msg assistant"><span class="who">${WORK('claude')}</span><div class="body"><div class="working">${WORK('claude', { mode: 'line', key: 'turn' + S.turnStart, since: S.turnStart, hint: true, glyph: false })}</div></div></div>` : ''}</div>`;
+    }
+    function renderMsg(m, i) {
+      if (m.kind === 'user') return `<div class="msg user"><div class="bubble">${esc(m.text)}</div></div>`;
+      if (m.kind === 'turn') return `<div class="turn"><span class="t">${ic('checkCircle', 'i-sm')}${(m.ms / 1000).toFixed(1)}s</span><span>$${m.cost.toFixed(2)}</span>${m.diff ? `<button class="turn-diff" data-act="panel:diff">${ic('gitCompare', 'i-sm')}<span>${m.diff.files} files</span><span class="a">+${m.diff.a}</span><span class="d">−${m.diff.d}</span></button>` : ''}</div>`;
+      if (m.kind === 'perm') return `<div class="perm ${m.resolved ? 'resolved' : ''}"><div class="q">${ic('alertCircle')}<b>Allow Bash?</b><span class="what">${esc(m.what)}</span>${m.resolved ? `<span class="res">${esc(m.resolved)}</span>` : ''}</div><pre>$ ${esc(m.cmd)}</pre><div class="acts"><button class="btn primary sm" data-act="perm:allow" data-i="${i}">${ic('check2', 'i-sm')}<span>Allow</span></button><button class="btn sm" data-act="perm:always" data-i="${i}">Allow for this session</button><button class="btn ghost sm" data-act="perm:deny" data-i="${i}">Deny</button></div></div>`;
+      const live = m.live;
+      let body = '';
+      for (const b of m.blocks) {
+        if (b.type === 'thinking') body += `<details class="think ${b.live ? 'is-live' : ''}" ${b.open ? 'open' : ''}><summary>${b.live ? WORK('claude') : ic('brain', 'i-sm')}<span>${b.live ? 'Thinking…' : 'Thinking'}</span></summary><div>${esc(b.text)}</div></details>`;
+        else if (b.type === 'tools') body += `<div class="steps">${b.tools.map((t) => `<div class="tool ${t.pending ? 'pending' : 'done'} ${t.open ? 'is-open' : ''}" data-tool="${t.id || ''}"><div class="th" data-act="tool-toggle">${t.pending ? RUN() : ic(VERB_ICON[t.verb] || 'zap', 'i-sm')}<span class="verb">${esc(t.verb)}</span><span class="target">${esc(t.target)}</span>${t.steps ? `<span class="subn">${t.steps} steps</span>` : ''}${ic('chevronRight', 'i-sm chev')}</div>${t.live ? `<div class="sub-live">${esc(t.live)}</div>` : ''}<div class="out">${t.cmd ? `<div class="cmd">$ ${esc(t.cmd)}</div>` : ''}${esc(t.out || (t.pending ? '…' : '(no output)'))}</div></div>`).join('')}</div>`;
+        else if (b.type === 'todos') body += `<div class="todos-card"><div class="th">${ic('listTodo', 'i-sm')}<span>Todos</span><span class="n">${b.items.filter((t) => t.s === 'completed').length}/${b.items.length}</span></div>${b.items.map((t) => `<div class="todo ${t.s}">${t.s === 'completed' ? ic('checkCircle', 'i-sm') : t.s === 'in_progress' ? ic('arrowRight', 'i-sm') : ic('circle', 'i-sm')}<span>${esc(t.t)}</span></div>`).join('')}</div>`;
+        else body += `<div class="md">${b.html}</div>`;
+      }
+      if (live) body += `<div class="working">${WORK('claude', { mode: 'line', key: 'turn' + S.turnStart, since: S.turnStart, hint: true, glyph: false })}</div>`;
+      return `<div class="msg assistant"><span class="who">${live ? WORK('claude') : ag('claude')}</span><div class="body">${body}</div></div>`;
+    }
+    const box = (lines, w) => ['╭' + '─'.repeat(w) + '╮', ...lines.map((l) => '│' + l.padEnd(w) + '│'), '╰' + '─'.repeat(w) + '╯'].join('\n');
+    const VERB_ICON = { Read: 'file', Edit: 'pencil', Write: 'pencil', Bash: 'terminal', Search: 'search', Grep: 'search', Glob: 'search', Fetch: 'globe', Agent: 'sparkles', Test: 'play' };
+
+    function renderPanel() {
+      if (S.panel === 'diff') return `<div class="sec"><div class="sec-h">${ic('gitCompare', 'i-sm')}<span>Changes</span><span class="n">2 files</span></div>
+        <div class="kv"><span>Branch</span><b>max/fix-chart-tooltip</b></div><div class="kv"><span>Base</span><b>origin/main · 2 ahead</b></div><div class="kv"><span>Diff</span><b><span class="stats"><span class="a">+48</span><span class="d">−12</span></span></b></div>
+        <div class="acts"><button class="btn sm" data-act="commit">${ic('gitCommit', 'i-sm')}<span>Commit &amp; push</span><kbd>Ctrl+Shift+Y</kbd></button><button class="btn ghost sm" data-act="pull">${ic('arrowDown', 'i-sm')}<span>Pull latest</span></button></div></div>
+        <div class="sec"><div class="sec-h">${ic('file', 'i-sm')}<span>Files</span></div>
+        ${[['M', 'CompareChart.jsx', 'web/src/components', '+9 −12', true], ['A', 'CompareChart.test.jsx', 'web/src/components', '+39', false]].map(([k, f, d, s, sel]) => `<div class="dfile ${sel ? 'is-sel' : ''}" data-act="dfile"><span class="chk"></span><span class="kind ${k}">${k}</span><span class="f">${f}</span><span class="dir">${d}</span><span class="stats">${s.split(' ').map((x) => `<span class="${x[0] === '+' ? 'a' : 'd'}">${x}</span>`).join('')}</span></div>`).join('')}
+        <div class="dv-body"><div class="hunk"><div class="hh">@@ -138,9 +138,14 @@ export function CompareChart</div>
+          ${[['138', '138', ' ', '  return ('], ['139', '139', ' ', '    <svg ref={ref} className="chart"'], ['140', '', '-', '      onMouseMove={(e) => setTip({ x: e.nativeEvent.offsetX,'], ['141', '', '-', '        i: idx(e) })}'], ['', '140', '+', '      onMouseMove={(e) => { const i = idx(e);'], ['', '141', '+', '        setTip({ x: xFor(i), i }); }}'], ['', '142', '+', '      onMouseLeave={() => setTip(null)}'], ['142', '143', ' ', '    >']].map(([a, b, s, c]) => `<div class="dl ${s === '+' ? 'add' : s === '-' ? 'del' : ''}"><span class="g">${a}</span><span class="g">${b}</span><span class="s">${s}</span><span class="c">${esc(c)}</span></div>`).join('')}</div></div></div>
+        <div class="sec"><div class="sec-h">${ic('message', 'i-sm')}<span>Review comments</span><span class="n">1</span></div><div class="hint">Attached to your next message.</div><div class="cline"><b>CompareChart.jsx:142</b> should this also clear on blur?</div></div>
+        <div class="sec"><div class="sec-h">${ic('eye', 'i-sm')}<span>Review</span></div><div class="hint">Ask an agent to read the diff and comment on bugs, risks and improvements without changing files.</div><div class="acts"><button class="btn sm" data-act="review">${ic('sparkles', 'i-sm')}<span>Review changes</span></button></div></div>`;
+      if (S.panel === 'checks') return `<div class="sec"><div class="sec-h">${ic('gitPullRequest', 'i-sm')}<span>Pull request</span></div><div class="pr-card"><div class="pr-title">Tooltip snaps to ticks and hides on leave</div><div class="pr-meta"><span class="badge open">Open</span><span>max/fix-chart-tooltip → main</span><span class="stats"><span class="a">+48</span><span class="d">−12</span></span></div>
+        <div class="checks">${[['ok', 'build'], ['ok', 'lint'], ['pending', 'test (windows-latest)']].map(([s, n]) => `<div class="check"><span class="ck ${s}">${ic(s === 'ok' ? 'checkCircle' : s === 'bad' ? 'xCircle' : 'loader', 'i-sm')}</span><span class="cn">${n}</span><span class="hint">${s === 'ok' ? '1m 12s' : 'running'}</span></div>`).join('')}</div>
+        <div class="acts"><button class="btn primary sm" data-act="merge">${ic('gitMerge', 'i-sm')}<span>Merge when green</span></button><button class="btn sm" data-act="open-pr">${ic('externalLink', 'i-sm')}<span>Open on GitHub</span></button></div></div></div>
+        <div class="sec"><div class="sec-h">${ic('listTodo', 'i-sm')}<span>Todos</span><span class="n">2/3</span></div>${[['completed', 'Snap tooltip x to nearest tick'], ['completed', 'Hide tooltip on mouseleave'], ['pending', 'Fade the tooltip out']].map(([s, t]) => `<div class="todo ${s}">${ic(s === 'completed' ? 'checkCircle' : 'circle', 'i-sm')}<span>${t}</span></div>`).join('')}</div>
+        <div class="sec"><div class="sec-h">${ic('clock', 'i-sm')}<span>Activity</span></div>${[['2 min ago', 'Claude edited CompareChart.jsx'], ['38s turn', '$0.14 · 3 tools'], ['yesterday', 'PR #43 opened from this workspace']].map(([w, t]) => `<div class="cline"><b>${w}</b> ${t}</div>`).join('')}</div>`;
+      return `<div class="tree"><div class="tree-root">${ic('folder', 'i-sm')}<span>fix-chart-tooltip</span></div>${treeNodes()}</div>`;
+    }
+    const TREE = [['.astral', ['handoff.md']], ['server', ['feed.js', 'yahoo.js', 'cache.js', 'trader.js']], ['web', [['src', [['components', ['CompareChart.jsx', 'CompareChart.test.jsx', 'Ledger.jsx', 'Market.jsx']], 'index.css', 'main.jsx']], 'index.html', 'vite.config.js']], 'docker-compose.yml', 'package.json', 'README.md'];
+    S.open = new Set(['web', 'web/src', 'web/src/components']);
+    function treeNodes(nodes = TREE, path = '', depth = 0) {
+      return nodes.map((n) => {
+        const pad = `style="padding-left:${8 + depth * 14}px"`;
+        if (Array.isArray(n)) { const p = path + n[0]; const open = S.open.has(p); return `<div class="tree-node ${open ? 'is-open' : ''}"><button class="tree-row ${open ? 'is-open' : ''}" data-act="tree" data-path="${p}" ${pad}><span class="chev">${ic('chevronRight', 'i-sm')}</span>${ic('folder', 'i-sm')}<span class="f">${n[0]}</span></button><div class="tree-children">${treeNodes(n[1], p + '/', depth + 1)}</div></div>`; }
+        return `<button class="tree-row" data-act="file" data-file="${path + n}" style="padding-left:${22 + depth * 14}px">${ic('file', 'i-sm')}<span class="f">${n}</span></button>`;
+      }).join('');
+    }
+    function drawerText() {
+      return `<span class="dim">$</span> git status --porcelain=v1 --branch
+<span class="dim">## max/fix-chart-tooltip...origin/main [ahead 2]</span>
+ M web/src/components/CompareChart.jsx
+?? web/src/components/CompareChart.test.jsx
+${S.drawerExtra || ''}<span class="dim">$</span> <span class="cursor"></span>`;
+    }
+    function renderSettings() {
+      const sec = S.settings || 'general';
+      const body = sec === 'general' ? `<div class="sgroup"><h3>General</h3>
+          <div class="srow"><div><div class="sl">Theme</div><div class="ss">Astral follows this setting, not Windows.</div></div><div class="seg"><button>Light</button><button class="is-on">Dark</button><button>System</button></div></div>
+          <div class="srow"><div><div class="sl">Font</div><div class="ss">System, Inter or monospace across the whole interface.</div></div><div class="seg"><button class="is-on">System</button><button>Inter</button><button>Mono</button></div></div>
+          <div class="srow"><div><div class="sl">Follow-up behaviour</div><div class="ss">What Enter does while Claude is busy.</div></div><div class="seg"><button class="is-on">Queue</button><button>Interrupt</button></div></div>
+          <div class="srow"><div><div class="sl">Sounds</div><div class="ss">A soft chime when a turn ends in a background workspace.</div></div><button class="toggle is-on"><span></span></button></div>
+          <div class="srow"><div><div class="sl">Start Claude Code in your home folder</div><div class="ss">Claude keeps its auto-memory per start folder. With this on, it starts in your home folder and the workspace is added with --add-dir, so it sees the memory you've built up there.</div></div><button class="toggle"><span></span></button></div></div>`
+        : sec === 'repos' ? `<div class="sgroup"><h3>Repositories</h3>${REPOS.map((r) => `<div class="plugin" style="margin-bottom:10px"><div class="top"><span class="avatar">${r.name[0].toUpperCase()}</span><div><div class="title">${r.name}</div><div class="vendor">base origin/${r.base} · ${r.ws.length} workspace${r.ws.length > 1 ? 's' : ''}</div></div></div><div class="field"><label>Setup script <span class="hint">after a workspace is created</span></label><input value="npm install" readonly></div><div class="field"><label>Run script <span class="hint">the Run button · $CONDUCTOR_PORT is reserved per workspace</span></label><input value="${r.id === 'nd' ? 'npm run dev -- --port $env:CONDUCTOR_PORT' : r.id === 'np' ? 'npm run dev' : './gradlew runClient'}" readonly></div></div>`).join('')}</div>`
+        : sec === 'agents' ? `<div class="sgroup"><h3>Agents</h3><p class="ss" style="margin:0 0 12px">Every supported CLI. Install runs the vendor's own command in a visible terminal. The launcher toggle decides what shows in the launcher row.</p><div class="plugin-grid">${Object.entries(AGENTS).filter(([k]) => k !== 'shell').map(([k, a]) => `<div class="plugin"><div class="top"><span class="logo">${ag(k)}</span><div><div class="title">${a.name}</div><div class="vendor">${a.vendor}</div></div><span class="state ${a.ver ? 'ok' : ''}">${a.ver ? 'installed' : 'not installed'}</span></div><div class="ver"><span>command <b>${a.cmd}</b></span>${a.ver ? `<span>installed <b>${a.ver}</b></span>` : ''}<span>default model <b>${a.model}</b></span></div><div class="acts" style="margin-top:2px">${a.ver ? `<button class="btn sm">${ic('check2', 'i-sm')}<span>Check for updates</span></button>` : `<button class="btn primary sm">${ic('download', 'i-sm')}<span>Install</span></button>`}<button class="toggle ${a.ver ? 'is-on' : ''}" title="Show in launcher"><span></span></button></div></div>`).join('')}</div></div>`
+        : `<div class="sgroup"><h3>Keyboard shortcuts</h3><table class="kbd-table">${[['New workspace', 'Ctrl+N'], ['Add repository', 'Ctrl+Shift+N'], ['Search and quick open', 'Ctrl+K'], ['Resume a past conversation', 'Ctrl+Shift+R'], ['Switch sessions', 'Ctrl+Tab'], ['Switch workspaces', 'Ctrl+1..9'], ['Toggle sidebar', 'Ctrl+B'], ['Toggle right panel', 'Ctrl+\\'], ['Toggle terminal drawer', 'Ctrl+`'], ['Diff / Files / Checks', 'Ctrl+Shift+D / E / C'], ['Commit and push', 'Ctrl+Shift+Y'], ['Pull latest', 'Ctrl+Shift+L'], ['Create PR', 'Ctrl+Shift+P'], ['Big terminal mode', 'Ctrl+Shift+T'], ['Stop the active agent', 'Ctrl+Shift+Backspace'], ['Back / forward', 'Alt+← / Alt+→']].map(([a, k]) => `<tr><td>${a}</td><td><kbd>${k}</kbd></td></tr>`).join('')}</table></div>`;
+      return `<div class="page"><div class="settings"><div class="snav">${[['general', 'cog', 'General'], ['repos', 'folder', 'Repositories'], ['agents', 'sparkles', 'Agents'], ['keys', 'code', 'Shortcuts']].map(([k, i, l]) => `<button class="${sec === k ? 'is-active' : ''}" data-act="settings:${k}">${ic(i, 'i-sm')}<span>${l}</span></button>`).join('')}</div><div class="sbody">${body}</div></div></div>`;
+    }
+
+    // ── overlays: menus, palette, modals, toasts ──
+    function toast(text) { layer.querySelectorAll('.toast').forEach((t) => t.remove()); const t = document.createElement('div'); t.className = 'toast'; t.textContent = text; layer.appendChild(t); setTimeout(() => t.classList.add('out'), 2600); setTimeout(() => t.remove(), 2900); }
+    function closeOverlays() { layer.querySelectorAll('.ctx, .overlay').forEach((el) => el.remove()); }
+    function menu(anchor, items, title) {
+      closeOverlays();
+      const r = anchor.getBoundingClientRect(), v = $('viewport').getBoundingClientRect();
+      const el = document.createElement('div'); el.className = 'ctx';
+      el.innerHTML = (title ? `<div class="ctx-title">${title}</div>` : '') + items.map((it) => it === '-' ? '<hr>' : `<button data-pick="${esc(it.id || it.label)}">${it.ag ? ag(it.ag) : it.icon ? ic(it.icon, 'i-sm') : '<span class="tick">' + (it.on ? ic('check2', 'i-sm') : '') + '</span>'}<span class="lbl">${esc(it.label)}</span>${it.sub ? `<span class="sub">${esc(it.sub)}</span>` : ''}${it.kbd ? `<kbd>${it.kbd}</kbd>` : ''}</button>`).join('');
+      layer.appendChild(el);
+      // the viewport is zoomed, so screen px from getBoundingClientRect are divided back into the app's own px
+      const z = parseFloat(getComputedStyle($('viewport')).zoom) || 1, vw = v.width / z, vh = v.height / z;
+      let left = (r.left - v.left) / z, top = (r.bottom - v.top) / z + 4;
+      if (left + el.offsetWidth > vw - 8) left = Math.max(8, (r.right - v.left) / z - el.offsetWidth);
+      if (top + el.offsetHeight > vh - 8) top = Math.max(8, (r.top - v.top) / z - el.offsetHeight - 4);
+      el.style.left = left + 'px'; el.style.top = top + 'px';
+      el.addEventListener('click', (e) => { const b = e.target.closest('[data-pick]'); if (!b) return; const it = items.find((x) => x !== '-' && (x.id || x.label) === b.dataset.pick); closeOverlays(); if (it && it.run) it.run(); });
+    }
+    function modal(html, onClick) { closeOverlays(); const o = document.createElement('div'); o.className = 'overlay'; o.innerHTML = html; layer.appendChild(o); o.addEventListener('click', (e) => { if (e.target === o) { closeOverlays(); return; } if (onClick) onClick(e, o); }); const inp = o.querySelector('input'); if (inp) inp.focus(); return o; }
+    function palette() {
+      const items = [
+        { ag: 'claude', t: 'Chart tooltip', p: 'night-desk · fix-chart-tooltip · Claude Code', run: () => { S.view = 'chat'; S.tab = 'claude'; } },
+        { ag: 'codex', t: 'Feed retry', p: 'night-desk · fix-chart-tooltip · Codex', run: () => { S.view = 'chat'; S.tab = 'codex'; } },
+        { icon: 'gitBranch', t: 'asx-price-feed', p: 'night-desk · workspace · PR #41', run: () => toast('Preview only: the real app switches workspaces here') },
+        { icon: 'folder', t: 'Notepad', p: 'repository · 2 workspaces', run: () => toast('Preview only: the real app switches workspaces here') },
+        { icon: 'plus', t: 'New workspace', p: 'night-desk · from origin/main', run: () => act('new-ws') },
+        { icon: 'cog', t: 'Settings', p: 'Ctrl+,', run: () => { S.view = 'settings'; } },
+      ];
+      const o = modal(`<div class="palette"><input placeholder="Search sessions, workspaces, repositories…" id="pal-q"><div class="scope"><button class="is-on">Everything</button><button>Sessions</button><button>Workspaces</button><button>Commands</button></div><div class="list" id="pal-list"></div></div>`);
+      const list = o.querySelector('#pal-list'), q = o.querySelector('#pal-q'); let hi = 0;
+      const draw = () => { const f = items.filter((it) => (it.t + ' ' + it.p).toLowerCase().includes(q.value.toLowerCase())); list.innerHTML = f.length ? f.map((it, i) => `<button class="item is-two ${i === hi ? 'is-hi' : ''}" data-i="${items.indexOf(it)}">${it.ag ? ag(it.ag) : ic(it.icon, 'i-sm')}<span class="lines"><span class="t">${esc(it.t)}</span><span class="p">${esc(it.p)}</span></span><span class="sub">${it.ag ? 'session' : it.icon === 'gitBranch' ? 'workspace' : it.icon === 'folder' ? 'repository' : 'command'}</span></button>`).join('') : '<div class="none">Nothing matches.</div>'; return f; };
+      let cur = draw();
+      q.addEventListener('input', () => { hi = 0; cur = draw(); });
+      q.addEventListener('keydown', (e) => { if (e.key === 'ArrowDown') { hi = Math.min(cur.length - 1, hi + 1); draw(); } if (e.key === 'ArrowUp') { hi = Math.max(0, hi - 1); draw(); } if (e.key === 'Enter' && cur[hi]) { closeOverlays(); cur[hi].run(); render(); } if (e.key === 'Escape') closeOverlays(); e.stopPropagation(); });
+      list.addEventListener('click', (e) => { const b = e.target.closest('.item'); if (!b) return; closeOverlays(); items[+b.dataset.i].run(); render(); });
+    }
+    function resumePicker() {
+      const rows = [
+        ['claude', 'Chart tooltip stuck at wrong x', 'night-desk · fix-chart-tooltip · 2 min ago', true],
+        ['codex', 'Retry Yahoo 429s with backoff', 'night-desk · fix-chart-tooltip · 14 min ago', false],
+        ['claude', 'Make the eavesdropper pick an output device', 'Notepad · 3 days ago', false],
+        ['claude', 'Minebro: stop the bot walking into lava', 'Minebro · 5 days ago', false],
+        ['codex', 'Docker compose for the trader loop', 'night-desk · last week', false],
+      ];
+      const o = modal(`<div class="palette"><input placeholder="Resume a conversation…"><div class="scope"><button class="is-on">This workspace</button><button>All folders <kbd>Tab</kbd></button></div><div class="list">${rows.map(([a, t, p, hi]) => `<button class="item is-two ${hi ? 'is-hi' : ''}" data-resume="${esc(t)}">${ag(a)}<span class="lines"><span class="t">${t}</span><span class="p">${p}</span></span><span class="sub">${AGENTS[a].name}</span></button>`).join('')}</div></div>`, (e) => { const b = e.target.closest('[data-resume]'); if (b) { closeOverlays(); toast(`Resumed "${b.dataset.resume}" in a new tab (pretend)`); } });
+      o.querySelector('input').addEventListener('keydown', (e) => { if (e.key === 'Escape') closeOverlays(); e.stopPropagation(); });
+    }
+    function newWorkspace() {
+      modal(`<div class="modal"><h3>New workspace</h3><p class="sub">Creates a git worktree on its own branch from origin/main, so an agent can work without touching your checkout.</p>
+        <div class="field"><label>Repository</label><input value="night-desk" readonly></div>
+        <div class="field"><label>Name <span class="hint">also the branch, prefixed with max/</span></label><input value="tooltip-fade" id="nw-name"></div>
+        <div class="field"><label>Start with</label><div class="acts" style="margin:0">${['claude', 'codex', 'gemini', 'shell'].map((a) => `<button class="btn sm ${a === 'claude' ? 'primary' : ''}" data-agent="${a}">${ag(a)}<span>${AGENTS[a].name}</span></button>`).join('')}</div></div>
+        <div class="modal-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" data-create>${ic('plus', 'i-sm')}<span>Create workspace</span></button></div></div>`, (e, o) => {
+          if (e.target.closest('[data-close]')) closeOverlays();
+          if (e.target.closest('[data-create]')) { const name = o.querySelector('#nw-name').value.trim() || 'tooltip-fade'; closeOverlays(); REPOS[0].ws.splice(1, 0, { id: 'new-' + Date.now(), title: name, name: 'night-desk', stripe: 'clean', text: 'new worktree', when: 'now' }); S.drawerExtra = `<span class="dim">$</span> git worktree add -b max/${name} ..\\${name} origin/main\n<span class="ok">Preparing worktree (new branch 'max/${name}')</span>\n<span class="dim">$</span> npm install\n<span class="dim">added 412 packages in 9s</span>\n`; render(); toast(`Worktree max/${name} created (pretend), setup script running in the drawer`); }
+          const b = e.target.closest('[data-agent]'); if (b) { const o2 = b.closest('.modal'); o2.querySelectorAll('[data-agent]').forEach((x) => x.classList.remove('primary')); b.classList.add('primary'); }
+        });
+    }
+
+    // ── the scripted Claude turn ──
+    let turnTimer = [];
+    const later = (ms, fn) => turnTimer.push(setTimeout(fn, ms));
+    function send() {
+      const text = S.draft.trim(); if (!text) return;
+      S.draft = '';
+      if (S.working) { S.queue.push(text); render(); toast('Queued. It goes out when this turn ends.'); return; }
+      S.msgs.push({ kind: 'user', text });
+      startTurn(text);
+    }
+    function startTurn(text) {
+      S.working = true; S.turnStart = Date.now(); S.sessions[0].status = 'working'; phrases.delete('side'); render();
+      const t = text.toLowerCase();
+      const commit = /commit|push/.test(t), test = /test/.test(t), fade = /fade|anim/.test(t);
+      const thinking = commit ? 'The user wants the change committed. I should stage only the two files I touched, write a conventional message, and push the branch. Pushing needs permission.' : test ? 'A unit test for the mouseleave case. The existing test file renders the chart with testing-library, so I can fire mouseMove then mouseLeave and assert the tooltip is gone.' : fade ? 'A fade needs the tooltip to stay mounted briefly. Easiest is a CSS transition on opacity with a hidden class, and a short timeout before unmounting.' : 'Let me look at what this touches before changing anything.';
+      const a = { kind: 'assistant', live: true, blocks: [{ type: 'thinking', text: thinking, live: true, open: false }] };
+      S.msgs.push(a);
+      later(1400, () => { a.blocks[0].live = false; render(); });
+      later(2300, () => {
+        const tools = commit ? [{ verb: 'Bash', target: 'git add web/src/components/CompareChart.jsx web/src/components/CompareChart.test.jsx', cmd: 'git add web/src/components/CompareChart.jsx web/src/components/CompareChart.test.jsx', out: '', pending: true }]
+          : test ? [{ verb: 'Read', target: 'web/src/components/CompareChart.test.jsx', out: '(58 lines) uses render() from @testing-library/react and fireEvent for hover cases.', pending: true }]
+          : fade ? [{ verb: 'Read', target: 'web/src/index.css', out: '(640 lines) .chart-tip is positioned absolutely with no transition.', pending: true }]
+          : [{ verb: 'Search', target: 'CompareChart in web/src', out: 'web/src/components/CompareChart.jsx\nweb/src/components/CompareChart.test.jsx\nweb/src/pages/Market.jsx:14 import { CompareChart }', pending: true }];
+        a.blocks.push({ type: 'tools', tools }); render();
+        later(1300, () => { tools[0].pending = false; render(); });
+      });
+      later(4200, () => {
+        if (commit) {
+          a.blocks[1].tools.push({ verb: 'Bash', target: 'git commit -m "fix: chart tooltip snaps to ticks and hides on leave"', cmd: 'git commit -m "fix: chart tooltip snaps to ticks and hides on leave"', out: '[max/fix-chart-tooltip 3f1c9e2] fix: chart tooltip snaps to ticks and hides on leave\n 2 files changed, 48 insertions(+), 12 deletions(-)\n create mode 100644 web/src/components/CompareChart.test.jsx' });
+          S.msgs.push({ kind: 'perm', what: 'git push', cmd: 'git push -u origin max/fix-chart-tooltip', pending: true });
+          S.sessions[0].status = 'attention'; render(); return;
+        }
+        const second = test ? { verb: 'Edit', target: 'web/src/components/CompareChart.test.jsx', out: '@@ -52,4 +52,13 @@\n+  it("hides on mouseleave", () => {\n+    const { container, queryByTestId } = render(<CompareChart rows={ROWS} />);\n+    fireEvent.mouseMove(container.querySelector("svg"), { clientX: 120 });\n+    expect(queryByTestId("tip")).toBeTruthy();\n+    fireEvent.mouseLeave(container.querySelector("svg"));\n+    expect(queryByTestId("tip")).toBeNull();\n+  });' }
+          : fade ? { verb: 'Edit', target: 'web/src/index.css', out: '@@ -301,3 +301,5 @@\n-.chart-tip { position: absolute; pointer-events: none; }\n+.chart-tip { position: absolute; pointer-events: none; transition: opacity .18s ease; }\n+.chart-tip.is-hidden { opacity: 0; }' }
+          : { verb: 'Read', target: 'web/src/pages/Market.jsx', out: '(96 lines) mounts CompareChart with the selected tickers; nothing tooltip related here.' };
+        a.blocks[1].tools.push(second); render();
+      });
+      later(6200, () => {
+        if (commit) return;
+        const t3 = test || fade ? { verb: 'Bash', target: 'npm test -- CompareChart', cmd: 'npm test -- CompareChart', out: `> night-desk@0.4.1 test\n> vitest run CompareChart\n\n ✓ web/src/components/CompareChart.test.jsx (${test ? 7 : 6} tests) ${test ? 438 : 402}ms\n\n Test Files  1 passed (1)\n      Tests  ${test ? 7 : 6} passed (${test ? 7 : 6})`, pending: true }
+          : { verb: 'Agent', target: 'Explore: how the tooltip state flows', steps: 4, live: 'Read web/src/components/CompareChart.jsx', out: 'Explore\n  Read web/src/components/CompareChart.jsx\n  Read web/src/pages/Market.jsx\n  Search setTip in web/src\n  Read web/src/index.css\nThe tooltip is local state in CompareChart; Market never touches it. Nothing else listens to hover.', pending: true };
+        a.blocks[1].tools.push(t3); render();
+        later(1800, () => { t3.pending = false; t3.live = ''; render(); });
+      });
+      later(8600, () => {
+        if (commit) return;
+        const html = test ? '<p>Added a <code>hides on mouseleave</code> case next to the existing hover tests. It moves the mouse over the SVG, checks the tooltip is there, fires <code>mouseLeave</code> and checks it is gone.</p><p>Seven tests pass. Anything else you want covered, like the snapping?</p>'
+          : fade ? '<p>The tooltip now fades out over 180ms instead of vanishing. I kept it mounted for the length of the transition with a short timeout, then clear the state, so nothing flashes on the next hover.</p><ul><li class="task done">CSS transition on <code>.chart-tip</code></li><li class="task done">Timeout before unmount</li><li class="task">Same treatment for the ledger tooltip?</li></ul>'
+          : `<p>I looked through the code around that. ${esc(text.length > 80 ? text.slice(0, 77) + '…' : text)}</p><p>In this preview I can only act out a few things: try asking me to <b>commit</b>, add a <b>test</b>, or make the tooltip <b>fade</b>. The real app runs the actual Claude Code CLI here.</p>`;
+        a.blocks.push({ type: 'md', html });
+        finishTurn(a, test || fade ? { files: 2, a: test ? 57 : 50, d: test ? 12 : 13 } : null, test ? 0.11 : fade ? 0.09 : 0.04);
+      });
+    }
+    function finishTurn(a, diff, cost) {
+      a.live = false; S.working = false; S.sessions[0].status = 'idle';
+      S.msgs.push({ kind: 'turn', ms: Date.now() - S.turnStart, cost, diff });
+      if (diff) REPOS[0].ws[0].stats = { a: diff.a, d: diff.d };
+      render();
+      if (S.queue.length) { const next = S.queue.shift(); toast('Sending the queued message'); later(900, () => { S.msgs.push({ kind: 'user', text: next }); startTurn(next); }); }
+    }
+    function interrupt() {
+      turnTimer.forEach(clearTimeout); turnTimer = [];
+      const a = S.msgs[S.msgs.length - 1]; if (a && a.kind === 'assistant') { a.live = false; a.blocks.forEach((b) => { if (b.type === 'tools') b.tools.forEach((t) => { t.pending = false; }); if (b.type === 'thinking') b.live = false; }); a.blocks.push({ type: 'md', html: '<p><i>Interrupted.</i></p>' }); }
+      S.working = false; S.sessions[0].status = 'idle'; S.msgs.push({ kind: 'turn', ms: Date.now() - S.turnStart, cost: 0.02, diff: null }); render(); toast('Turn interrupted (Esc)');
+    }
+    function resolvePerm(i, how) {
+      const p = S.msgs[i]; if (!p || p.kind !== 'perm' || p.resolved) return;
+      p.resolved = how === 'deny' ? 'Denied' : how === 'always' ? 'Allowed for this session' : 'Allowed'; S.sessions[0].status = 'working';
+      const a = S.msgs.slice(0, i).reverse().find((m) => m.kind === 'assistant');
+      if (how === 'deny') { a.blocks.push({ type: 'md', html: '<p>Okay, I committed locally and left the push to you. <code>git push -u origin max/fix-chart-tooltip</code> when you are ready.</p>' }); finishTurn(a, null, 0.06); return; }
+      const t = { verb: 'Bash', target: 'git push -u origin max/fix-chart-tooltip', cmd: 'git push -u origin max/fix-chart-tooltip', out: 'Enumerating objects: 11, done.\nWriting objects: 100% (7/7), 1.84 KiB | 1.84 MiB/s, done.\nTo github.com:maxwitanowski/Night-Desk.git\n   a91c0b2..3f1c9e2  max/fix-chart-tooltip -> max/fix-chart-tooltip', pending: true };
+      a.blocks.push({ type: 'tools', tools: [t] }); render();
+      later(1600, () => { t.pending = false; a.blocks.push({ type: 'md', html: '<p>Pushed. PR #43 now has the commit and the Windows test job is running again; the Checks tab on the right will go green in a minute.</p>' }); S.drawerExtra = `<span class="dim">$</span> git push -u origin max/fix-chart-tooltip\n<span class="ok">   a91c0b2..3f1c9e2  max/fix-chart-tooltip -> max/fix-chart-tooltip</span>\n`; finishTurn(a, { files: 2, a: 48, d: 12 }, 0.08); });
+    }
+
+    // ── actions ──
+    function act(name, el, e) {
+      if (name.startsWith('panel:')) { S.panel = name.slice(6); S.panelOpen = true; render(); return; }
+      if (name.startsWith('settings:')) { S.settings = name.slice(9); render(); return; }
+      if (name.startsWith('perm:')) { resolvePerm(+el.dataset.i, name.slice(5)); return; }
+      if (name.startsWith('menu:')) {
+        const k = name.slice(5);
+        if (k === 'model') menu(el, [{ label: 'Default', sub: "the CLI's own setting", on: S.model === 'Default', run: () => { S.model = 'Default'; render(); } }, '-', ...[['Fable 5.1 · 1M context', 'fable[1m]'], ['Opus 5 · 1M context', 'opus[1m]'], ['Fable 5.1', 'claude-fable-5-1'], ['Opus 5', 'claude-opus-5'], ['Sonnet 5', 'claude-sonnet-5'], ['Haiku 4.5', 'claude-haiku-4-5']].map(([l, s]) => ({ label: l, sub: s, on: S.model === l, run: () => { S.model = l; render(); } }))], 'Model');
+        if (k === 'perm') menu(el, [['auto', 'Auto', 'default permissions'], ['accept', 'Accept edits', 'file edits without asking'], ['ask', 'Ask', 'confirm every tool'], ['plan', 'Plan', 'read-only, Shift+Tab'], ['bypass', 'Bypass', 'never ask']].map(([id, l, s]) => ({ id, label: l, sub: s, on: S.perm === id, run: () => { S.perm = id; render(); } })), 'Permission mode');
+        if (k === 'effort') menu(el, ['Default', 'Low', 'Medium', 'High', 'Max'].map((l) => ({ label: l, on: S.effort === l, run: () => { S.effort = l; render(); } })), 'Effort');
+        return;
+      }
+      switch (name) {
+        case 'send': send(); break;
+        case 'interrupt': interrupt(); break;
+        case 'unqueue': S.queue.splice(+el.dataset.i, 1); render(); break;
+        case 'tab': S.view = 'chat'; S.tab = el.dataset.tab; render(); break;
+        case 'close-tab': e.stopPropagation(); toast('Preview only: closing a tab ends that session in the real app'); break;
+        case 'view': S.view = el.dataset.view; render(); break;
+        case 'tool-toggle': el.parentElement.classList.toggle('is-open'); break;
+        case 'toggle-side': S.sideOpen = !S.sideOpen; render(); break;
+        case 'toggle-panel': S.panelOpen = !S.panelOpen; render(); break;
+        case 'toggle-drawer': S.drawer = false; render(); toast('Drawer hidden. Ctrl+` brings it back (or the Terminal view).'); break;
+        case 'settings': S.view = 'settings'; render(); break;
+        case 'palette': palette(); break;
+        case 'resume': resumePicker(); break;
+        case 'new-ws': newWorkspace(); break;
+        case 'add-repo': toast('The real app opens a folder picker here'); break;
+        case 'new-chat': menu(el, [...['claude', 'codex', 'gemini', 'aider'].map((a) => ({ ag: a, label: AGENTS[a].name, sub: a === 'claude' ? 'Chat UI' : 'Terminal UI', run: () => { if (a === 'claude') { S.tab = 'claude'; S.view = 'chat'; render(); } else { S.sessions.push({ id: a + Date.now(), agent: a, name: AGENTS[a].name, status: 'working' }); S.tab = S.sessions[S.sessions.length - 1].id; S.view = 'chat'; S.codexLog = null; render(); toast(`${AGENTS[a].name} would start now with a handoff brief from the Claude chat`); } } })), '-', { icon: 'terminal', label: 'PowerShell', run: () => { S.tab = 'shell'; S.view = 'chat'; render(); } }, { icon: 'history', label: 'Resume a conversation', kbd: 'Ctrl+Shift+R', run: resumePicker }], 'New chat');
+          break;
+        case 'more': menu(el, [{ icon: 'gitCommit', label: 'Commit & push', kbd: 'Ctrl+Shift+Y', run: () => act('commit') }, { icon: 'arrowDown', label: 'Pull latest from main', kbd: 'Ctrl+Shift+L', run: () => act('pull') }, { icon: 'gitPullRequest', label: 'Create PR', kbd: 'Ctrl+Shift+P', run: () => act('panel:checks') }, { icon: 'pencil', label: 'Rename branch', run: () => toast('Preview only') }, '-', { icon: 'externalLink', label: 'Open in Explorer', run: () => toast('Preview only') }, { icon: 'terminal', label: 'Open in Windows Terminal', run: () => toast('Preview only') }, '-', { icon: 'download', label: 'Archive workspace', sub: 'after the PR merges', run: () => toast('Preview only') }]); break;
+        case 'open-in': menu(el, [{ icon: 'code', label: 'VS Code', run: () => toast('Preview only') }, { icon: 'terminal', label: 'Windows Terminal', run: () => toast('Preview only') }, { icon: 'folder', label: 'Explorer', run: () => toast('Preview only') }, { icon: 'globe', label: 'GitHub', run: () => toast('Preview only') }], 'Open workspace in');
+          break;
+        case 'repo-menu': menu(el, [{ icon: 'plus', label: 'New workspace', kbd: 'Ctrl+N', run: newWorkspace }, { icon: 'folderPlus', label: 'Open the local workspace', run: () => toast('Preview only') }, { icon: 'cog', label: 'Repository settings', run: () => { S.view = 'settings'; S.settings = 'repos'; render(); } }, '-', { icon: 'x', label: 'Remove from Astral', sub: 'files stay', run: () => toast('Preview only') }], el.dataset.repo === 'nd' ? 'night-desk' : el.dataset.repo === 'np' ? 'Notepad' : 'Minebro'); break;
+        case 'ws': if (el.dataset.ws !== 'nd-fix') toast('Preview only: the real app switches to that workspace'); break;
+        case 'run': S.drawerExtra = (S.drawerExtra || '') + `<span class="dim">$</span> npm run dev -- --port 5601\n<span class="acc">  VITE v8.0.3  ready in 412 ms</span>\n<span class="dim">  ➜  Local:   http://localhost:5601/</span>\n`; S.drawer = true; render(); toast('Run script started in the drawer (pretend)'); break;
+        case 'commit': S.draft = PROMPTS[0]; S.view = 'chat'; S.tab = 'claude'; render(); send(); break;
+        case 'pull': S.drawerExtra = (S.drawerExtra || '') + `<span class="dim">$</span> git pull --rebase origin main\n<span class="ok">Already up to date.</span>\n`; S.drawer = true; render(); break;
+        case 'merge': toast('Checks still running. Astral merges when they go green.'); break;
+        case 'open-pr': toast('Preview only: opens the PR on GitHub'); break;
+        case 'review': S.draft = 'Read the diff and comment on bugs, risks and improvements without changing files.'; S.view = 'chat'; S.tab = 'claude'; render(); send(); break;
+        case 'dfile': el.parentElement.querySelectorAll('.dfile').forEach((x) => x.classList.remove('is-sel')); el.classList.add('is-sel'); break;
+        case 'tree': { const p = el.dataset.path; S.open.has(p) ? S.open.delete(p) : S.open.add(p); render(); break; }
+        case 'file': toast(`Read-only preview of ${el.dataset.file} in the real app`); break;
+        case 'attach': toast('Paste or drop images and files in the real app'); break;
+        case 'win': toast('Window controls are Electron\'s; nothing to do in a preview'); break;
+        case 'win-close': toast('Nice try. The gallery stays open.'); break;
+        default: toast('Preview only');
+      }
+    }
+    app.addEventListener('click', (e) => {
+      const el = e.target.closest('[data-act]'); if (!el || !app.contains(el)) return;
+      closeOverlays(); act(el.dataset.act, el, e);
+    });
+    document.addEventListener('click', (e) => { if (!e.target.closest('.ctx') && !e.target.closest('[data-act]')) layer.querySelectorAll('.ctx').forEach((c) => c.remove()); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { if (layer.querySelector('.overlay, .ctx')) { closeOverlays(); return; } }
+      if (!$('viewport').matches(':hover') && !$('viewport').contains(document.activeElement)) return;
+      if (e.ctrlKey && e.key.toLowerCase() === 'k') { e.preventDefault(); palette(); }
+      else if (e.ctrlKey && e.key.toLowerCase() === 'n' && !e.shiftKey) { e.preventDefault(); newWorkspace(); }
+      else if (e.ctrlKey && e.key.toLowerCase() === 'b') { e.preventDefault(); act('toggle-side'); }
+      else if (e.ctrlKey && e.key === '\\') { e.preventDefault(); act('toggle-panel'); }
+      else if (e.ctrlKey && e.key === '`') { e.preventDefault(); S.drawer = !S.drawer; render(); }
+      else if (e.ctrlKey && e.key === ',') { e.preventDefault(); S.view = 'settings'; render(); }
+      else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'r') { e.preventDefault(); resumePicker(); }
+      else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd') { e.preventDefault(); act('panel:diff'); }
+      else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'e') { e.preventDefault(); act('panel:files'); }
+      else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c') { e.preventDefault(); act('panel:checks'); }
+      else if (e.key === 'Escape' && S.working) interrupt();
+    });
+
+    // ── tour buttons & feature cards ──
+    const DO = {
+      ask: () => { S.view = 'chat'; S.tab = 'claude'; S.draft = PROMPTS[1]; render(); const ta = $('ta'); if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } if (!S.working) send(); },
+      working: () => { S.view = 'chat'; S.tab = 'claude'; S.sessions.forEach((s) => { if (s.agent !== 'shell') s.status = 'working'; }); if (!S.sessions.some((s) => s.agent === 'aider')) S.sessions.push({ id: 'aider', agent: 'aider', name: 'Aider', status: 'working' }); if (!S.working) { S.draft = 'Can you also make the tooltip fade out instead of vanishing?'; send(); } else render(); toast('Sparkle, braille and scanner bar, each the way its CLI draws it'); setTimeout(() => { S.sessions.forEach((s) => { if (s.agent !== 'claude' && s.status === 'working') s.status = 'idle'; }); render(); }, 9000); },
+      queue: () => { S.view = 'chat'; S.tab = 'claude'; if (!S.working) { S.draft = PROMPTS[2]; send(); } later(300, () => { S.queue.push(PROMPTS[1]); render(); toast('Queued above the input. It sends when the turn ends.'); }); },
+      handoff: () => { S.view = 'chat'; S.tab = 'codex'; render(); toast('Codex was told to read .astral/handoff.md first: a brief of the Claude chat'); },
+      newws: newWorkspace, palette, resume: resumePicker,
+      settings: () => { S.view = 'settings'; S.settings = 'agents'; render(); },
+    };
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-do]'); if (!b) return;
+      const d = b.dataset.do; closeOverlays();
+      if (d.startsWith('tab:')) { S.view = 'chat'; S.tab = d.slice(4); render(); }
+      else if (d.startsWith('panel:')) { act(d); }
+      else if (DO[d]) DO[d]();
+      const y = $('preview').getBoundingClientRect().top + window.scrollY - 8; if (Math.abs(window.scrollY - y) > 40) window.scrollTo({ top: y, behavior: 'smooth' });
+    });
+    // agent chips in the hero
+    $('agent-list').innerHTML = `<span class="lbl">Hosts</span><div class="row">${Object.entries(AGENTS).filter(([k]) => k !== 'shell').map(([k, a]) => `<span>${ag(k)}${a.name}</span>`).join('')}<span>${ic('cpu', 'i-sm')}llama.cpp · LM Studio</span></div>`;
+    document.querySelectorAll('.feat .tag[data-ag]').forEach((t) => { t.insertAdjacentHTML('afterbegin', ag(t.dataset.ag)); });
+
+    render();
+  })();
+  </script>
+</body>
+</html>

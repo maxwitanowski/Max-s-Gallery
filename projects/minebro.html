@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minebro — an AI teammate for Minecraft</title>
+  <meta name="description" content="Minebro is a Fabric mod for Minecraft 26.2 that adds a second player controlled by a language model. It joins your world, chops, crafts, mines, fights and talks to you in chat." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet" />
+  <style>
+    /* =====================================================
+       MINEBRO — the page is a Minecraft world.
+       Day/night lever, ore-veined underground, hotbar navigation
+       (keys 1–9), XP bar, advancements, tooltips, a chat demo.
+       ===================================================== */
+    :root {
+      --sky-top: #0b1020; --sky-bot: #1d2b4a;
+      --hill-far: #16283a; --hill-near: #1c3b2c;
+      --leaf: #2c5a2e; --trunk: #3a2a1a;
+      --stars: 1; --sun: 0; --moon: 1;
+      --grass: #5d9c3a; --dirt: #79553a;
+      --btn: #8b8b8b; --btn-light: #b5b5b5; --btn-dark: #545454; --btn-hover: #7f8fd1;
+      --white: #ffffff; --grey: #aaaaaa; --yellow: #ffff55; --green: #55ff55; --aqua: #55ffff; --xp: #7dff4a;
+      --tip-bg: rgba(16, 0, 16, 0.95); --tip-border: #5000ff; --tip-border2: #28007f;
+      --pixel: 'Pixelify Sans', 'Segoe UI', sans-serif;
+      --mono: 'VT323', ui-monospace, monospace;
+      --dirt-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%2379553a'/%3E%3Cg fill='%238a6644'%3E%3Crect x='1' y='0' width='1' height='1'/%3E%3Crect x='4' y='1' width='1' height='1'/%3E%3Crect x='6' y='2' width='1' height='1'/%3E%3Crect x='2' y='3' width='1' height='1'/%3E%3Crect x='0' y='5' width='1' height='1'/%3E%3Crect x='5' y='5' width='1' height='1'/%3E%3Crect x='3' y='6' width='1' height='1'/%3E%3Crect x='7' y='7' width='1' height='1'/%3E%3Crect x='6' y='6' width='1' height='1'/%3E%3C/g%3E%3Cg fill='%235e4027'%3E%3Crect x='3' y='0' width='1' height='1'/%3E%3Crect x='0' y='2' width='1' height='1'/%3E%3Crect x='5' y='3' width='1' height='1'/%3E%3Crect x='7' y='4' width='1' height='1'/%3E%3Crect x='2' y='5' width='1' height='1'/%3E%3Crect x='1' y='7' width='1' height='1'/%3E%3Crect x='4' y='7' width='1' height='1'/%3E%3Crect x='6' y='4' width='1' height='1'/%3E%3C/g%3E%3C/svg%3E");
+      --grass-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%235d9c3a'/%3E%3Cg fill='%236fb04a'%3E%3Crect x='0' y='0' width='1' height='1'/%3E%3Crect x='3' y='1' width='1' height='1'/%3E%3Crect x='6' y='1' width='1' height='1'/%3E%3Crect x='1' y='3' width='1' height='1'/%3E%3Crect x='5' y='4' width='1' height='1'/%3E%3Crect x='2' y='6' width='1' height='1'/%3E%3Crect x='7' y='6' width='1' height='1'/%3E%3Crect x='4' y='7' width='1' height='1'/%3E%3C/g%3E%3Cg fill='%234a8a2c'%3E%3Crect x='2' y='0' width='1' height='1'/%3E%3Crect x='5' y='2' width='1' height='1'/%3E%3Crect x='0' y='4' width='1' height='1'/%3E%3Crect x='3' y='5' width='1' height='1'/%3E%3Crect x='6' y='5' width='1' height='1'/%3E%3Crect x='1' y='6' width='1' height='1'/%3E%3Crect x='7' y='3' width='1' height='1'/%3E%3C/g%3E%3C/svg%3E");
+      --stone-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%23828282'/%3E%3Cg fill='%23909090'%3E%3Crect x='1' y='1' width='1' height='1'/%3E%3Crect x='4' y='0' width='1' height='1'/%3E%3Crect x='6' y='3' width='1' height='1'/%3E%3Crect x='2' y='5' width='1' height='1'/%3E%3Crect x='7' y='6' width='1' height='1'/%3E%3C/g%3E%3Cg fill='%236b6b6b'%3E%3Crect x='0' y='3' width='1' height='1'/%3E%3Crect x='3' y='2' width='1' height='1'/%3E%3Crect x='5' y='6' width='1' height='1'/%3E%3Crect x='2' y='7' width='1' height='1'/%3E%3Crect x='6' y='1' width='1' height='1'/%3E%3Crect x='4' y='4' width='1' height='1'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    body.day {
+      --sky-top: #4f8cff; --sky-bot: #bcd8ff;
+      --hill-far: #5b8fb8; --hill-near: #3f8f4f;
+      --leaf: #3f9a3a; --trunk: #5a3d24;
+      --stars: 0; --sun: 1; --moon: 0;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; background: var(--sky-bot); color: var(--white);
+      font-family: var(--pixel); font-size: 19px; line-height: 1.5;
+      -webkit-font-smoothing: none; overflow-x: hidden;
+      transition: background 1.2s ease;
+    }
+    a { color: inherit; text-decoration: none; }
+    ::selection { background: var(--green); color: #000; }
+    section[id], header[id] { scroll-margin-top: 20px; }
+
+    /* ---------- shared bits ---------- */
+    .ico { display: inline-block; width: 26px; height: 26px; background: no-repeat center / contain; image-rendering: pixelated; flex: none; }
+    .mc-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      min-height: 46px; padding: 8px 22px; background: var(--btn); border: 2px solid #000;
+      box-shadow: inset 2px 2px 0 var(--btn-light), inset -2px -2px 0 var(--btn-dark);
+      color: var(--white); text-shadow: 2px 2px 0 #3f3f3f; font-family: var(--pixel); font-size: 20px; font-weight: 500;
+      cursor: pointer; user-select: none;
+    }
+    .mc-btn:hover { background: var(--btn-hover); box-shadow: inset 2px 2px 0 #a3b0e6, inset -2px -2px 0 #4a5a9c; color: #ffffa0; }
+    .mc-btn:active { box-shadow: inset -2px -2px 0 var(--btn-light), inset 2px 2px 0 var(--btn-dark); transform: translateY(1px); }
+    .mc-btn--green { background: #3c8527; box-shadow: inset 2px 2px 0 #63b34a, inset -2px -2px 0 #1e4d12; }
+    .mc-btn--green:hover { background: #4aa032; box-shadow: inset 2px 2px 0 #7ccb63, inset -2px -2px 0 #1e4d12; color: #fff; }
+    .mc-btn--sm { min-height: 36px; padding: 4px 12px; font-size: 16px; }
+    .mc-btn.done { background: #3c8527; box-shadow: inset 2px 2px 0 #63b34a, inset -2px -2px 0 #1e4d12; }
+    .panel {
+      background: var(--tip-bg); border: 2px solid var(--tip-border); outline: 2px solid #100010;
+      box-shadow: inset 0 0 0 2px var(--tip-border2); padding: 20px 22px;
+    }
+    .panel__t { margin: 0 0 8px; color: var(--yellow); font-size: 23px; font-weight: 600; text-shadow: 2px 2px 0 #3f3f14; }
+    .page { max-width: 1120px; margin: 0 auto; padding: 0 clamp(18px, 4vw, 40px); position: relative; z-index: 1; }
+    /* below the surface: everything after the hero is underground */
+    .below { position: relative; }
+    .underground { position: absolute; inset: 0; z-index: 0; overflow: hidden; image-rendering: pixelated;
+      background: linear-gradient(180deg, rgba(14, 16, 26, .66) 0%, rgba(8, 10, 16, .84) 45%, rgba(4, 5, 9, .92) 100%), var(--stone-tile) 0 0 / 48px 48px; }
+    .underground::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 48px; background: var(--dirt-tile) 0 0 / 48px 48px; opacity: .55; }
+    .ore { position: absolute; width: 48px; height: 48px; background: no-repeat center / contain; filter: brightness(.85); }
+    .bedrock { height: 64px; background: var(--stone-tile) 0 0 / 48px 48px; filter: brightness(.35) contrast(1.3); image-rendering: pixelated; position: relative; z-index: 1; }
+    .sec { padding: 72px 0 40px; }
+    .sec__h { display: flex; align-items: center; gap: 14px; margin: 0 0 14px; font-size: clamp(30px, 4vw, 44px); font-weight: 700; text-shadow: 3px 3px 0 #000; }
+    .sec__h .ico { width: 34px; height: 34px; }
+    .sec__lead { margin: 0 0 26px; max-width: 720px; color: #eee; text-shadow: 2px 2px 0 #000, 0 0 12px rgba(0,0,0,.9); font-size: 20px; }
+    .hint { font-family: var(--mono); font-size: 20px; color: var(--grey); text-shadow: 2px 2px 0 #000; }
+    .kbd { display: inline-block; min-width: 26px; padding: 0 6px; background: #ddd; color: #222; border: 2px solid #000; box-shadow: inset -2px -2px 0 #888; text-shadow: none; font-family: var(--pixel); font-size: 15px; line-height: 20px; text-align: center; }
+
+    /* ---------- HUD (fixed) ---------- */
+    .hud-top { position: fixed; top: 12px; left: 14px; right: 14px; z-index: 60; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; }
+    .hud-top > * { pointer-events: auto; }
+    .back { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; background: rgba(0,0,0,.55); border: 2px solid #000; font-size: 16px; text-shadow: 2px 2px 0 #000; color: #ddd; }
+    .back:hover { color: #fff; background: rgba(0,0,0,.75); }
+    .hud-bot { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; align-items: center; gap: 0; }
+    /* item name sits above the level number, like the game */
+    .hotname { font-size: 22px; color: #fff; text-shadow: 2px 2px 0 #3f3f3f; opacity: 0; transition: opacity .6s ease; min-height: 28px; margin-bottom: 8px; line-height: 1; }
+    .hotname.show { opacity: 1; transition: none; }
+    .coords { position: fixed; left: 14px; top: 56px; z-index: 60; font-family: var(--mono); font-size: 19px; color: #ddd; text-shadow: 2px 2px 0 #000; background: rgba(0,0,0,.45); padding: 2px 8px; pointer-events: none; }
+    .hotbar { display: flex; background: rgba(0,0,0,.65); border: 2px solid #000; padding: 2px; }
+    .hotbar a { width: 44px; height: 44px; display: grid; place-items: center; position: relative; box-shadow: inset 2px 2px 0 rgba(0,0,0,.6), inset -2px -2px 0 rgba(255,255,255,.22); }
+    .hotbar a:hover { background: rgba(255,255,255,.08); }
+    .hotbar a.sel { outline: 3px solid #fff; outline-offset: -1px; z-index: 1; }
+    .hotbar a::after { content: attr(data-n); position: absolute; left: 3px; top: 0; font-family: var(--mono); font-size: 14px; color: #bbb; text-shadow: 1px 1px 0 #000; }
+    .hotbar .ico { width: 30px; height: 30px; }
+
+    /* ---------- tooltip + toasts ---------- */
+    .tipf { position: fixed; left: 0; top: 0; z-index: 80; pointer-events: none; max-width: 320px; opacity: 0; transition: opacity .12s; padding: 8px 12px; background: var(--tip-bg); border: 2px solid var(--tip-border); outline: 2px solid #100010; box-shadow: inset 0 0 0 2px var(--tip-border2); font-size: 16px; line-height: 1.3; }
+    .tipf.on { opacity: 1; }
+    .tipf b { display: block; color: #fff; font-size: 18px; font-weight: 600; margin-bottom: 2px; }
+    .tipf span { color: var(--grey); }
+    .toasts { position: fixed; top: 70px; right: 14px; z-index: 70; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+    .toast {
+      width: 330px; padding: 10px 12px; display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: center;
+      background: #c6c6c6; border: 3px solid #000; box-shadow: inset 3px 3px 0 #fff, inset -3px -3px 0 #555;
+      color: #3f3f3f; animation: toast-in .45s steps(5) both, toast-out .45s steps(5) 3.4s forwards;
+    }
+    .toast .ico { width: 36px; height: 36px; }
+    .toast b { display: block; color: #d8a600; font-size: 16px; font-weight: 700; text-shadow: 1px 1px 0 #6b5200; }
+    .toast span { font-size: 17px; }
+    @keyframes toast-in { from { transform: translateX(120%); } to { transform: none; } }
+    @keyframes toast-out { to { transform: translateX(120%); opacity: 0; } }
+
+    /* ---------- the world (hero) ---------- */
+    .world { position: relative; height: 100vh; min-height: 680px; overflow: hidden; }
+    .sky { position: absolute; inset: 0; background: linear-gradient(180deg, var(--sky-top), var(--sky-bot)); transition: background 1.2s ease; }
+    .stars { position: absolute; inset: 0; opacity: var(--stars); transition: opacity 1.2s;
+      background-image: radial-gradient(1.5px 1.5px at 12% 18%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 33% 8%, #fff 50%, transparent 51%), radial-gradient(2px 2px at 48% 26%, #cfe3ff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 67% 14%, #fff 50%, transparent 51%), radial-gradient(2px 2px at 81% 30%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 92% 9%, #cfe3ff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 22% 40%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 58% 44%, #fff 50%, transparent 51%), radial-gradient(2px 2px at 75% 52%, #cfe3ff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 8% 60%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 40% 62%, #fff 50%, transparent 51%); }
+    .moon { position: absolute; top: 12%; right: 14%; width: 56px; height: 56px; background: #e9e9e9; box-shadow: inset -10px -6px 0 0 #b8b8b8; opacity: var(--moon); transition: opacity 1.2s; }
+    .sun { position: absolute; top: 10%; left: 12%; width: 64px; height: 64px; background: #fff7a8; box-shadow: 0 0 0 6px rgba(255,247,168,.25), 0 0 40px rgba(255,247,168,.5); opacity: var(--sun); transition: opacity 1.2s; }
+    .cloud { position: absolute; height: 16px; width: 64px; background: rgba(255,255,255,.9); box-shadow: 16px -16px 0 rgba(255,255,255,.9), 32px -16px 0 rgba(255,255,255,.9), 48px 0 0 rgba(255,255,255,.9), -16px 0 0 rgba(255,255,255,.9), 64px -8px 0 rgba(255,255,255,.9); opacity: calc(.25 + var(--sun) * .75); animation: cloud linear infinite; }
+    @keyframes cloud { from { transform: translateX(-140px); } to { transform: translateX(calc(100vw + 140px)); } }
+    .hills { position: absolute; left: 0; right: 0; bottom: 96px; height: 260px; background: var(--hill-far); transition: background 1.2s;
+      clip-path: polygon(0 100%, 0 70%, 6% 70%, 6% 55%, 14% 55%, 14% 40%, 22% 40%, 22% 60%, 30% 60%, 30% 45%, 40% 45%, 40% 30%, 48% 30%, 48% 50%, 58% 50%, 58% 62%, 66% 62%, 66% 38%, 74% 38%, 74% 52%, 84% 52%, 84% 35%, 92% 35%, 92% 58%, 100% 58%, 100% 100%); }
+    .hills2 { position: absolute; left: 0; right: 0; bottom: 96px; height: 150px; background: var(--hill-near); transition: background 1.2s;
+      clip-path: polygon(0 100%, 0 60%, 10% 60%, 10% 40%, 18% 40%, 18% 70%, 34% 70%, 34% 50%, 44% 50%, 44% 80%, 60% 80%, 60% 45%, 70% 45%, 70% 65%, 82% 65%, 82% 35%, 90% 35%, 90% 75%, 100% 75%, 100% 100%); }
+    .tree { position: absolute; bottom: 96px; width: 32px; }
+    .tree i { display: block; width: 32px; height: 64px; background: var(--trunk); margin: 0 auto; transition: background 1.2s; }
+    .tree b { position: absolute; left: -32px; top: -64px; width: 96px; height: 80px; background: var(--leaf); box-shadow: 0 -24px 0 -8px var(--leaf); transition: background 1.2s, box-shadow 1.2s; }
+    .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 96px; image-rendering: pixelated;
+      background: var(--grass-tile) top left / 48px 12px repeat-x, var(--dirt-tile) 0 0 / 48px 48px; }
+    .ground::after { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 3px; background: #4a8a2c; opacity: .6; }
+
+    /* character */
+    .bro { position: absolute; bottom: 96px; left: 20%; width: 64px; height: 128px; image-rendering: pixelated; transition: left 0s linear; z-index: 3; }
+    .bro__tag { position: absolute; left: 50%; top: -30px; transform: translateX(-50%); padding: 1px 6px; background: rgba(0,0,0,.4); font-family: var(--mono); font-size: 20px; color: #fff; white-space: nowrap; }
+    .bro__say { position: absolute; left: 50%; top: -70px; transform: translateX(-50%); padding: 4px 8px; background: rgba(0,0,0,.6); font-family: var(--mono); font-size: 19px; color: var(--yellow); white-space: nowrap; opacity: 0; transition: opacity .3s; }
+    .bro__say.on { opacity: 1; }
+    .bro__flip { position: absolute; inset: 0; }
+    .bro.flip .bro__flip { transform: scaleX(-1); }
+    .bro__body { position: absolute; inset: 0; animation: idle 2.6s ease-in-out infinite; }
+    .bro.walk .bro__body { animation: none; }
+    .bro.jump .bro__body { animation: jump .6s cubic-bezier(.3,.9,.4,1); }
+    @keyframes idle { 50% { transform: translateY(-2px); } }
+    @keyframes jump { 40% { transform: translateY(-46px); } }
+    .bro .part { position: absolute; border: 2px solid rgba(0,0,0,.35); }
+    .bro .head { left: 16px; top: 0; width: 32px; height: 32px; background: #c58c5a; box-shadow: inset 0 8px 0 #3b2a1a; z-index: 2; }
+    .bro .head::before, .bro .head::after { content: ""; position: absolute; top: 14px; width: 6px; height: 4px; background: #fff; box-shadow: 2px 0 0 #3a4a8f; }
+    .bro .head::before { left: 4px; } .bro .head::after { right: 6px; }
+    .bro .torso { left: 16px; top: 32px; width: 32px; height: 48px; background: #00a8a8; z-index: 1; }
+    .bro .arm { top: 32px; width: 16px; height: 48px; background: linear-gradient(#00a8a8 0 30%, #c58c5a 30%); transform-origin: 50% 4px; }
+    .bro .arm.l { left: 0; } .bro .arm.r { left: 48px; }
+    .bro .leg { top: 80px; width: 16px; height: 48px; background: #3c3c8c; transform-origin: 50% 2px; }
+    .bro .leg.l { left: 16px; } .bro .leg.r { left: 32px; }
+    .bro.walk .leg.l, .bro.walk .arm.r { animation: swing .55s ease-in-out infinite alternate; }
+    .bro.walk .leg.r, .bro.walk .arm.l { animation: swing .55s ease-in-out infinite alternate-reverse; }
+    @keyframes swing { from { transform: rotate(-28deg); } to { transform: rotate(28deg); } }
+    .bro.wave .arm.r { animation: wave .45s ease-in-out 3 alternate; }
+    @keyframes wave { from { transform: rotate(-150deg); } to { transform: rotate(-190deg); } }
+
+    .lever { position: absolute; top: 74px; left: 50%; transform: translateX(-50%); z-index: 4; }
+    .title { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-58%); text-align: center; z-index: 4; padding: 0 20px; pointer-events: none; }
+    .title > * { pointer-events: auto; }
+    .logo { display: inline-block; position: relative; margin: 0; font-size: clamp(64px, 12vw, 150px); line-height: .9; font-weight: 700; letter-spacing: .02em; color: #e3e3e3; text-shadow: 4px 4px 0 #7a7a7a, 8px 8px 0 #3d3d3d, 10px 10px 0 #000; animation: dropin .8s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes dropin { from { transform: translateY(-40px); opacity: 0; } to { transform: none; opacity: 1; } }
+    /* like the game: centred just past the logo's bottom-right corner, tilted 20° counterclockwise, pulsing twice a second */
+    .splash { position: absolute; left: 100%; bottom: 26%; color: var(--yellow); text-shadow: 3px 3px 0 #3f3f00; font-size: clamp(12px, 1.55vw, 21px); font-weight: 600; white-space: nowrap; transform: translate(-50%, 50%) rotate(-20deg); animation: splash .25s ease-in-out infinite alternate; z-index: 2; }
+    @keyframes splash { from { transform: translate(-50%, 50%) rotate(-20deg) scale(1); } to { transform: translate(-50%, 50%) rotate(-20deg) scale(1.1); } }
+    .title__sub { margin: 52px auto 0; max-width: 640px; font-size: 22px; color: #f0f0f0; text-shadow: 2px 2px 0 #000; }
+    .title__btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+    .title__hint { position: absolute; left: 0; right: 0; bottom: 156px; text-align: center; font-family: var(--mono); font-size: 20px; color: #fff; text-shadow: 2px 2px 0 #000; z-index: 4; animation: blink 1.6s steps(2) infinite; pointer-events: none; }
+    @keyframes blink { 50% { opacity: .35; } }
+
+    /* ---------- video ---------- */
+    .screen { position: relative; padding: 10px; background: var(--stone-tile); background-size: 40px 40px; image-rendering: pixelated; border: 3px solid #000; box-shadow: inset 3px 3px 0 #a0a0a0, inset -3px -3px 0 #4f4f4f; }
+    .screen video { display: block; width: 100%; aspect-ratio: 1280 / 710; background: #000; border: 2px solid #000; image-rendering: auto; }
+    .screen__cap { margin-top: 10px; font-family: var(--mono); font-size: 21px; color: #eee; text-shadow: 2px 2px 0 #000; }
+
+    /* ---------- crafting + how ---------- */
+    .craft { display: grid; grid-template-columns: auto auto auto; align-items: center; gap: 22px; justify-content: start; margin: 10px 0 24px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 84px); grid-template-rows: repeat(3, 84px); gap: 6px; padding: 8px; background: #8b8b8b; border: 2px solid #000; box-shadow: inset 2px 2px 0 #fff, inset -2px -2px 0 #555; }
+    .slot { display: grid; place-items: center; text-align: center; background: #8b8b8b; border: 2px solid #373737; box-shadow: inset 2px 2px 0 #373737, inset -2px -2px 0 #fff; font-size: 13.5px; line-height: 1.1; padding: 6px; color: #fff; text-shadow: 1px 1px 0 #000; cursor: help; min-width: 0; overflow-wrap: anywhere; }
+    .slot:hover { background: #a3a3a3; }
+    .slot .ico { width: 32px; height: 32px; margin: 0 auto 4px; }
+    .arrow { font-size: 60px; color: #fff; text-shadow: 3px 3px 0 #000; line-height: 1; }
+    .result { width: 120px; height: 120px; padding: 8px; background: #8b8b8b; border: 2px solid #000; box-shadow: inset 2px 2px 0 #fff, inset -2px -2px 0 #555; }
+    .result .slot { width: 100%; height: 100%; font-size: 15px; }
+    .result .slot .ico { width: 48px; height: 48px; }
+    .craft:hover .result .slot { background: #b3d38f; }
+    .how { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .how .panel { transition: transform .2s steps(2); }
+    .how .panel:hover { transform: translateY(-3px); }
+    .how .panel p { margin: 0; font-size: 17.5px; color: #eee; }
+    .how .panel code { font-family: var(--mono); font-size: 20px; color: var(--aqua); }
+
+    /* ---------- inventory (abilities) ---------- */
+    .inv { display: inline-grid; grid-template-columns: repeat(9, 100px); gap: 4px; padding: 8px; background: #c6c6c6; border: 3px solid #000; box-shadow: inset 3px 3px 0 #fff, inset -3px -3px 0 #555; max-width: 100%; }
+    .inv .slot { width: 100px; height: 100px; cursor: pointer; font-size: 13px; padding: 6px 4px; overflow: hidden; }
+    .inv .slot span { display: block; max-width: 100%; overflow-wrap: anywhere; word-break: break-word; line-height: 1.05; }
+    .inv .slot.empty { cursor: default; }
+    .inv .slot:active { transform: translateY(1px); }
+    .inv-wrap { overflow-x: auto; padding-bottom: 8px; }
+    .cat { display: flex; gap: 10px 22px; flex-wrap: wrap; margin: 12px 0 0; font-size: 17px; color: #eee; text-shadow: 2px 2px 0 #000; align-items: center; }
+    .cat span { display: inline-flex; align-items: center; gap: 8px; }
+    .cat .ico { width: 22px; height: 22px; }
+
+    /* ---------- chat demo ---------- */
+    .chatbox { background: rgba(4,5,9,.8); border: 2px solid #000; font-family: var(--mono); font-size: 23px; line-height: 1.25; text-shadow: 2px 2px 0 #3f3f3f; }
+    .chatlog { height: 300px; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; scroll-behavior: smooth; }
+    .chatlog b { font-weight: 400; color: var(--aqua); }
+    .chatlog i { font-style: normal; color: var(--yellow); }
+    .chatlog .sys { color: var(--yellow); }
+    .chatlog .gray { color: var(--grey); }
+    .chatlog .err { color: #ff5555; }
+    .chatrow { display: flex; border-top: 2px solid #000; background: rgba(0,0,0,.6); }
+    .chatrow input { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; padding: 10px 14px; color: #fff; font-family: var(--mono); font-size: 23px; text-shadow: 2px 2px 0 #3f3f3f; }
+    .chatrow input::placeholder { color: #888; }
+    .chatrow button { border: 0; border-left: 2px solid #000; background: #3c8527; color: #fff; font-family: var(--pixel); font-size: 18px; padding: 0 18px; cursor: pointer; text-shadow: 2px 2px 0 #1e4d12; }
+    .chatrow button:hover { background: #4aa032; }
+    .quick { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .quick .mc-btn { font-family: var(--mono); font-size: 20px; text-shadow: 2px 2px 0 #3f3f3f; }
+
+    /* ---------- install (advancements) ---------- */
+    .adv { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .adv__c { display: grid; grid-template-columns: 64px 1fr; gap: 16px; align-items: start; padding: 16px; background: rgba(4,5,9,.78); border: 3px solid #000; box-shadow: inset 3px 3px 0 rgba(255,255,255,.18), inset -3px -3px 0 rgba(0,0,0,.6); transition: box-shadow .2s steps(2); }
+    .adv__c.done { box-shadow: inset 3px 3px 0 #63b34a, inset -3px -3px 0 #1e4d12, 0 0 0 3px #3c8527; }
+    .adv__i { width: 64px; height: 64px; display: grid; place-items: center; background: #8b8b8b; border: 2px solid #000; box-shadow: inset 2px 2px 0 #b5b5b5, inset -2px -2px 0 #545454; }
+    .adv__i .ico { width: 40px; height: 40px; }
+    .adv__c h3 { margin: 0 0 6px; font-size: 24px; font-weight: 600; text-shadow: 2px 2px 0 #000; }
+    .adv__c p, .adv__c li { margin: 0 0 6px; font-size: 17px; color: #eee; text-shadow: 1px 1px 0 #000; }
+    .adv__c ul { margin: 0 0 6px; padding-left: 20px; }
+    .adv__c .lnk { color: var(--aqua); text-decoration: underline; text-underline-offset: 3px; }
+    .adv__c .paths { font-family: var(--mono); font-size: 19px; color: #ddd; overflow-wrap: anywhere; }
+    .adv__c > div, .panel, .how .panel p, table.cmds td { min-width: 0; overflow-wrap: anywhere; }
+    .adv__c .cmd { display: inline-block; margin: 4px 0; padding: 4px 10px; background: rgba(0,0,0,.6); font-family: var(--mono); font-size: 21px; color: #fff; text-shadow: 2px 2px 0 #3f3f3f; }
+    .adv__c .mc-btn { margin-top: 8px; }
+    .providers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0 6px; }
+    .providers .panel { padding: 12px 14px; }
+    .providers .panel__t { font-size: 19px; }
+    .providers p { margin: 0; font-size: 15.5px; color: #eee; }
+    .providers code { font-family: var(--mono); font-size: 18px; color: var(--aqua); }
+
+    table.cmds { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 17px; }
+    table.cmds th, table.cmds td { text-align: left; padding: 10px 12px; border: 2px solid #000; background: rgba(4,5,9,.78); }
+    table.cmds th { background: rgba(4,5,9,.92); color: var(--yellow); text-shadow: 2px 2px 0 #3f3f14; }
+    table.cmds td:first-child { font-family: var(--mono); font-size: 21px; color: var(--aqua); white-space: nowrap; }
+    table.cmds tr { cursor: pointer; }
+    table.cmds tbody tr:hover td { background: rgba(80,0,255,.25); }
+    .cost { display: flex; gap: 8px; align-items: center; margin-top: 18px; font-size: 18px; color: #eee; text-shadow: 1px 1px 0 #000; flex-wrap: wrap; }
+    .hearts { display: inline-flex; gap: 2px; }
+    .hearts i { width: 18px; height: 16px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 8' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M1 0h2v1h1v1h1V1h1V0h2v1h1v3H8v1H7v1H6v1H5v1H4V7H3V6H2V5H1V4H0V1h1z'/%3E%3Cpath fill='%23ff2a2a' d='M1 1h2v1h1v1h1V2h1V1h2v3H7v1H6v1H5v1H4V6H3V5H2V4H1z'/%3E%3Cpath fill='%23ff8a8a' d='M1 1h1v1H1zM6 1h1v1H6z'/%3E%3C/svg%3E") no-repeat center / contain; image-rendering: pixelated; }
+    .links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+    .foot { padding: 34px 0 120px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 16px; color: #ddd; text-shadow: 2px 2px 0 #000; }
+
+    @media (max-width: 860px) {
+      .how, .providers, .adv { grid-template-columns: 1fr; }
+      .craft { grid-template-columns: 1fr; justify-items: start; }
+      .arrow { transform: rotate(90deg); }
+      .splash { left: 50%; bottom: -34%; font-size: 14px; transform: translate(-50%, 0) rotate(-20deg); animation: none; }
+      .hotbar a { width: 36px; height: 36px; } .hotbar .ico { width: 22px; height: 22px; }
+      .title__hint { display: none; }
+      .bro { left: 8%; }
+      .lever { top: 64px; }
+      .chatlog { height: 240px; font-size: 19px; } .chatrow input { font-size: 19px; }
+      .inv { grid-template-columns: repeat(9, 76px); } .inv .slot { width: 76px; height: 76px; font-size: 10.5px; padding: 4px 2px; } .inv .slot .ico { width: 20px; height: 20px; margin-bottom: 3px; }
+      table.cmds td:first-child { white-space: normal; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HUD ===== -->
+  <div class="hud-top">
+    <a class="back" href="../index.html">← Max's Gallery</a>
+  </div>
+  <div class="coords" id="coords">XYZ: 118 / 63 / -37</div>
+  <div class="hud-bot">
+    <div class="hotname" id="hotname"></div>
+    <nav class="hotbar" id="hotbar" aria-label="Sections">
+      <a href="#top" data-n="1" data-name="Title screen" title="Title screen"><i class="ico" data-icon="grass"></i></a>
+      <a href="#watch" data-n="2" data-name="Watch it play" title="Watch it play"><i class="ico" data-icon="play"></i></a>
+      <a href="#how" data-n="3" data-name="How it works" title="How it works"><i class="ico" data-icon="table"></i></a>
+      <a href="#abilities" data-n="4" data-name="What it can do" title="What it can do"><i class="ico" data-icon="chest"></i></a>
+      <a href="#chat" data-n="5" data-name="Talk to Minebro" title="Talk to Minebro"><i class="ico" data-icon="bubble"></i></a>
+      <a href="#install" data-n="6" data-name="How to install" title="How to install"><i class="ico" data-icon="book"></i></a>
+      <a href="#commands" data-n="7" data-name="Commands" title="Commands"><i class="ico" data-icon="cmd"></i></a>
+      <a href="https://github.com/maxwitanowski/Minebro/releases" target="_blank" rel="noopener" data-n="8" data-name="Download the jar" title="Download the jar"><i class="ico" data-icon="diamond"></i></a>
+      <a href="https://github.com/maxwitanowski/Minebro" target="_blank" rel="noopener" data-n="9" data-name="Source on GitHub" title="Source on GitHub"><i class="ico" data-icon="github"></i></a>
+    </nav>
+  </div>
+  <div class="tipf" id="tipf"><b></b><span></span></div>
+  <div class="toasts" id="toasts"></div>
+
+  <!-- ===== THE WORLD ===== -->
+  <header class="world" id="top">
+    <div class="sky"></div>
+    <div class="stars"></div>
+    <div class="sun"></div>
+    <div class="moon"></div>
+    <div class="cloud" style="top: 14%; animation-duration: 70s; animation-delay: -20s;"></div>
+    <div class="cloud" style="top: 26%; animation-duration: 95s; animation-delay: -60s; transform: scale(.7);"></div>
+    <div class="cloud" style="top: 8%; animation-duration: 120s; animation-delay: -90s; transform: scale(1.3);"></div>
+    <div class="hills"></div>
+    <div class="hills2"></div>
+    <div class="tree" style="left: 6%;"><b></b><i></i></div>
+    <div class="tree" style="left: 78%;"><b></b><i></i></div>
+    <div class="tree" style="left: 90%; transform: scale(.8); transform-origin: bottom;"><b></b><i></i></div>
+
+    <button class="mc-btn mc-btn--sm lever" id="lever" data-tip-title="Lever" data-tip="Flips the sun and moon. Minebro can sleep through the night if you ask.">☾ Night · switch to day</button>
+
+    <div class="title">
+      <h1 class="logo">MINEBRO<span class="splash" aria-hidden="true">Now with a second player!</span></h1>
+      <p class="title__sub">An AI teammate for Minecraft. It joins your world as a real player, chops trees, crafts tools, mines, fights, eats, sleeps, and talks to you in chat.</p>
+      <div class="title__btns">
+        <a class="mc-btn mc-btn--green" href="https://github.com/maxwitanowski/Minebro/releases" target="_blank" rel="noopener">Download minebro-0.1.0.jar</a>
+        <a class="mc-btn" href="#watch">Watch it play</a>
+        <a class="mc-btn" href="#chat">Talk to it</a>
+      </div>
+    </div>
+
+    <div class="title__hint">Keys <span class="kbd">1</span>–<span class="kbd">9</span> jump between sections · <span class="kbd">T</span> opens chat</div>
+    <div class="ground" aria-hidden="true"></div>
+  </header>
+
+  <div class="below">
+  <div class="underground" id="underground" aria-hidden="true"></div>
+  <div class="page">
+    <!-- ===== WATCH ===== -->
+    <section class="sec" id="watch">
+      <h2 class="sec__h"><i class="ico" data-icon="play"></i>Watch it play</h2>
+      <p class="sec__lead">Minebro in a fresh singleplayer world, recorded 14 September 2026. No scripts, no cheats. It only knows about what it can actually see.</p>
+      <div class="screen">
+        <video id="demo" autoplay muted loop playsinline preload="auto" poster="media/minebro-poster.jpg" aria-label="Minebro playing Minecraft">
+          <source src="media/minebro.mp4" type="video/mp4" />
+        </video>
+        <div class="screen__cap">Minecraft 26.2 · Singleplayer · Claude Sonnet 5 driving the bot</div>
+      </div>
+    </section>
+
+    <!-- ===== HOW ===== -->
+    <section class="sec" id="how">
+      <h2 class="sec__h"><i class="ico" data-icon="table"></i>How it works</h2>
+      <p class="sec__lead">A server-side Fabric mod that spawns a real player and runs a loop on its own thread: look around, ask the model what to do, do it, repeat. <span class="hint">Hover the recipe.</span></p>
+      <div class="craft" aria-label="Crafting recipe for Minebro">
+        <div class="grid3">
+          <div class="slot" data-tip-title="Minecraft Java 26.2" data-tip="Works in singleplayer and on dedicated servers. Nothing to install for other players."><i class="ico" data-icon="grass"></i>Minecraft 26.2</div>
+          <div class="slot" data-tip-title="Fabric loader 0.19.3+" data-tip="Plus Fabric API. Both jars go in the mods folder."><i class="ico" data-icon="gear"></i>Fabric loader</div>
+          <div class="slot" data-tip-title="API key" data-tip="Anthropic, OpenRouter, or any OpenAI-compatible endpoint including local models."><i class="ico" data-icon="key"></i>API key</div>
+          <div class="slot" data-tip-title="Vision" data-tip="A few thousand rays cast from its eyes each turn. Only what a ray hits exists for it. No x-ray."><i class="ico" data-icon="eye"></i>Vision (raycasts)</div>
+          <div class="slot" data-tip-title="Model loop" data-tip="Observe → call the model with a tool list → run the tools it picks on the server thread → repeat."><i class="ico" data-icon="brain"></i>Model loop</div>
+          <div class="slot" data-tip-title="A* pathfinder" data-tip="Block-grid A* for a 1×2 body: walk, jump, drop, swim, dig, pillar, descend."><i class="ico" data-icon="compass"></i>A* pathfinder</div>
+          <div class="slot" data-tip-title="Tick controller" data-tip="Runs the current task every tick and sets movement inputs exactly like a client would."><i class="ico" data-icon="clock"></i>Tick controller</div>
+          <div class="slot" data-tip-title="Tools &amp; tasks" data-tip="mine, craft, smelt, place, containers, combat, eat, sleep, follow, give, remember…"><i class="ico" data-icon="pickaxe"></i>Tools &amp; tasks</div>
+          <div class="slot" data-tip-title="Chat" data-tip="Everything you type reaches it. It answers as &lt;Minebro&gt;."><i class="ico" data-icon="bubble"></i>Chat</div>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="result"><div class="slot" data-tip-title="Minebro" data-tip="A second player with its own inventory, health, hunger, death and respawn."><i class="ico" data-icon="steve"></i>Minebro</div></div>
+      </div>
+      <div class="how">
+        <div class="panel"><p class="panel__t">A real player, not a mob</p><p>The bot is a real <code>ServerPlayer</code> on a fake network connection, the same trick the Carpet mod uses for fake players. Vanilla handles its hunger, health, chunk loading, saving, death and respawn. It shows up in the tab list and keeps its inventory between sessions.</p></div>
+        <div class="panel"><p class="panel__t">It thinks in a loop</p><p>A brain thread builds an observation of what the bot can see, sends it to the model with a list of tools, then runs whatever the model picks on the server thread. It thinks when you chat, when a task finishes, and otherwise every 30 seconds.</p></div>
+        <div class="panel"><p class="panel__t">It plays fair</p><p>Only blocks and mobs hit by its eye rays exist for it. Reach is 4.5 blocks, mining takes the real time for the tool it holds, and it needs line of sight to hit anything. It can see what you hold and wear, but not your inventory, health or hunger.</p></div>
+        <div class="panel"><p class="panel__t">Body and brain are separate</p><p>Every tick a controller runs the current task and sets movement inputs like a client would. Pathfinding, digging with vanilla timing and GUI-less crafting all live in the body. The model never touches physics.</p></div>
+      </div>
+    </section>
+
+    <!-- ===== ABILITIES ===== -->
+    <section class="sec" id="abilities">
+      <h2 class="sec__h"><i class="ico" data-icon="chest"></i>What it can do</h2>
+      <p class="sec__lead">These are the tools the model picks from. <span class="hint">Hover for details, click one to see Minebro use it.</span></p>
+      <div class="inv-wrap"><div class="inv" id="inv"></div></div>
+      <p class="cat" id="cat"></p>
+    </section>
+
+    <!-- ===== CHAT ===== -->
+    <section class="sec" id="chat">
+      <h2 class="sec__h"><i class="ico" data-icon="bubble"></i>Talk to Minebro</h2>
+      <p class="sec__lead">A little pretend version of the in-game chat. Say anything, or try the real commands. <span class="hint">Press <span class="kbd">T</span> anywhere to start typing.</span></p>
+      <div class="chatbox">
+        <div class="chatlog" id="chatlog"></div>
+        <form class="chatrow" id="chatform" autocomplete="off">
+          <input id="chatin" type="text" placeholder="Type here… try /ai spawn" maxlength="120" />
+          <button type="submit">Send</button>
+        </form>
+      </div>
+      <div class="quick">
+        <button class="mc-btn mc-btn--sm" data-say="/ai spawn">/ai spawn</button>
+        <button class="mc-btn mc-btn--sm" data-say="hey can you get us some wood">get us some wood</button>
+        <button class="mc-btn mc-btn--sm" data-say="/ai goal build a small cobblestone house near spawn">/ai goal …</button>
+        <button class="mc-btn mc-btn--sm" data-say="/ai status">/ai status</button>
+        <button class="mc-btn mc-btn--sm" data-say="/ai observe">/ai observe</button>
+        <button class="mc-btn mc-btn--sm" data-say="what am I wearing?">what am I wearing?</button>
+      </div>
+    </section>
+
+    <!-- ===== INSTALL ===== -->
+    <section class="sec" id="install">
+      <h2 class="sec__h"><i class="ico" data-icon="book"></i>How to install</h2>
+      <p class="sec__lead">Four advancements. Tick them off as you go. Nothing to install for anyone else who joins your world.</p>
+      <div class="adv" id="adv">
+        <div class="adv__c" data-adv="Fabric installed">
+          <div class="adv__i"><i class="ico" data-icon="gear"></i></div>
+          <div>
+            <h3>1 · Install Fabric for 26.2</h3>
+            <ul>
+              <li>Get the Fabric installer from <a class="lnk" href="https://fabricmc.net/use/installer/" target="_blank" rel="noopener">fabricmc.net</a>. Pick Minecraft <b>26.2</b>, loader <b>0.19.3</b> or newer, click Install.</li>
+              <li>Download <b>Fabric API</b> for 26.2 from <a class="lnk" href="https://modrinth.com/mod/fabric-api" target="_blank" rel="noopener">Modrinth</a> (<span class="paths">fabric-api-0.157.0+26.2.jar</span> or similar).</li>
+            </ul>
+            <button class="mc-btn mc-btn--sm" data-done>Mark done</button>
+          </div>
+        </div>
+        <div class="adv__c" data-adv="Minebro in the mods folder">
+          <div class="adv__i"><i class="ico" data-icon="chest"></i></div>
+          <div>
+            <h3>2 · Drop in the jar</h3>
+            <p>Grab <span class="paths">minebro-0.1.0.jar</span> from the <a class="lnk" href="https://github.com/maxwitanowski/Minebro/releases" target="_blank" rel="noopener">Releases page</a> and put it next to Fabric API in your mods folder:</p>
+            <ul class="paths">
+              <li>Windows: %APPDATA%\.minecraft\mods</li>
+              <li>macOS: ~/Library/Application Support/minecraft/mods</li>
+              <li>Linux: ~/.minecraft/mods</li>
+            </ul>
+            <p>Launch the <b>fabric-loader-0.19.3-26.2</b> profile once to create <span class="paths">config/minebro.json</span>. Dedicated server: same two jars in the server's mods folder.</p>
+            <button class="mc-btn mc-btn--sm" data-done>Mark done</button>
+          </div>
+        </div>
+        <div class="adv__c" data-adv="Got a key">
+          <div class="adv__i"><i class="ico" data-icon="key"></i></div>
+          <div>
+            <h3>3 · Get an API key</h3>
+            <div class="providers">
+              <div class="panel"><p class="panel__t">Anthropic</p><p>Default. Key from <a class="lnk" href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>, model <code>claude-sonnet-5</code>.</p></div>
+              <div class="panel"><p class="panel__t">OpenRouter</p><p>Key from <a class="lnk" href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai</a>. Any model with tool calling.</p></div>
+              <div class="panel"><p class="panel__t">OpenAI-compatible</p><p>Point <code>baseUrl</code> at OpenAI, LM Studio or Ollama for local models.</p></div>
+            </div>
+            <button class="mc-btn mc-btn--sm" data-done>Mark done</button>
+          </div>
+        </div>
+        <div class="adv__c" data-adv="Minebro joined the game">
+          <div class="adv__i"><i class="ico" data-icon="steve"></i></div>
+          <div>
+            <h3>4 · Enter the key, spawn it</h3>
+            <p>Open a world and type in chat:</p>
+            <span class="cmd">/ai set key sk-ant-...</span><br />
+            <span class="paths">OpenRouter: /ai set provider openrouter, then /ai set key sk-or-...</span>
+            <p>Saved to <span class="paths">config/minebro.json</span>, so it's a one-time thing. Environment variables <span class="paths">ANTHROPIC_API_KEY</span> / <span class="paths">OPENROUTER_API_KEY</span> work too. Then:</p>
+            <span class="cmd">/ai spawn</span>
+            <p>It appears next to you, says hello, and starts looking around. Just talk in normal chat.</p>
+            <button class="mc-btn mc-btn--sm" data-done>Mark done</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== COMMANDS ===== -->
+    <section class="sec" id="commands">
+      <h2 class="sec__h"><i class="ico" data-icon="cmd"></i>Commands</h2>
+      <p class="sec__lead"><span class="hint">Click a row to try it in the chat above.</span></p>
+      <table class="cmds" id="cmds">
+        <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr data-say="/ai spawn"><td>/ai spawn</td><td>Spawns Minebro next to you. Inventory and position carry over between sessions.</td></tr>
+          <tr data-say="/ai goal build a small cobblestone house near spawn"><td>/ai goal &lt;text&gt;</td><td>A standing job it sees every turn. <span class="paths">/ai goal clear</span> removes it.</td></tr>
+          <tr data-say="/ai chat hello"><td>/ai chat &lt;text&gt;</td><td>Send it a message without broadcasting it.</td></tr>
+          <tr data-say="/ai status"><td>/ai status</td><td>Current task, queue, model in use, last error.</td></tr>
+          <tr data-say="/ai observe"><td>/ai observe</td><td>Prints exactly what the model sees this turn.</td></tr>
+          <tr data-say="/ai pause"><td>/ai stop · pause · resume</td><td>Cancel what it's doing, or stop and restart model calls. No API cost while paused.</td></tr>
+          <tr data-say="/ai set model claude-opus-5"><td>/ai set model …</td><td>Swap models any time: <span class="paths">claude-opus-5</span>, <span class="paths">google/gemini-3.8-flash</span> via OpenRouter, or a local LM Studio model.</td></tr>
+          <tr data-say='/ai do mine {"block":"oak_log","count":4}'><td>/ai do &lt;tool&gt; &lt;json&gt;</td><td>Run one ability directly, no model involved.</td></tr>
+          <tr data-say="/ai despawn"><td>/ai despawn</td><td>Removes it, like logging out. Everything is saved.</td></tr>
+        </tbody>
+      </table>
+      <div class="cost"><span class="hearts" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span> Cost: each model call is a few thousand mostly-cached tokens. With Sonnet 5 that's well under $1 USD per hour of play.</div>
+      <div class="links">
+        <a class="mc-btn mc-btn--green" href="https://github.com/maxwitanowski/Minebro/releases" target="_blank" rel="noopener">Download the jar</a>
+        <a class="mc-btn" href="https://github.com/maxwitanowski/Minebro" target="_blank" rel="noopener">Full README on GitHub ↗</a>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span>Minebro · Max's Gallery · MIT licence</span>
+      <span>Built with Fabric Loom and JDK 25 · Not affiliated with Mojang</span>
+    </footer>
+  </div>
+  <div class="bedrock" aria-hidden="true"></div>
+  </div>
+
+  <script>
+  (() => {
+    const $ = (s, r = document) => r.querySelector(s);
+    const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+    const rand = (a, b) => a + Math.random() * (b - a);
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+    // ---------- pixel-art icons (16×16 maps → SVG) ----------
+    const P = { k: '#000', w: '#fff', g: '#5d9c3a', G: '#6fb04a', d: '#79553a', D: '#8a6644', s: '#828282', S: '#a3a3a3', f: '#4a4a4a',
+      b: '#8a5a2b', B: '#5a3a1a', t: '#a06a35', l: '#6b4320', p: '#c98b3d', y: '#ffd83d', Y: '#b08a12', c: '#4fe0e0', C: '#1f9c9c', E: '#e8ffff',
+      e: '#4ee06b', q: '#0a0a0a', n: '#ff9bd1', N: '#d95fa8', r: '#ff3030', o: '#e8c04a', h: '#3b2a1a', i: '#c58c5a', u: '#3a4a8f', a: '#55ff55', v: '#1a1a1a', m: '#6b6b6b', T: '#d8af93' };
+    const ICONS = {
+      grass: ['.kkkkkkkkkkkkkk.','kggggggggggggggk','kgGggggGgggGgggk','kggggggggggggggk','kggdggggdgggdggk','kddddddddddddddk','kdDddddDdddDdddk','kddddddddddddddk','kddDddddddDddddk','kdDddddDdddDdddk','kddddddddddddddk','kddDddddddDddddk','kddddddddddddddk','kdDddddDdddDdddk','.kkkkkkkkkkkkkk.','................'],
+      play:  ['................','kkkkkkkkkkkkkkkk','kmmmmmmmmmmmmmmk','kmvvvvvvvvvvvvmk','kmvvvvavvvvvvvmk','kmvvvvaavvvvvvmk','kmvvvvaaavvvvvmk','kmvvvvaaaavvvvmk','kmvvvvaaavvvvvmk','kmvvvvaavvvvvvmk','kmvvvvavvvvvvvmk','kmvvvvvvvvvvvvmk','kmmmmmmmmmmmmmmk','kkkkkkkkkkkkkkkk','......kkkk......','....kkkkkkkk....'],
+      table: ['................','................','.kkkkkkkkkkkkkk.','kttttttllttttttk','kttttttllttttttk','kllllllllllllllk','kttttttllttttttk','kttttttllttttttk','kBBBBBBBBBBBBBBk','kbbbbkkbbbbkkbbk','kbbbbkkbbbbkkbbk','kbbbbbbbbbbbbbbk','kbbbbbbbbbbbbbbk','kbbbbbbbbbbbbbbk','.kkkkkkkkkkkkkk.','................'],
+      chest: ['................','................','.kkkkkkkkkkkkkk.','kbbbbbbbbbbbbbbk','kbbbbbbbbbbbbbbk','kbbbbbbbbbbbbbbk','kBBBBBBBBBBBBBBk','kbbbbbbkkbbbbbbk','kbbbbbbkkbbbbbbk','kbbbbbbbbbbbbbbk','kbbbbbbbbbbbbbbk','kbbbbbbbbbbbbbbk','kbbbbbbbbbbbbbbk','kBBBBBBBBBBBBBBk','.kkkkkkkkkkkkkk.','................'],
+      bubble:['................','................','..kkkkkkkkkkkk..','.kwwwwwwwwwwwwk.','kwwwwwwwwwwwwwwk','kwwwwwwwwwwwwwwk','kwwwkwwkwwkwwwwk','kwwwwwwwwwwwwwwk','kwwwwwwwwwwwwwwk','.kwwwwwwwwwwwwk.','..kkkkwwkkkkkk..','.....kwwk.......','....kwwk........','....kkk.........','................','................'],
+      book:  ['................','.kkkkkkkkkkkkkk.','kbbbbbbbbbbbwwwk','kbbbbbbbbbbbwwwk','kbbbbbbbbbbbwwwk','kbbbbbbbbbbbwwwk','kbttttttttbbwwwk','kbttttttttbbwwwk','kbbbbbbbbbbbwwwk','kbbbbbbbbbbbwwwk','kbbbbbbbbbbbwwwk','kbbbbbbbbbbbwwwk','kbbbbbbbbbbbwwwk','kBBBBBBBBBBBwwwk','.kkkkkkkkkkkkkk.','................'],
+      cmd:   ['................','.kkkkkkkkkkkkkk.','kpppppppppppppppk'.slice(0,16),'kpsspppsspppsspk','kpsspppsspppsspk','kpppppppppppppppk'.slice(0,16),'kpppssssssssppppk'.slice(0,16),'kpppssssssssppppk'.slice(0,16),'kpppssssssssppppk'.slice(0,16),'kpppssssssssppppk'.slice(0,16),'kpppppppppppppppk'.slice(0,16),'kpsspppsspppsspk','kpsspppsspppsspk','kpppppppppppppppk'.slice(0,16),'.kkkkkkkkkkkkkk.','................'],
+      diamond:['................','................','.....kkkkkk.....','....kEEccccck...','...kEEccccccck..','..kEccccccccccck','.kccccccccccccck','.kccccccccccccck','..kCcccccccccCk.','...kCcccccccCk..','....kCCcccCCk...','.....kCCCCCk....','......kCCCk.....','.......kCk......','........k.......','................'],
+      github:['................','................','.....kkkkkk.....','...kkkkkkkkkk...','..kkwkkkkkkwkk..','.kkkwwkkkkwwkkk.','kkkkwwwwwwwwkkkk','kkkwwwwwwwwwwkkk','kkkwwkwwwwkwwkkk','kkkwwwwwwwwwwkkk','kkkkwwwwwwwwkkkk','.kkkkkwwwwkkkkk.','..kkkkkwwkkkkk..','...kkkkkkkkkk...','.....kkkkkk.....','................'],
+      key:   ['................','................','..kkkk..........','.kyyyyk.........','kyykkyyk........','kyykkyyk........','.kyyyyk.........','..kyyyyyyyyyyyyk','..kyyyyyyyyyyyyk','..kkkkkkkkyyykyk','..........kykkyk','..........kkk.kk','................','................','................','................'],
+      eye:   ['................','................','................','.....kkkkkk.....','...kkeeeeeekk...','..keeeeeeeeeek..','.keeeekkkkeeeek.','keeeeeqwqqeeeeek','keeeeeqqqqeeeeek','.keeeeqqqqeeeek.','..keeeeeeeeeek..','...kkeeeeeekk...','.....kkkkkk.....','................','................','................'],
+      brain: ['................','................','................','....kkkk.kkkk...','..kknnnnknnnnkk.','.knnnnnnknnnnnk.','knnnnnnnknnnnnnk','knNnnnnnknnnNnnk','knnnnNnnknnNnnnk','knnnnnnnknnnnnnk','.knnnnnnknnnnnk.','..kknnnnknnnnkk.','....kkkkkkkkk...','................','................','................'],
+      compass:['................','................','.....kkkkkk.....','...kkssssssskk..'.slice(0,16),'..kssssssssssk..','.ksssssrrsssssk.','kssssssrrssssssk','kssssssrrssssssk','kssssssEEssssssk','kssssssEEssssssk','.ksssssEEsssssk.','..kssssssssssk..','...kkssssssskk..'.slice(0,16),'.....kkkkkk.....','................','................'],
+      clock: ['................','................','.....kkkkkk.....','...kkooooookk...'.slice(0,16),'..koooooooooook.'.slice(0,16),'.kooooooookoooook'.slice(0,16),'kooooooookooooook'.slice(0,16),'kooooooookooooook'.slice(0,16),'kooooooookkkkoook'.slice(0,16),'kooooooooooooook','.koooooooooooook'.slice(0,16),'..koooooooooook.'.slice(0,16),'...kkooooookk...'.slice(0,16),'.....kkkkkk.....','................','................'],
+      pickaxe:['........kkkkkk..','......kkssssssk.','.....ksssssssssk','....kssskkkkksssk'.slice(0,16),'...kssk....kssssk'.slice(0,16),'..kssk.....kssk.','..kssk......kk..','.kbbkk..........','.kbbk...........','kbbk............','kbbk............','kbk.............','kk..............','................','................','................'],
+      steve: ['hhhhhhhhhhhhhhhh','hhhhhhhhhhhhhhhh','hhhhhhhhhhhhhhhh','hhhhhhhhhhhhhhhh','hiihiihiihiihiih','iiiiiiiiiiiiiiii','iiiiiiiiiiiiiiii','iiiiiiiiiiiiiiii','iiwwuuiiiiuuwwii','iiwwuuiiiiuuwwii','iiiiiiiiiiiiiiii','iiiiiiiBBiiiiiii','iiiiiiBBBBiiiiii','iiiiiBBBBBBiiiii','iiiiiBBiiBBiiiii','iiiiiiiiiiiiiiii'],
+      boots: ['................','................','................','................','..kkkk....kkkk..','..kbbk....kbbk..','..kbbk....kbbk..','..kbbk....kbbk..','..kbbkk...kbbkk.','..kbbbbk..kbbbbk','..kBBBBk..kBBBBk','..kkkkkk..kkkkkk','................','................','................','................'],
+      apple: ['................','................','........kk......','.......kBee.....','...kkkkBkkkk....','..krrrrrrrrrrk..','.krwwrrrrrrrrrk.','krrwrrrrrrrrrrrk','krrrrrrrrrrrrrrk','krrrrrrrrrrrrrrk','krrrrrrrrrrrrrrk','.krrrrrrrrrrrrk.','..krrrrrrrrrrk..','...kkkkkkkkkk...','................','................'],
+      gear:  ['................','......kkkk......','..kk..kssk..kk..','.kssk.kssk.kssk.','.kssssssssssssk.','..kssssssssssk..','kkssssskkkksssskk'.slice(0,16),'ksssskkffkksssssk'.slice(0,16),'ksssskkffkksssssk'.slice(0,16),'kkssssskkkksssskk'.slice(0,16),'..kssssssssssk..','.kssssssssssssk.','.kssk.kssk.kssk.','..kk..kssk..kk..','......kkkk......','................'],
+      // ores: only the specks are drawn, so they sit straight on the stone wall
+      coal:    ['................','..qq.......qq...','.qqqq.....qqqq..','.qqqq.....qqqq..','..qq.......qq...','................','.......qq.......','......qqqq......','......qqqq......','.......qq.......','..qq.........qq.','.qqqq.......qqqq','.qqqq.......qqqq','..qq.........qq.','................','................'],
+      iron:    ['................','..TT.......TT...','.TTT.......TTT..','..TT.......TT...','................','.......TT.......','......TTTT......','......TTTT......','.......TT.......','................','..TT.........TT.','.TTT........TTT.','..TT.........TT.','................','................','................'],
+      gold:    ['................','..yy.......yy...','.yyyy.....yyyy..','..yy.......yy...','................','.......yy.......','......yyyy......','.......yy.......','................','..yy.........yy.','.yyyy.......yyyy','..yy.........yy.','................','................','................','................'],
+      redstone:['................','..rr.......rr...','.rrrr.....rrrr..','..rr.......rr...','................','.......rr.......','......rrrr......','.......rr.......','................','..rr.........rr.','.rrrr.......rrrr','..rr.........rr.','................','................','................','................'],
+      diamondore:['................','..cc.......cc...','.cEcc......cEcc.','..cc.......cc...','................','.......cc.......','......ccEc......','.......cc.......','................','..cc.........cc.','.cEcc........cEc','..cc.........cc.','................','................','................','................'],
+      torch:   ['................','................','.......yy.......','......yooy......','......yooy......','.......rr.......','.......bb.......','.......bb.......','.......bb.......','.......bb.......','.......bb.......','.......bb.......','.......bb.......','................','................','................'],
+    };
+    const svgCache = {};
+    const iconURL = (name) => {
+      if (svgCache[name]) return svgCache[name];
+      const rows = ICONS[name]; if (!rows) return '';
+      let rects = '';
+      rows.forEach((row, y) => { for (let x = 0; x < 16; x++) { const ch = row[x]; if (ch && ch !== '.' && P[ch]) rects += `<rect x='${x}' y='${y}' width='1' height='1' fill='${P[ch]}'/>`; } });
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'>${rects}</svg>`;
+      return (svgCache[name] = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
+    };
+    const paintIcons = (root = document) => $$('[data-icon]', root).forEach((el) => { el.style.backgroundImage = iconURL(el.dataset.icon); });
+    const iconHTML = (name, cls = 'ico') => `<i class="${cls}" data-icon="${name}"></i>`;
+    paintIcons();
+
+    // ---------- underground: ores, caves and torches scattered behind the content ----------
+    const under = $('#underground');
+    const decorate = () => {
+      under.innerHTML = '';
+      const H = under.offsetHeight, W = under.offsetWidth;
+      const cols = Math.ceil(W / 48), rows = Math.ceil(H / 48);
+      const seed = (n) => { const x = Math.sin(n * 9301 + 49297) * 233280; return x - Math.floor(x); };
+      let n = 1;
+      const taken = new Set();
+      const place = (type, c, r) => {
+        if (c < 0 || r < 1 || c >= cols || r >= rows || taken.has(c + ',' + r)) return;
+        taken.add(c + ',' + r);
+        const o = document.createElement('i');
+        o.className = 'ore'; o.dataset.icon = type;
+        o.style.left = c * 48 + 'px'; o.style.top = r * 48 + 'px';
+        under.appendChild(o);
+      };
+      // veins: a seed block plus a few neighbours, rarer and shinier the deeper you go
+      for (let r = 1; r < rows; r++) for (let c = 0; c < cols; c++) {
+        const depth = r / rows, roll = seed(n++);
+        let type = null;
+        if (roll < 0.014) type = 'coal';
+        else if (roll < 0.022) type = 'iron';
+        else if (roll < 0.026 && depth > 0.35) type = 'gold';
+        else if (roll < 0.031 && depth > 0.45) type = 'redstone';
+        else if (roll < 0.034 && depth > 0.65) type = 'diamondore';
+        if (!type) continue;
+        place(type, c, r);
+        const size = type === 'coal' ? 3 : type === 'iron' ? 2 : 1;
+        for (let k = 0; k < size; k++) {
+          const dir = Math.floor(seed(n++) * 4);
+          place(type, c + [1, -1, 0, 0][dir], r + [0, 0, 1, -1][dir]);
+        }
+      }
+      paintIcons(under);
+    };
+    decorate();
+    let dT; addEventListener('resize', () => { clearTimeout(dT); dT = setTimeout(decorate, 250); });
+    // debug-screen style coordinates: Y drops from the surface to bedrock as you scroll
+    const coords = $('#coords');
+    const updateCoords = () => {
+      const total = document.documentElement.scrollHeight - innerHeight;
+      const y = Math.round(63 - (scrollY / Math.max(1, total)) * 127);
+      coords.textContent = `XYZ: 118 / ${y} / -37`;
+    };
+    addEventListener('scroll', updateCoords, { passive: true }); updateCoords();
+
+    // ---------- video: always playing, 2× ----------
+    const video = $('#demo');
+    const fast = () => { try { video.playbackRate = 2; video.defaultPlaybackRate = 2; } catch (e) {} };
+    ['loadedmetadata', 'play', 'playing', 'ratechange'].forEach((ev) => video.addEventListener(ev, () => { if (video.playbackRate !== 2) fast(); }));
+    fast();
+    const tryPlay = () => { const p = video.play(); if (p && p.catch) p.catch(() => {}); };
+    tryPlay();
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) tryPlay(); });
+    ['pointerdown', 'keydown', 'scroll'].forEach((ev) => window.addEventListener(ev, tryPlay, { once: true, passive: true }));
+
+    // ---------- toasts + xp ----------
+    const toasts = $('#toasts');
+    const earned = new Set();
+    let level = 0;
+    const setLevel = () => {};
+    const toast = (title, text, ico = 'diamond') => {
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.innerHTML = `${iconHTML(ico)}<div><b>${title}</b><span>${text}</span></div>`;
+      paintIcons(el);
+      toasts.appendChild(el);
+      setTimeout(() => el.remove(), 4200);
+    };
+    const advance = (key, text, ico) => {
+      if (earned.has(key)) return;
+      earned.add(key); level++; setLevel();
+      toast('Advancement Made!', text, ico);
+    };
+
+    // ---------- tooltip ----------
+    const tipf = $('#tipf');
+    let tipEl = null;
+    const moveTip = (x, y) => {
+      const w = tipf.offsetWidth, h = tipf.offsetHeight;
+      let tx = x + 16, ty = y + 18;
+      if (tx + w > innerWidth - 8) tx = x - w - 12;
+      if (ty + h > innerHeight - 8) ty = y - h - 12;
+      tipf.style.transform = `translate(${tx}px, ${ty}px)`;
+    };
+    const showTip = (el, x, y) => {
+      tipf.querySelector('b').textContent = el.dataset.tipTitle || '';
+      tipf.querySelector('span').innerHTML = el.dataset.tip || '';
+      tipf.classList.add('on');
+      moveTip(x, y);
+    };
+    document.addEventListener('pointerover', (e) => {
+      const el = e.target.closest('[data-tip]');
+      if (!el) { if (tipEl) { tipEl = null; tipf.classList.remove('on'); } return; }
+      if (el !== tipEl) { tipEl = el; showTip(el, e.clientX, e.clientY); }
+    });
+    document.addEventListener('pointermove', (e) => { if (tipEl) moveTip(e.clientX, e.clientY); });
+    document.addEventListener('pointerout', (e) => { if (tipEl && !e.relatedTarget?.closest?.('[data-tip]')) { tipEl = null; tipf.classList.remove('on'); } });
+
+    // ---------- day / night ----------
+    const lever = $('#lever');
+    lever.addEventListener('click', () => {
+      const day = document.body.classList.toggle('day');
+      lever.textContent = day ? '☀ Day · switch to night' : '☾ Night · switch to day';
+      broSay(day ? 'morning!' : 'bed time?');
+      advance('lever', day ? 'Turned the sun on' : 'Turned the lights off', 'clock');
+    });
+
+    // ---------- (the walking character was removed; keep the hooks so chat/lever/install still work) ----------
+    const broSay = () => {}, broJump = () => {}, broWave = () => {};
+
+    // ---------- inventory of abilities ----------
+    const ABIL = [
+      ['goto', 'Move', 'Walks, jumps and swims to a position. With dig it will tunnel and pillar.', 'on my way, 40 blocks east'],
+      ['goto_player', 'Move', 'Walks to you.', 'coming to you'],
+      ['follow_player', 'Move', 'Sticks close to a player.', "right behind you"],
+      ['pillar_up', 'Move', 'Jumps and places blocks under itself.', 'going up'],
+      ['dig_down', 'Move', 'Digs straight down, carefully.', 'digging down, watch out for lava'],
+      ['find_blocks', 'Look', 'Lists blocks it can currently see. Vision only, no x-ray.', 'i can see 34 oak logs and some coal'],
+      ['find_entities', 'Look', 'Lists mobs and players in sight.', '2 cows, 1 zombie in the dark'],
+      ['inventory', 'Look', 'Checks what it is carrying.', 'i have 12 oak logs, a stone pickaxe and 3 bread'],
+      ['recipe', 'Look', 'Looks up any vanilla recipe.', 'a furnace needs 8 cobblestone'],
+      ['mine', 'Gather', 'Finds the block, walks or digs to it, uses the best tool, picks up the drops.', 'mining oak_log x4'],
+      ['collect_items', 'Gather', 'Picks up nearby dropped items.', 'grabbing those drops'],
+      ['craft', 'Make', 'Any vanilla recipe. Walks to a crafting table if needed.', 'crafted a stone pickaxe'],
+      ['smelt', 'Make', 'Uses a furnace, adds fuel, waits.', 'smelting 8 iron'],
+      ['place_block', 'Make', 'Places a block from its inventory.', 'placed a torch'],
+      ['use_container', 'Make', 'Chests, barrels and furnaces: put and take.', 'stocked the chest with 6 bread'],
+      ['eat', 'Survive', 'Eats the best food it has when hungry.', 'eating some bread'],
+      ['equip', 'Survive', 'Wears the best armour and holds the right tool.', 'put on iron armour'],
+      ['sleep', 'Survive', 'Finds a bed and sleeps through the night.', 'good night'],
+      ['attack', 'Survive', 'Chases and fights with its best weapon. Fights back automatically.', 'zombie handled'],
+      ['drop', 'Survive', 'Drops an item.', 'dropped 4 dirt'],
+      ['give', 'Survive', 'Hands you items.', 'here, take these logs'],
+      ['say', 'Talk', 'Talks in chat.', 'hello!'],
+      ['remember', 'Talk', 'Writes a note that survives restarts, per world.', 'noted: base is at 120 64 -40'],
+      ['forget', 'Talk', 'Deletes a note.', 'forgot that'],
+      ['wait', 'Talk', 'Waits a bit.', 'waiting…'],
+    ];
+    const CATICON = { Move: 'boots', Look: 'eye', Gather: 'pickaxe', Make: 'table', Survive: 'apple', Talk: 'bubble' };
+    const inv = $('#inv');
+    ABIL.forEach(([name, cat, desc, line]) => {
+      const s = document.createElement('div');
+      s.className = 'slot';
+      s.dataset.tipTitle = name; s.dataset.tip = `<em style="color:#ffff55">${cat}</em> · ${desc}`;
+      s.innerHTML = `${iconHTML(CATICON[cat])}<span>${name.replace(/_/g, '_<wbr>')}</span>`;
+      s.addEventListener('click', () => { chatPush(`<i>&lt;Minebro&gt;</i> ${line}`); toast('Used ' + name, line, CATICON[cat]); advance('tool', 'Used a tool', 'chest'); });
+      inv.appendChild(s);
+    });
+    for (let i = ABIL.length; i < 27; i++) { const s = document.createElement('div'); s.className = 'slot empty'; inv.appendChild(s); }
+    $('#cat').innerHTML = Object.entries(CATICON).map(([cat, ico]) => `<span>${iconHTML(ico)}${cat}</span>`).join('');
+    paintIcons(inv); paintIcons($('#cat'));
+
+    // ---------- chat demo ----------
+    const log = $('#chatlog'), form = $('#chatform'), input = $('#chatin');
+    let spawned = false, paused = false, goal = '', model = 'claude-sonnet-5', busy = 'idle';
+    const chatPush = (html, cls = '') => { const d = document.createElement('div'); if (cls) d.className = cls; d.innerHTML = html; log.appendChild(d); log.scrollTop = log.scrollHeight; };
+    const reply = (text, delay = rand(500, 1100)) => setTimeout(() => chatPush(`<i>&lt;Minebro&gt;</i> ${text}`), delay);
+    const respond = (raw) => {
+      const t = raw.trim(); if (!t) return;
+      const low = t.toLowerCase();
+      if (low.startsWith('/')) {
+        const [, cmd, ...rest] = low.split(/\s+/);
+        const arg = t.split(/\s+/).slice(2).join(' ');
+        if (!low.startsWith('/ai')) return chatPush('Unknown command. Try /ai help', 'err');
+        switch (cmd) {
+          case 'spawn':
+            if (spawned) return chatPush('Minebro is already here', 'gray');
+            spawned = true; chatPush('Minebro joined the game', 'sys'); reply(pick(['hey! looking around…', "hi Max, what's the plan?"]));
+            broJump(); broWave(); broSay('hey!'); advance('spawn', 'Minebro joined the game', 'steve'); return;
+          case 'despawn': spawned = false; chatPush('Minebro left the game', 'sys'); return;
+          case 'status': return chatPush(`<span class="gray">task: ${busy} · queue: 0 · model: ${model} · goal: ${goal || 'none'} · paused: ${paused} · last error: none</span>`);
+          case 'observe': return chatPush(`<span class="gray">pos 118 64 -37 · health 20/20 · hunger 17/20 · holding stone_pickaxe · armour: iron_helmet · seen: oak_log x34, cobblestone x120, coal_ore x6, cow x2, zombie x1 (dark, 18m) · players: Max (12m, holding iron_pickaxe) · time: ${document.body.classList.contains('day') ? 'day' : 'night'}</span>`);
+          case 'goal':
+            if (!arg || arg === 'clear') { goal = ''; return chatPush('Goal cleared', 'sys'); }
+            goal = arg; busy = 'working on goal'; chatPush(`Goal set: ${arg}`, 'sys'); return reply(pick(['okay, on it', "sure, i'll grab cobble first", 'got it, starting now']));
+          case 'chat': return reply(pick(['yep?', 'listening', 'what do you need?']));
+          case 'stop': busy = 'idle'; return reply('stopped');
+          case 'pause': paused = true; return chatPush('Model calls paused. No API cost while paused.', 'sys');
+          case 'resume': paused = false; return chatPush('Model calls resumed', 'sys');
+          case 'think': return reply(pick(['thinking… ok, mining coal next', 'thinking… heading back to base']));
+          case 'reset': return chatPush('Conversation cleared (notes kept)', 'sys');
+          case 'set':
+            if (rest[0] === 'model' && rest[1]) { model = t.split(/\s+/)[3]; return chatPush(`model = ${model}`, 'sys'); }
+            if (rest[0] === 'key') return chatPush('key saved to config/minebro.json (not really, this is a demo)', 'sys');
+            if (rest[0] === 'provider') return chatPush(`provider = ${rest[1] || '?'}`, 'sys');
+            return chatPush(`${rest[0] || 'setting'} = ${rest[1] || '?'}`, 'sys');
+          case 'do': return reply(`running ${rest[0] || 'tool'} directly, no model involved`);
+          case 'help': return chatPush('<span class="gray">/ai spawn · despawn · goal &lt;text&gt; · chat &lt;text&gt; · status · observe · stop · pause · resume · think · reset · set &lt;key&gt; &lt;value&gt; · do &lt;tool&gt; &lt;json&gt;</span>');
+          default: return chatPush('Unknown /ai command. Try /ai help', 'err');
+        }
+      }
+      if (!spawned) { chatPush('<span class="gray">(nobody is here yet — try /ai spawn)</span>'); return; }
+      if (paused) return chatPush('<span class="gray">(Minebro is paused)</span>');
+      if (/wood|log|tree/.test(low)) return reply("on it, there's an oak forest just north");
+      if (/wear|armou?r|holding/.test(low)) return reply('iron helmet and diamond chestplate, no leggings or boots, holding an iron pickaxe');
+      if (/house|build|base/.test(low)) return reply("sure. i'll grab cobble first, want it near spawn?");
+      if (/food|hungry|eat|bread/.test(low)) return reply('got 6 bread in the chest by the base, bringing some');
+      if (/diamond/.test(low)) return reply("haven't seen any yet. i can dig down to y=-58 if you want");
+      if (/creeper|zombie|skeleton|mob/.test(low)) return reply("there's a zombie in the dark to the east, i'll deal with it");
+      if (/sleep|night|bed/.test(low)) return reply("i'll find a bed, it's getting dark");
+      if (/follow|come|here/.test(low)) return reply('coming to you');
+      if (/hello|hi\b|hey|yo\b/.test(low)) return reply(pick(['hey Max!', 'hi! what are we doing today?']));
+      if (/thank/.test(low)) return reply('no worries');
+      if (/\?$/.test(low)) return reply(pick(["i can't see that from here, where is it?", 'not sure, want me to check?', 'probably. want me to try?']));
+      return reply(pick(['give me a sec, mining this', 'yep', 'what do you need?', 'on my way', 'ok']));
+    };
+    const send = (text) => { chatPush(`<b>&lt;Max&gt;</b> ${text.replace(/</g, '&lt;')}`); respond(text); };
+    form.addEventListener('submit', (e) => { e.preventDefault(); const v = input.value; input.value = ''; if (v.trim()) send(v); });
+    $$('[data-say]').forEach((el) => el.addEventListener('click', () => { send(el.dataset.say); $('#chat').scrollIntoView({ behavior: 'smooth', block: 'center' }); }));
+    chatPush('<span class="gray">Press T or click here to chat. Type /ai spawn to start.</span>');
+
+    // ---------- hotbar nav, keys, xp ----------
+    const hot = $$('#hotbar a'), hotname = $('#hotname');
+    let nameT;
+    const showName = (t) => { hotname.textContent = t; hotname.classList.add('show'); clearTimeout(nameT); nameT = setTimeout(() => hotname.classList.remove('show'), 1600); };
+    hot.forEach((a) => a.addEventListener('mouseenter', () => showName(a.dataset.name)));
+    const sections = hot.map((a) => a.getAttribute('href').startsWith('#') ? $(a.getAttribute('href')) : null);
+    const spy = () => {
+      const y = scrollY + innerHeight * 0.4;
+      let cur = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top + scrollY <= y) cur = i; });
+      hot.forEach((a, i) => a.classList.toggle('sel', i === cur));
+      const total = document.documentElement.scrollHeight - innerHeight;
+      if (cur === 1) advance('watch', 'Watched Minebro play', 'play');
+      if (cur === 5) advance('install', 'Read the install guide', 'book');
+      if (scrollY / total > 0.98) advance('end', 'Reached the end of the world', 'diamond');
+    };
+    addEventListener('scroll', spy, { passive: true }); spy();
+    addEventListener('keydown', (e) => {
+      const typing = document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
+      if (typing) { if (e.key === 'Escape') input.blur(); return; }
+      if (e.key >= '1' && e.key <= '9') { const a = hot[+e.key - 1]; showName(a.dataset.name); a.click(); }
+      if (e.key === 't' || e.key === 'T') { e.preventDefault(); $('#chat').scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => input.focus(), 350); }
+    });
+
+    // ---------- install advancements ----------
+    $$('[data-done]').forEach((btn) => btn.addEventListener('click', () => {
+      const card = btn.closest('.adv__c');
+      if (card.classList.contains('done')) return;
+      card.classList.add('done'); btn.textContent = 'Done ✓'; btn.classList.add('done');
+      advance('adv-' + card.dataset.adv, card.dataset.adv, 'book');
+      if ($$('.adv__c.done').length === 4) setTimeout(() => { toast('Challenge Complete!', 'Minebro is ready to play', 'steve'); broJump(); }, 600);
+    }));
+
+    // ---------- welcome ----------
+    setTimeout(() => toast('Advancement Made!', 'Entered the world', 'grass'), 900);
+    setLevel();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Night Desk · Max's Gallery</title>
+  <meta name="description" content="Night Desk: a paper-trading terminal on live ASX and US prices where you race an AI investment committee. This page is a working simulation of the real app." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Night Desk · Factory style (ported from the real app's index.css) ──
+       #101010 canvas, Geist 400 with tight tracking, Geist Mono 12px uppercase
+       for every label, hairline cards, no shadows, and two data colours:
+       signal orange (= down / live / the machine) and metric green (= up). */
+    :root {
+      color-scheme: dark;
+      --canvas: #101010; --carbon: #1d1a18; --ash: #3d3a39; --granite: #4d4947; --warm: #8a8380;
+      --stone: #b8b3b0; --bone: #eeeeee; --chalk: #fafafa; --orange: #ee6018; --green: #a0ca92;
+      --font: 'Geist', ui-sans-serif, system-ui, sans-serif; --mono: 'Geist Mono', ui-monospace, Menlo, Consolas, monospace;
+      --r-sm: 3px; --r-lg: 10px; --r-2xl: 20px; --ease: cubic-bezier(.4,0,.2,1); --t: .15s;
+      --page: var(--canvas); --surface-2: var(--carbon); --ink: var(--bone); --ink-2: var(--stone); --muted: var(--warm);
+      --grid: var(--carbon); --hairline: var(--carbon); --stroke: var(--ash); --up: var(--green); --down: var(--orange); --live: var(--orange);
+    }
+    .light { --page: var(--bone); --surface-2: #e3e1df; --ink: var(--canvas); --ink-2: var(--ash); --muted: var(--granite); --grid: #d9d6d4; --hairline: #d9d6d4; --stroke: var(--stone); --up: #3f7d33; --down: #c8500f; color: var(--ink); background: var(--bone); }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: var(--canvas); }
+    body { font-family: var(--font); font-weight: 400; color: var(--ink); background: var(--page); min-height: 100vh; line-height: 1.43; font-size: 14px; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; }
+    button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; letter-spacing: inherit; }
+    input, select { font: inherit; }
+    h1, h2, h3, h4 { font-weight: 400; }
+    h2 { font-size: 20px; letter-spacing: -0.025em; line-height: 1.1; }
+    h3 { font-size: 16px; letter-spacing: -0.02em; line-height: 1.2; }
+    b, strong { font-weight: 500; }
+    .mono, .eyebrow { font-family: var(--mono); font-size: 12px; line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; font-weight: 400; }
+    .thin { color: var(--muted); font-weight: 400; font-size: 13px; letter-spacing: -0.01em; }
+    .dim { color: var(--muted); }
+    .num { font-variant-numeric: tabular-nums; text-align: right; }
+    .up { color: var(--up); } .down { color: var(--down); }
+    .hint { color: var(--muted); font-size: 12px; }
+
+    /* gallery strip above the app */
+    .gbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 10px 24px; border-bottom: 1px solid var(--hairline); font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: -0.02em; color: var(--muted); }
+    .gbar a { color: var(--ink); text-decoration: none; }
+    .gbar a:hover { color: var(--chalk); }
+    .gbar .demo-tag { display: inline-flex; align-items: center; gap: 8px; }
+    .gbar .demo-tag i { width: 6px; height: 6px; border-radius: 50%; background: var(--live); animation: pulse 1.6s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity: .35; } }
+
+    .app { width: 100%; padding: 0 24px 56px; }
+    /* masthead */
+    .masthead { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 64px; padding: 8px 0; flex-wrap: wrap; }
+    .brand { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .brand h1 { font-family: var(--mono); font-size: 12px; font-weight: 400; letter-spacing: .14em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; }
+    .brand h1::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--live); }
+    .tagline { font-family: var(--mono); font-size: 12px; letter-spacing: -0.02em; text-transform: uppercase; color: var(--muted); }
+    .mast-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .market-pill { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 14px; font-family: var(--mono); font-size: 12px; letter-spacing: -0.02em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--stroke); border-radius: var(--r-sm); }
+    .market-pill .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--granite); }
+    .market-pill.open { color: var(--ink); } .market-pill.open .pill-dot { background: var(--live); }
+    .scoreline { display: inline-flex; align-items: center; gap: 12px; height: 32px; padding: 0 14px; font-size: 14px; font-variant-numeric: tabular-nums; border: 1px solid var(--stroke); border-radius: var(--r-sm); transition: border-color var(--t) var(--ease); }
+    .scoreline:hover { border-color: var(--chalk); }
+    .scoreline i { display: inline-block; width: 12px; height: 1px; margin-right: 8px; vertical-align: middle; }
+    .scoreline em { font-style: normal; font-family: var(--mono); font-size: 12px; color: var(--muted); text-transform: uppercase; }
+    .scoreline .cash-hint { font-style: normal; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-left: 8px; text-transform: uppercase; }
+    /* tabs */
+    .tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--stroke); margin-bottom: 24px; overflow-x: auto; }
+    .tab { padding: 12px 12px 11px; font-size: 14px; text-transform: uppercase; letter-spacing: -0.01em; color: var(--muted); border-bottom: 1px solid transparent; margin-bottom: -1px; white-space: nowrap; transition: color var(--t) var(--ease), border-color var(--t) var(--ease); }
+    .tab:hover { color: var(--ink-2); } .tab.on { color: var(--ink); border-bottom-color: var(--ink); }
+    /* buttons */
+    .primary-btn, .ghost-btn, .trade-btn, .analyze-btn, .buy-btn, .sell-btn, .war-btn, .chip { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 14px; font-size: 14px; white-space: nowrap; transition: color var(--t) var(--ease), background-color var(--t) var(--ease), border-color var(--t) var(--ease); }
+    .primary-btn { color: var(--bone); background: var(--carbon); border-radius: var(--r-sm); }
+    .primary-btn:hover:not(:disabled) { background: var(--ash); }
+    .ghost-btn { color: var(--ink); background: transparent; border: 1px solid var(--stroke); border-radius: 0; }
+    .ghost-btn:hover:not(:disabled) { color: var(--chalk); border-color: var(--chalk); }
+    .light .ghost-btn:hover:not(:disabled) { color: var(--canvas); border-color: var(--canvas); }
+    .ghost-btn.small { height: 28px; padding: 0 10px; font-size: 13px; }
+    .trade-btn, .buy-btn, .war-btn { color: var(--canvas); background: var(--chalk); border-radius: var(--r-sm); }
+    .trade-btn:hover:not(:disabled), .buy-btn:hover:not(:disabled), .war-btn:hover:not(:disabled) { background: #fff; }
+    .trade-btn { height: 28px; padding: 0 12px; font-size: 13px; }
+    .analyze-btn { height: 28px; padding: 0 10px; font-size: 13px; color: var(--live); border: 1px solid var(--stroke); border-radius: 0; }
+    .analyze-btn:hover { border-color: var(--chalk); }
+    .sell-btn { color: var(--down); background: transparent; border: 1px solid var(--stroke); border-radius: 0; }
+    .sell-btn:hover:not(:disabled) { border-color: var(--down); }
+    button:disabled { opacity: .4; cursor: default; }
+    .link-btn { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--stroke); }
+    .link-btn:hover { text-decoration-color: var(--ink); }
+    .chip { height: 28px; padding: 0 10px; font-family: var(--mono); font-size: 12px; letter-spacing: -0.02em; text-transform: uppercase; color: var(--ink-2); border: 1px solid var(--stroke); border-radius: var(--r-sm); }
+    .chip:hover { color: var(--ink); border-color: var(--chalk); }
+    .war-btn { height: 40px; padding: 0 24px; } .war-btn.small { height: 32px; padding: 0 14px; }
+    select { font-family: var(--font); font-size: 13px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--stroke); border-radius: var(--r-sm); height: 32px; padding: 0 8px; cursor: pointer; }
+    select:focus { outline: none; border-color: var(--chalk); }
+    /* market layout */
+    .market-layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 24px; align-items: start; }
+    .stock-list { border: 1px solid var(--hairline); border-radius: var(--r-lg); display: flex; flex-direction: column; max-height: calc(100vh - 32px); position: sticky; top: 16px; }
+    .search-box { display: flex; align-items: center; gap: 8px; margin: 16px 16px 8px; padding: 0 10px; height: 32px; border: 1px solid var(--stroke); border-radius: var(--r-sm); color: var(--muted); }
+    .search-box:focus-within { border-color: var(--chalk); }
+    .search-box input { flex: 1; min-width: 0; background: none; border: none; outline: none; color: var(--ink); font-size: 14px; }
+    .search-box input::placeholder { color: var(--muted); }
+    .sort-row { display: flex; align-items: center; gap: 8px; padding: 4px 16px 0; }
+    .sort-row label { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: -0.02em; color: var(--muted); }
+    .sort-row select { flex: 1; }
+    .list-hint { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: -0.02em; text-transform: uppercase; color: var(--muted); padding: 8px 16px; border-bottom: 1px solid var(--hairline); }
+    .stock-rows { overflow-y: auto; flex: 1; }
+    .stock-rows::-webkit-scrollbar { width: 8px; } .stock-rows::-webkit-scrollbar-thumb { background: var(--surface-2); }
+    .stock-row { display: grid; grid-template-columns: 2px minmax(0, 1fr) 64px auto; align-items: center; gap: 12px; padding: 10px 12px 10px 10px; cursor: pointer; position: relative; border-bottom: 1px solid var(--hairline); transition: background var(--t) var(--ease); }
+    .stock-row:last-child { border-bottom: none; }
+    .stock-row:hover, .stock-row.selected { background: var(--surface-2); }
+    .row-accent { width: 2px; height: 32px; background: transparent; }
+    .stock-row.selected .row-accent { background: var(--sel); }
+    .row-id { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
+    .ticker { font-size: 14px; }
+    .co-name { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .row-nums { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; transition: opacity var(--t) var(--ease); }
+    .row-nums .price { font-size: 14px; font-variant-numeric: tabular-nums; }
+    .row-nums .delta { font-size: 12px; }
+    .row-actions { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; gap: 6px; opacity: 0; transition: opacity var(--t) var(--ease); }
+    .stock-row:hover .row-actions { opacity: 1; } .stock-row:hover .row-nums { opacity: 0; }
+    .spark { display: block; }
+    .chart-area { min-width: 0; }
+    .filter-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .filter-spacer { flex: 1; }
+    .segmented { display: inline-flex; border: 1px solid var(--stroke); border-radius: var(--r-sm); padding: 2px; gap: 2px; }
+    .seg { font-family: var(--mono); font-size: 12px; letter-spacing: -0.02em; text-transform: uppercase; height: 26px; padding: 0 10px; border-radius: 2px; color: var(--muted); transition: color var(--t) var(--ease), background-color var(--t) var(--ease); }
+    .seg:hover { color: var(--ink); } .seg.on { background: var(--bone); color: var(--canvas); }
+    .card { border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 20px 20px 12px; }
+    .compare-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+    .compare-head h2 { font-size: 16px; }
+    .legend { display: flex; gap: 16px; flex-wrap: wrap; }
+    .legend-item { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 12px; letter-spacing: -0.02em; text-transform: uppercase; color: var(--ink-2); }
+    .legend-line { display: inline-block; width: 16px; height: 1px; }
+    .legend-line.dashed { background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 8px) !important; height: 2px; }
+    /* chart */
+    .chart-wrap { position: relative; width: 100%; }
+    .chart-wrap svg { display: block; width: 100%; }
+    .axis-label, .end-label { paint-order: stroke; stroke: var(--page); stroke-width: 3px; stroke-linejoin: round; font-variant-numeric: tabular-nums; }
+    .axis-label { fill: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: -0.02em; text-transform: uppercase; }
+    .end-label { fill: var(--ink); font-family: var(--mono); font-size: 11px; letter-spacing: -0.02em; }
+    .chart-tooltip { position: absolute; z-index: 5; pointer-events: none; background: var(--surface-2); border: 1px solid var(--stroke); border-radius: var(--r-sm); padding: 10px 12px; min-width: 150px; }
+    .tt-time { font-family: var(--mono); font-size: 11px; letter-spacing: -0.02em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .tt-row { display: flex; align-items: center; gap: 8px; padding: 2px 0; font-size: 13px; }
+    .tt-key { width: 12px; height: 1px; flex: none; } .tt-value { font-variant-numeric: tabular-nums; color: var(--ink); } .tt-label { color: var(--muted); font-size: 12px; }
+    .chart-empty { display: grid; place-items: center; color: var(--muted); font-size: 13px; border: 1px dashed var(--stroke); border-radius: var(--r-lg); }
+    /* ai panel */
+    .ai-panel { border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 20px; margin-top: 24px; }
+    .ai-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .scan-summary { font-size: 14px; color: var(--ink-2); margin-bottom: 16px; max-width: 900px; line-height: 1.5; }
+    .outlook { font-family: var(--mono); font-size: 12px; text-transform: uppercase; padding: 0 8px; height: 22px; display: inline-flex; align-items: center; border: 1px solid var(--stroke); border-radius: var(--r-sm); color: var(--ink-2); }
+    .outlook.down { color: var(--down); border-color: var(--down); }
+    .buckets { display: flex; flex-direction: column; gap: 24px; }
+    .bucket h4 { font-family: var(--mono); font-size: 12px; letter-spacing: -0.02em; text-transform: uppercase; color: var(--stone); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .bucket h4 .thin { font-family: var(--font); text-transform: none; letter-spacing: -0.01em; font-size: 13px; }
+    .bucket-banger h4::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--live); }
+    .pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+    .pick-card { border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; transition: border-color var(--t) var(--ease); }
+    .pick-card:hover { border-color: var(--stroke); }
+    .bucket-banger .pick-card { --page: var(--bone); --surface-2: #e3e1df; --ink: var(--canvas); --ink-2: var(--ash); --muted: var(--granite); --hairline: #d9d6d4; --stroke: var(--stone); --up: #3f7d33; --down: #c8500f; color: var(--ink); background: var(--bone); border-color: var(--bone); }
+    .pick-card-head { display: flex; align-items: baseline; gap: 8px; }
+    .pick-sym { font-size: 16px; letter-spacing: -0.02em; color: var(--ink); }
+    .pick-name { color: var(--muted); font-size: 12px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mkt-tag { font-family: var(--mono); font-size: 10px; text-transform: uppercase; color: var(--muted); border: 1px solid var(--stroke); border-radius: var(--r-sm); padding: 1px 4px; }
+    .pick-stats { display: flex; flex-wrap: wrap; gap: 4px 12px; font-family: var(--mono); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; align-items: center; }
+    .conf-bar { width: 56px; height: 4px; background: var(--surface-2); margin-left: auto; overflow: hidden; } .conf-bar span { display: block; height: 100%; background: var(--up); }
+    .pick-why { color: var(--ink); font-size: 13px; line-height: 1.45; }
+    .pick-line { color: var(--ink-2); font-size: 12px; } .pick-line b { font-family: var(--mono); font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 400; margin-right: 6px; } .pick-line.risk b { color: var(--down); }
+    .pick-actions { display: flex; gap: 8px; margin-top: 8px; } .pick-actions .ghost-btn { height: 28px; padding: 0 10px; font-size: 13px; }
+    /* tiles / tables */
+    .pf-tiles { display: grid; gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: var(--r-lg); overflow: hidden; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); margin-bottom: 24px; }
+    .pf-tile { background: var(--page); padding: 20px; display: flex; flex-direction: column; gap: 6px; }
+    .pf-tile-label { font-family: var(--mono); font-size: 12px; letter-spacing: -0.02em; text-transform: uppercase; color: var(--stone); line-height: 1; }
+    .pf-tile-value { font-size: 36px; letter-spacing: -1.12px; line-height: 1; font-variant-numeric: tabular-nums; }
+    .pf-tile.up .pf-tile-value { color: var(--up); } .pf-tile.down .pf-tile-value { color: var(--down); }
+    .pf-tile-sub { font-size: 12px; color: var(--muted); }
+    .pf-alloc { border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 16px 20px; margin-bottom: 24px; }
+    .pf-alloc-bar { display: flex; height: 8px; overflow: hidden; gap: 2px; } .pf-alloc-bar span { display: block; height: 100%; min-width: 2px; }
+    .pf-alloc-legend { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 12px; font-family: var(--mono); font-size: 12px; text-transform: uppercase; color: var(--ink-2); }
+    .pf-alloc-legend i { display: inline-block; width: 12px; height: 1px; margin-right: 8px; vertical-align: 3px; }
+    .table-scroll { overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th { text-align: left; font-family: var(--mono); font-size: 12px; font-weight: 400; letter-spacing: -0.02em; text-transform: uppercase; color: var(--stone); padding: 8px; border-bottom: 1px solid var(--stroke); }
+    .data-table th:not(:first-child) { text-align: right; }
+    .data-table td { padding: 10px 8px; border-bottom: 1px solid var(--hairline); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr.clickable { cursor: pointer; } .data-table tr.clickable:hover td { background: var(--surface-2); }
+    .side { font-family: var(--mono); font-size: 11px; text-transform: uppercase; border: 1px solid currentColor; border-radius: var(--r-sm); padding: 2px 6px; }
+    .side.buy { color: var(--up); } .side.sell { color: var(--down); }
+    .section-card { border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 20px; margin-bottom: 24px; }
+    .section-card h3 { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    /* versus */
+    .war-banner { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; border-radius: var(--r-2xl); padding: 24px; margin-bottom: 24px; }
+    .war-banner h2 { font-size: 36px; letter-spacing: -1.12px; line-height: 1.1; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .war-banner h2 .thin { font-family: var(--mono); font-size: 12px; text-transform: uppercase; color: var(--muted); }
+    .war-banner.live h2::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--orange); }
+    .war-text { flex: 1; min-width: 280px; } .war-text p { color: var(--ink-2); font-size: 14px; max-width: 760px; line-height: 1.5; }
+    .war-banner .ghost-btn { color: var(--ink); border-color: var(--canvas); }
+    .scoreboard { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: 24px; border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 24px; margin-bottom: 24px; }
+    .score { display: flex; flex-direction: column; gap: 8px; } .score.ai { text-align: center; align-items: center; } .score.index { text-align: right; align-items: flex-end; }
+    .score.index .score-value { color: var(--stone); }
+    .score-label { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 12px; text-transform: uppercase; color: var(--stone); }
+    .score-value { font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -1.1px; }
+    .score .delta { font-size: 12px; } .score .delta.thin { font-size: 12px; }
+    .score-mid { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .vs { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; color: var(--muted); border: 1px solid var(--stroke); border-radius: var(--r-sm); padding: 4px 10px; }
+    .lead { font-size: 13px; }
+    .baseline-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding: 10px 24px; border: 1px solid var(--hairline); margin-bottom: 16px; font-size: 13px; }
+    .baseline-title { font-family: var(--mono); font-size: 12px; text-transform: uppercase; color: var(--muted); }
+    .baseline-item { display: inline-flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; } .baseline-item b { font-weight: 500; }
+    .ai-status { border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 20px; margin-bottom: 24px; }
+    .ai-status-head { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+    .switch-label { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-2); cursor: pointer; } .switch-label input { accent-color: var(--bone); width: 14px; height: 14px; }
+    .ai-controls { display: inline-flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+    .redday { border-left: 3px solid var(--down); padding-left: 10px; color: var(--ink); margin-top: 8px; }
+    .cm-roles { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 16px; }
+    .cm-role { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border: 1px solid var(--stroke); border-radius: var(--r-sm); font-size: 13px; color: var(--ink); }
+    .cm-role.chair { border-style: dashed; } .cm-role-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--granite); } .cm-role.chair .cm-role-dot { background: var(--orange); }
+    .cm-role-meta { font-family: var(--mono); font-size: 11px; text-transform: uppercase; color: var(--muted); }
+    .cm-view { font-size: 14px; color: var(--ink-2); line-height: 1.5; margin-bottom: 8px; }
+    .thinking { margin: 12px 0 16px; padding: 4px 16px; border-left: 1px solid var(--stroke); font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+    .cm-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; } .cm-head .hint { flex: 1; }
+    .versus-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    .trade-log ul { list-style: none; }
+    .log-row { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 8px; font-size: 13px; cursor: default; border-bottom: 1px solid var(--hairline); }
+    .log-row.expandable { cursor: pointer; } .log-row.expandable:hover { background: var(--surface-2); }
+    .log-time { margin-left: auto; color: var(--muted); font-family: var(--mono); font-size: 11px; text-transform: uppercase; }
+    .log-reason { font-size: 13px; color: var(--ink-2); padding: 8px 8px 12px; border-left: 1px solid var(--stroke); margin: 4px 0 8px 8px; line-height: 1.5; }
+    .danger-zone { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 0; color: var(--ink-2); font-size: 13px; }
+    /* ledger / settings */
+    .ledger-splits { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px 24px; margin-top: 16px; }
+    .ledger-split h4 { font-family: var(--mono); font-size: 12px; text-transform: uppercase; color: var(--stone); margin-bottom: 6px; }
+    .ledger-split ul { list-style: none; } .ledger-split li { display: flex; justify-content: space-between; gap: 12px; font-size: 12.5px; padding: 5px 0; border-top: 1px solid var(--hairline); color: var(--ink-2); } .ledger-split li b { font-weight: 400; color: var(--ink); }
+    .week-bars { display: flex; align-items: flex-end; gap: 12px; min-height: 120px; padding: 8px 0 0; overflow-x: auto; }
+    .week-bar { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 56px; } .week-bar .bar { display: block; width: 28px; }
+    .week-val, .week-label { font-family: var(--mono); font-size: 11px; } .week-label { color: var(--muted); }
+    .settings { display: flex; flex-direction: column; gap: 24px; max-width: 760px; }
+    .settings-card { border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 20px; } .settings-card h3 { margin-bottom: 8px; } .settings-card .hint { margin-bottom: 12px; }
+    .field-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0 4px; }
+    .field-row label { font-family: var(--mono); font-size: 12px; text-transform: uppercase; color: var(--muted); min-width: 120px; }
+    .field-row input { background: transparent; border: 1px solid var(--stroke); border-radius: var(--r-sm); color: var(--ink); height: 32px; padding: 0 10px; font-size: 14px; flex: 1; min-width: 220px; }
+    .chip-cloud { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    /* drawers */
+    .overlay { position: fixed; inset: 0; z-index: 40; background: rgba(16,16,16,.78); animation: fade var(--t) var(--ease); }
+    @keyframes fade { from { opacity: 0; } }
+    .detail { position: absolute; top: 0; right: 0; bottom: 0; width: min(520px, 100%); background: var(--page); border-left: 1px solid var(--stroke); padding: 24px 24px 40px; overflow-y: auto; animation: slide .2s var(--ease); }
+    @keyframes slide { from { transform: translateX(24px); opacity: 0; } }
+    .detail-head { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+    .detail-ticker { font-size: 36px; letter-spacing: -1.12px; line-height: 1; }
+    .detail-price { margin-left: auto; text-align: right; } .price.big { font-size: 36px; letter-spacing: -1.12px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .delta { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); } .delta.up { color: var(--up); } .delta.down { color: var(--down); }
+    .close-btn { color: var(--muted); font-size: 14px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; }
+    .close-btn:hover { color: var(--ink); border-color: var(--stroke); }
+    .panel-section { border-top: 1px solid var(--hairline); margin-top: 24px; padding-top: 16px; }
+    .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .position-strip { font-size: 13px; color: var(--ink-2); border: 1px solid var(--hairline); border-radius: var(--r-sm); padding: 10px 12px; margin-bottom: 16px; }
+    .trade-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .amount-box { display: inline-flex; align-items: center; gap: 4px; height: 32px; border: 1px solid var(--stroke); border-radius: var(--r-sm); padding: 0 10px; } .amount-box:focus-within { border-color: var(--chalk); }
+    .amount-box span { color: var(--muted); } .amount-box input { width: 90px; background: none; border: none; outline: none; color: var(--ink); font-size: 14px; font-variant-numeric: tabular-nums; }
+    .analysis h4 { font-family: var(--mono); font-size: 12px; text-transform: uppercase; color: var(--muted); margin: 16px 0 4px; } .analysis p { font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+    .verdict-row { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; } .verdict { font-size: 24px; letter-spacing: -0.025em; } .verdict-meta { color: var(--muted); font-size: 12px; }
+    .target { font-size: 14px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .detail.chat { display: flex; flex-direction: column; padding: 20px 24px; width: min(560px, 100%); }
+    .chat-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--hairline); }
+    .chat-eyebrow { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); margin-bottom: 8px; } .chat-eyebrow i { width: 6px; height: 6px; border-radius: 50%; background: var(--live); }
+    .chat-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 16px 0; min-height: 200px; }
+    .chat-msg { display: flex; flex-direction: column; gap: 4px; max-width: 92%; } .chat-msg.user { align-self: flex-end; align-items: flex-end; }
+    .chat-msg p { font-size: 14px; line-height: 1.5; white-space: pre-wrap; color: var(--ink); }
+    .chat-msg.user p { background: var(--bone); color: var(--canvas); padding: 10px 14px; border-radius: var(--r-lg); }
+    .chat-msg.assistant p { border-left: 1px solid var(--stroke); padding: 2px 0 2px 14px; color: var(--ink-2); }
+    .chat-who { font-family: var(--mono); font-size: 11px; text-transform: uppercase; color: var(--muted); }
+    .chat-starters { display: flex; flex-wrap: wrap; gap: 8px; } .chat-starters .chip { height: auto; padding: 6px 10px; text-transform: none; font-family: var(--font); font-size: 13px; letter-spacing: -0.01em; text-align: left; white-space: normal; }
+    .chat-input { display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid var(--hairline); }
+    .chat-input input { flex: 1; min-width: 0; height: 36px; background: transparent; border: 1px solid var(--stroke); border-radius: var(--r-sm); color: var(--ink); padding: 0 12px; font-size: 14px; } .chat-input input:focus { outline: none; border-color: var(--chalk); }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 60; background: var(--bone); color: var(--canvas); border-radius: var(--r-sm); padding: 10px 16px; font-size: 14px; animation: rise var(--t) var(--ease); }
+    @keyframes rise { from { transform: translate(-50%, 8px); opacity: 0; } }
+    /* about the project (gallery section under the app) */
+    .about { border-top: 1px solid var(--stroke); padding: 40px 24px 64px; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 40px; }
+    .about h2 { font-size: 28px; letter-spacing: -0.03em; margin-bottom: 12px; }
+    .about p { color: var(--ink-2); font-size: 14px; line-height: 1.55; max-width: 620px; margin-bottom: 12px; }
+    .about ul { list-style: none; } .about li { display: grid; grid-template-columns: 120px 1fr; gap: 12px; padding: 8px 0; border-top: 1px solid var(--hairline); font-size: 13px; color: var(--ink-2); }
+    .about li b { font-family: var(--mono); font-size: 12px; text-transform: uppercase; color: var(--stone); font-weight: 400; padding-top: 2px; }
+
+    /* ── project page chrome around the preview ── */
+    .phero { padding: 56px 24px 32px; max-width: 1180px; margin: 0 auto; }
+    .phero-eyebrow { color: var(--muted); margin-bottom: 18px; }
+    .phero h1 { font-size: clamp(44px, 6vw, 76px); letter-spacing: -0.035em; line-height: 1; margin-bottom: 18px; }
+    .phero-lead { max-width: 720px; font-size: 16px; line-height: 1.55; color: var(--ink-2); margin-bottom: 18px; } .phero-lead b { color: var(--ink); font-weight: 500; }
+    .phero-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+    .phero-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; } .phero-actions a, .about a.link-btn { text-decoration: none; } .about a.link-btn { text-decoration: underline; } .phero-actions .trade-btn { height: 32px; font-size: 14px; padding: 0 14px; }
+    .gbar-links { display: inline-flex; gap: 20px; }
+    .phero-meta span { height: 28px; padding: 0 10px; display: inline-flex; align-items: center; font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: -0.02em; color: var(--ink-2); border: 1px solid var(--stroke); border-radius: var(--r-sm); }
+    .preview { max-width: 1180px; margin: 0 auto; padding: 0 24px 24px; }
+    .preview-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 14px; }
+    .preview-head h2 { font-size: 22px; margin-bottom: 4px; }
+    .tour { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .tour .eyebrow { color: var(--muted); margin-right: 4px; }
+    .browser { border: 1px solid var(--stroke); border-radius: var(--r-lg); overflow: hidden; background: var(--canvas); }
+    .browser-bar { display: flex; align-items: center; gap: 14px; height: 40px; padding: 0 14px; border-bottom: 1px solid var(--stroke); background: var(--carbon); font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: -0.02em; color: var(--muted); }
+    .browser-bar .dots { display: inline-flex; gap: 6px; } .browser-bar .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--ash); }
+    .browser-bar .url { flex: 1; text-align: center; padding: 4px 12px; border: 1px solid var(--ash); border-radius: var(--r-sm); background: var(--canvas); color: var(--ink-2); text-transform: none; }
+    .browser-bar .live { display: inline-flex; align-items: center; gap: 8px; } .browser-bar .live i { width: 6px; height: 6px; border-radius: 50%; background: var(--live); animation: pulse 1.6s ease-in-out infinite; }
+    /* the app is laid out at 1440px and shrunk; fixed drawers stay inside the frame */
+    .viewport { position: relative; height: 640px; overflow: auto; transform: translateZ(0); zoom: 0.8; scrollbar-width: thin; scrollbar-color: var(--ash) transparent; }
+    .viewport .app { min-width: 1180px; padding-bottom: 40px; }
+    .callouts { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 24px; margin-top: 18px; }
+    .callouts li { display: grid; grid-template-columns: 28px 1fr; gap: 8px; font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+    .callouts li b { font-family: var(--mono); font-size: 12px; color: var(--live); font-weight: 400; padding-top: 3px; } .callouts strong { color: var(--ink); font-weight: 500; }
+    .how { max-width: 1180px; margin: 0 auto; padding: 48px 24px 24px; border-top: 1px solid var(--stroke); }
+    .how-head { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; flex-wrap: wrap; margin-bottom: 20px; } .how-head h2 { font-size: 28px; letter-spacing: -0.03em; }
+    .feat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    .feat { border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 20px; display: flex; flex-direction: column; gap: 10px; transition: border-color var(--t) var(--ease); }
+    .feat:hover { border-color: var(--stroke); }
+    .feat .eyebrow { color: var(--live); } .feat h3 { font-size: 18px; } .feat p { font-size: 13.5px; line-height: 1.55; color: var(--ink-2); flex: 1; }
+    .feat .ghost-btn { align-self: flex-start; }
+    .about { max-width: 1180px; margin: 0 auto; border-top: 1px solid var(--stroke); }
+    @media (max-width: 900px) { .callouts { grid-template-columns: 1fr 1fr; } .viewport { zoom: 0.55; height: 560px; } .phero { padding-top: 32px; } }
+    @media (max-width: 560px) { .callouts { grid-template-columns: 1fr; } .viewport { zoom: 0.4; height: 480px; } }
+    @media (max-width: 900px) {
+      .market-layout, .versus-cols, .about { grid-template-columns: 1fr; }
+      .stock-list { position: static; max-height: 360px; }
+      .scoreboard { grid-template-columns: 1fr; text-align: center; } .score, .score.ai, .score.index { align-items: center; text-align: center; }
+      .app { padding: 0 14px 40px; } .gbar { padding: 10px 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="gbar">
+    <a href="../index.html">← Max's Gallery</a>
+    <span class="demo-tag"><i></i>Night Desk · paper trading vs an AI committee</span>
+    <span class="gbar-links"><a href="#how">How it works ↓</a><a href="https://github.com/maxwitanowski/Night-Desk" target="_blank" rel="noopener">Source on GitHub ↗</a></span>
+  </div>
+
+  <!-- ===== project hero ===== -->
+  <header class="phero">
+    <p class="eyebrow phero-eyebrow">02 / Paper-trading terminal · 2026 · open source</p>
+    <h1>Night Desk</h1>
+    <p class="phero-lead">A paper-trading terminal on live ASX and US prices, where I race an AI investment committee with fake money and real rules. The code is on GitHub and it runs in Docker at home, but there's no live public instance, so below is an <b>interactive preview</b>: the real interface rebuilt on simulated prices, so you can click around and see how the site works.</p>
+    <div class="phero-actions"><a class="trade-btn" href="https://github.com/maxwitanowski/Night-Desk" target="_blank" rel="noopener">Source on GitHub ↗</a><a class="ghost-btn" href="#preview">Try the preview ↓</a></div>
+    <div class="phero-meta"><span>React + Express</span><span>Yahoo Finance data</span><span>OpenRouter AI committee</span><span>Docker, runs at home</span></div>
+  </header>
+
+  <!-- ===== interactive preview in a browser frame ===== -->
+  <section class="preview" id="preview">
+    <div class="preview-head">
+      <div><h2>Interactive preview</h2><p class="hint">Simulated prices, scripted AI, nothing real. Click stocks to chart them, open a trade, run a scan, convene the committee.</p></div>
+      <div class="tour">
+        <span class="eyebrow">Jump to</span>
+        <button class="chip" data-tab="market">Market</button><button class="chip" data-tab="portfolio">Portfolio</button><button class="chip" data-tab="versus">You vs AI</button><button class="chip" data-tab="ledger">Ledger</button><button class="chip" data-tab="settings">Settings</button>
+      </div>
+    </div>
+    <div class="browser">
+      <div class="browser-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">Night Desk · interactive preview · simulated data</span><span class="live"><i></i>simulated</span></div>
+      <div class="viewport" id="viewport">
+      <div class="app">
+    <header class="masthead">
+      <div class="brand">
+        <h1>Night&nbsp;Desk</h1>
+        <span class="tagline">paper trading · live ASX · you vs the machine</span>
+      </div>
+      <div class="mast-right">
+        <span class="market-pill open"><span class="pill-dot"></span>ASX open</span>
+        <span class="market-pill"><span class="pill-dot"></span>US closed</span>
+        <button class="ghost-btn" data-action="chat">Talk</button>
+        <button class="scoreline" data-tab="versus" id="scoreline"></button>
+      </div>
+    </header>
+    <nav class="tabs" id="tabs">
+      <button class="tab on" data-tab="market">Market</button>
+      <button class="tab" data-tab="portfolio">Portfolio</button>
+      <button class="tab" data-tab="ledger">Ledger</button>
+      <button class="tab" data-tab="versus">You vs AI</button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </nav>
+    <main id="view"></main>
+  </div>
+      <div id="overlay"></div>
+      <div id="toast"></div>
+      </div>
+    </div>
+    <ol class="callouts">
+      <li><b>01</b><span><strong>Watchlist</strong> on the left: 48 ASX and US names with sparklines. Click one to add it to the chart.</span></li>
+      <li><b>02</b><span><strong>Compare chart</strong> in the middle: every selected stock normalised to % change over the chosen range.</span></li>
+      <li><b>03</b><span><strong>Scoreline</strong> top right: my equity versus the machine's, live. Click it for the scoreboard.</span></li>
+      <li><b>04</b><span><strong>Trade</strong> appears when you hover a row. Fractional shares, real fee model, simulated spread.</span></li>
+    </ol>
+  </section>
+
+  <!-- ===== how it works ===== -->
+  <section class="how" id="how">
+    <div class="how-head"><h2>How the site works</h2><p class="hint">Each card opens the matching part of the preview.</p></div>
+    <div class="feat-grid">
+      <article class="feat"><span class="eyebrow">Market</span><h3>One chart, eight stocks, live.</h3><p>Prices come from Yahoo's chart API every minute for 24 ASX 200 large caps and 24 US mega caps. Up to eight stocks overlay on a single normalised chart across 1H to 1Y ranges, with a trading-time axis so closed hours collapse instead of drawing long flat lines.</p><button class="ghost-btn small" data-tab="market">Show me</button></article>
+      <article class="feat"><span class="eyebrow">Find opportunities</span><h3>An AI scan of the whole board.</h3><p>The scan researches the macro picture first (RBA and Fed, commodities, China, AI capex) and then sorts picks into bangers, quality dips, momentum and small-cap catalysts, each with a why, a what-to-watch and a risk line. Every ticker is validated against Yahoo before it's shown.</p><button class="ghost-btn small" data-tab="market" data-then="scan">Run the scan</button></article>
+      <article class="feat"><span class="eyebrow">Trading</span><h3>Fake money against real prices.</h3><p>A$1,000 to start. Fills use the live price plus a simulated spread and my real broker's fee schedule, with stops, targets, an ASX opening-auction queue, shorting and a 2× leverage cap. The portfolio tab keeps the equity curve, allocation and every trade.</p><button class="ghost-btn small" data-tab="portfolio">Open the portfolio</button></article>
+      <article class="feat"><span class="eyebrow">You vs AI</span><h3>The investment war.</h3><p>Both books reset and the machine switches on. The scoreboard tracks me, the AI and what the same money would have done in the S&amp;P 500 or ASX 200, with equity curves for all four. Every AI trade is logged with the reasoning behind it.</p><button class="ghost-btn small" data-tab="versus">Open the scoreboard</button></article>
+      <article class="feat"><span class="eyebrow">The committee</span><h3>Five analysts and a chair.</h3><p>A macro strategist, momentum scout, hedge-fund tracker, fundamentals analyst and risk officer each research fresh with web search, debate, converge on a joint portfolio, and a portfolio manager sets the targets. The engine executes them. They follow the sun: both opens, both closes, the China window.</p><button class="ghost-btn small" data-tab="versus" data-then="convene">Convene a session</button></article>
+      <article class="feat"><span class="eyebrow">Memory and rules</span><h3>It remembers its mistakes.</h3><p>Every agent keeps a permanent memory of what it got wrong and why, and a post-mortem runs after any sell. Standing rules (no re-entry within three hours, minimum hold, three trades a session), a daily loss cap, a drawdown kill switch and a red-day mode keep it honest. You can talk to any member from the chat drawer.</p><button class="ghost-btn small" data-action="chat">Talk to the desk</button></article>
+      <article class="feat"><span class="eyebrow">Ledger</span><h3>Gates before real money.</h3><p>Round trips, expectancy per playbook, weekly spendable dollars and benchmarks against buy-and-hold. The AI only graduates to a real broker if it beats me and the index for four to eight weeks with a drawdown under 15%. It hasn't yet.</p><button class="ghost-btn small" data-tab="ledger">Open the ledger</button></article>
+      <article class="feat"><span class="eyebrow">Settings</span><h3>Keys, models, brokers.</h3><p>OpenRouter key and model per role, committee size and schedule, broker fee preset, leverage cap, watchlist. The key never leaves my machine: it sits in a local data folder that Docker mounts.</p><button class="ghost-btn small" data-tab="settings">Open settings</button></article>
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <div>
+      <h2>Under the hood</h2>
+      <p>The real Night Desk runs in Docker on my PC and keeps trading while the browser is closed. The preview above is the same interface with generated prices and a scripted committee, so there's nothing to break and no API key involved.</p>
+      <p><a class="link-btn" href="https://github.com/maxwitanowski/Night-Desk" target="_blank" rel="noopener">github.com/maxwitanowski/Night-Desk ↗</a></p>
+    </div>
+    <ul>
+      <li><b>Stack</b><span>React + Vite + Zustand front end, Express server, hand-rolled SVG charts, Docker</span></li>
+      <li><b>Data</b><span>Yahoo Finance chart API for quotes and history, Alpaca paper API for US fills, ASX announcements feed</span></li>
+      <li><b>AI</b><span>OpenRouter: a GLM analyst committee (macro, momentum, hedge-fund tracker, fundamentals, risk officer) chaired by a portfolio manager with permanent memory</span></li>
+      <li><b>Rules</b><span>Real broker fee models, spread fills, stops and targets, a daily loss cap, drawdown kill switch and a red-day mode</span></li>
+      <li><b>Started</b><span>August 2026, Australia</span></li>
+    </ul>
+  </section>
+
+  <script>
+  (() => {
+    // ───────────────────────── seeded simulation ─────────────────────────
+    let seed = 20260915;
+    const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+    const gauss = () => (rnd() + rnd() + rnd() + rnd() - 2) / 1.2;
+    const WATCH = [
+      ['CBA', 'Commonwealth Bank of Australia', 152.06, 'asx'], ['BHP', 'BHP Group Limited', 59.45, 'asx'], ['CSL', 'CSL Limited', 172.01, 'asx'],
+      ['NAB', 'National Australia Bank Limited', 38.05, 'asx'], ['WBC', 'Westpac Banking Corporation', 34.17, 'asx'], ['ANZ', 'ANZ Group Holdings Limited', 36.87, 'asx'],
+      ['WES', 'Wesfarmers Limited', 72.45, 'asx'], ['MQG', 'Macquarie Group Limited', 239.82, 'asx'], ['GMG', 'Goodman Group', 26.26, 'asx'],
+      ['FMG', 'Fortescue Ltd', 16.35, 'asx'], ['RIO', 'Rio Tinto Group', 164.38, 'asx'], ['WDS', 'Woodside Energy Group Ltd', 32.58, 'asx'],
+      ['TLS', 'Telstra Group Limited', 4.84, 'asx'], ['WTC', 'WiseTech Global Limited', 118.94, 'asx'], ['XRO', 'Xero Limited', 189.32, 'asx'], ['STO', 'Santos Limited', 8.60, 'asx'],
+      ['NVDA', 'NVIDIA Corporation', 182.14, 'us'], ['AAPL', 'Apple Inc.', 236.55, 'us'], ['MSFT', 'Microsoft Corporation', 512.30, 'us'],
+      ['TSLA', 'Tesla, Inc.', 398.10, 'us'], ['AMZN', 'Amazon.com, Inc.', 231.44, 'us'], ['META', 'Meta Platforms, Inc.', 748.72, 'us'],
+    ];
+    const SERIES = ['#eeeeee', '#ee6018', '#a0ca92', '#b8b3b0', '#f6a877', '#d4e6cc', '#8a8380', '#c8500f'];
+    const YOU = SERIES[0], AI = SERIES[1];
+    const RANGES = ['1H', '10H', '24H', '4D', '7D', '1M', '3M', '1Y'];
+    const RANGE_SPEC = { '1H': [60, 60, .0009], '10H': [120, 300, .002], '24H': [144, 600, .003], '4D': [192, 1800, .006], '7D': [168, 3600, .008], '1M': [180, 14400, .012], '3M': [180, 43200, .02], '1Y': [250, 126144, .03] };
+    const NOW = Math.floor(Date.now() / 1000);
+    const stocks = {};
+    WATCH.forEach(([sym, name, base, mkt], i) => {
+      const drift = (rnd() - .5) * .3;
+      stocks[sym] = { sym, name, mkt, base, drift, price: base, prevClose: base * (1 + (rnd() - .5) * .03), hist: {} };
+    });
+    const history = (sym, range) => {
+      const s = stocks[sym];
+      if (s.hist[range]) return s.hist[range];
+      const [n, step, vol] = RANGE_SPEC[range];
+      const pts = []; let p = s.base * (1 - s.drift * vol * n * .4);
+      for (let i = 0; i < n; i++) { p *= 1 + gauss() * vol + s.drift * vol * .5; pts.push({ t: NOW - (n - 1 - i) * step, c: p }); }
+      const k = s.base / pts[pts.length - 1].c; pts.forEach((q) => { q.c *= k; });
+      return (s.hist[range] = pts);
+    };
+    Object.keys(stocks).forEach((sym) => { history(sym, '24H'); });
+    const changePct = (s) => ((s.price - s.prevClose) / s.prevClose) * 100;
+
+    // books
+    const START = 1000;
+    const state = {
+      tab: 'market', range: '24H', sort: 'default', query: '', selected: ['CBA', 'BHP', 'NVDA'], scan: null, tableView: false,
+      user: { cash: 401.7, positions: [{ sym: 'STO', shares: 34.2, avg: 8.66 }, { sym: 'WDS', shares: 6.2, avg: 33.08 }, { sym: 'NVDA', shares: 0.53, avg: 176.4 }] },
+      ai: { cash: 623.4, positions: [{ sym: 'WTC', shares: 0.26, avg: 114.2 }, { sym: 'XRO', shares: 0.53, avg: 184.9 }, { sym: 'CBA', shares: 1.42, avg: 149.8 }] },
+      trades: { user: [], ai: [] }, snapshots: [], aiLive: true, sessions: 22, drawer: null, chat: [], warStart: NOW - 6.3 * 86400,
+    };
+    const value = (book) => book.positions.reduce((a, p) => a + p.shares * stocks[p.sym].price, 0);
+    const total = (book) => book.cash + value(book);
+    const mkTrade = (who, side, sym, valueAud, price, reason, tAgo) => ({ who, side, sym, value: valueAud, price, reason, t: (NOW - tAgo) * 1000 });
+    state.trades.ai = [
+      mkTrade('ai', 'sell', 'WTC', 118.94, 118.94, 'Red-day rotation booked at the 15:52 flatten; +4.04% relative strength on a −0.87% index. No add into the fading hour.', 3.1 * 3600),
+      mkTrade('ai', 'buy', 'XRO', 97.6, 184.9, 'Momentum scout: +3.02% broad bounce with gross margin above 84%. Sized at 3% under the RED_DAY playbook, stop −1.5%, target +3%.', 5.4 * 3600),
+      mkTrade('ai', 'buy', 'CBA', 212.7, 149.8, 'Fundamentals: banks hold up into the FOMC; CBA accumulation on a pause. Risk officer capped it at 21%.', 1.2 * 86400),
+      mkTrade('ai', 'sell', 'STO', 84.2, 8.72, 'Lesson 2 mirror ban: the opponent runs a 2× levered STO book. Refused at any price; taking the small gain.', 2.1 * 86400),
+    ];
+    state.trades.user = [
+      mkTrade('user', 'buy', 'STO', 296.2, 8.66, '', 4.2 * 86400), mkTrade('user', 'buy', 'WDS', 205.1, 33.08, '', 2.9 * 86400),
+      mkTrade('user', 'sell', 'FMG', 88.4, 16.6, '', 2.2 * 86400), mkTrade('user', 'buy', 'NVDA', 93.5, 176.4, '', 1.4 * 86400),
+    ];
+    // equity snapshots for the last 7 days (every 20 minutes)
+    (() => { let u = START, a = START, sp = START, xj = START; for (let t = NOW - 6.3 * 86400; t <= NOW; t += 1200) { u += gauss() * 1.1 - .02; a += gauss() * .8 + .004; sp += gauss() * .5 + .012; xj += gauss() * .55 - .01; state.snapshots.push({ t, user: u, ai: a, spx: sp, xjo: xj }); } })();
+    const rebaseSnapshots = () => { const last = state.snapshots[state.snapshots.length - 1]; const du = total(state.user) - last.user, da = total(state.ai) - last.ai; state.snapshots.forEach((s, i) => { const k = i / (state.snapshots.length - 1); s.user += du * k; s.ai += da * k; }); };
+    rebaseSnapshots();
+
+    // ───────────────────────── formatting ─────────────────────────
+    const fmtMoney = (v, d = 2) => (v == null || Number.isNaN(v)) ? '—' : (Math.round(v * 10 ** d) / 10 ** d || 0).toLocaleString('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: d, maximumFractionDigits: d });
+    const fmtPct = (v, signed = true) => (v == null || Number.isNaN(v)) ? '—' : `${signed && v > 0 ? '+' : ''}${v.toFixed(2)}%`;
+    const fmtShares = (v) => v >= 100 ? v.toFixed(2) : v.toFixed(4);
+    const fmtClock = (ms) => new Date(ms).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    const INTRADAY = new Set(['1H', '10H', '24H']), DAYTIME = new Set(['4D', '7D']);
+    const fmtAxis = (sec, range) => { const d = new Date(sec * 1000); if (INTRADAY.has(range)) return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); if (DAYTIME.has(range)) return d.toLocaleDateString('en-US', { weekday: 'short', hour: 'numeric' }); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+    // ───────────────────────── charts ─────────────────────────
+    const niceTicks = (min, max, count = 4) => { if (min === max) { min -= 1; max += 1; } const span = max - min, s0 = span / count, mag = 10 ** Math.floor(Math.log10(s0)); const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= count + .5) || mag * 10; const out = []; for (let v = Math.ceil(min / step) * step; v <= max + step * .01; v += step) out.push(+v.toFixed(6)); return out; };
+    const sparkline = (pts, w = 64, h = 26) => {
+      const vals = pts.map((p) => p.c), min = Math.min(...vals), max = Math.max(...vals), span = max - min || 1;
+      const x = (i) => (i / (pts.length - 1)) * (w - 4) + 2, y = (v) => h - 4 - ((v - min) / span) * (h - 8);
+      const up = vals[vals.length - 1] >= vals[0], col = up ? 'var(--up)' : 'var(--down)';
+      const d = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.c).toFixed(1)}`).join('');
+      return `<svg class="spark" width="${w}" height="${h}" aria-hidden="true"><line x1="2" x2="${w - 2}" y1="${y(vals[0]).toFixed(1)}" y2="${y(vals[0]).toFixed(1)}" stroke="var(--grid)" stroke-dasharray="3 3"/><path d="${d}" fill="none" stroke="${col}" stroke-width="1.75" stroke-linejoin="round"/><circle cx="${x(pts.length - 1).toFixed(1)}" cy="${y(vals[vals.length - 1]).toFixed(1)}" r="2.5" fill="${col}"/></svg>`;
+    };
+    // series: [{key,label,color,points:[{t,v}],dashed?}]; mode 'pct' | 'price'
+    const lineChart = (series, { mode = 'pct', range = '24H', height = 320, width = 800 } = {}) => {
+      const drawn = series.filter((s) => s.points.length >= 2);
+      if (!drawn.length) return { svg: `<div class="chart-empty" style="height:${height}px"><span>Select up to 8 stocks to chart</span></div>`, layout: null };
+      const PAD = { top: 14, right: 14, bottom: 26, left: 8 }, gutter = drawn.length <= 4 ? 56 : 0;
+      let tMin = Infinity, tMax = -Infinity, vMin = Infinity, vMax = -Infinity;
+      drawn.forEach((s) => { tMin = Math.min(tMin, s.points[0].t); tMax = Math.max(tMax, s.points[s.points.length - 1].t); s.points.forEach((p) => { vMin = Math.min(vMin, p.v); vMax = Math.max(vMax, p.v); }); });
+      if (mode === 'pct') { vMin = Math.min(vMin, 0); vMax = Math.max(vMax, 0); }
+      const pad = (vMax - vMin || 1) * .08; vMin -= pad; vMax += pad;
+      const left = PAD.left, right = width - PAD.right - gutter, top = PAD.top, bottom = height - PAD.bottom;
+      const X = (t) => left + ((t - tMin) / (tMax - tMin || 1)) * (right - left), Y = (v) => top + ((vMax - v) / (vMax - vMin)) * (bottom - top);
+      let g = '';
+      niceTicks(vMin, vMax).forEach((v) => { const y = Y(v); g += `<line x1="${left}" x2="${right}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${mode === 'pct' && v === 0 ? 'var(--stroke)' : 'var(--grid)'}"/><text class="axis-label" x="${left}" y="${(y - 4).toFixed(1)}">${mode === 'pct' ? fmtPct(v) : fmtMoney(v)}</text>`; });
+      const nx = Math.max(2, Math.min(6, Math.floor((right - left) / 160)));
+      for (let i = 0; i <= nx; i++) { const t = tMin + ((tMax - tMin) * i) / nx, x = X(t); g += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${top}" y2="${bottom}" stroke="var(--grid)" stroke-dasharray="2 4"/><text class="axis-label" x="${(i === nx ? x - 2 : x + 2).toFixed(1)}" y="${bottom + 16}" text-anchor="${i === nx ? 'end' : 'start'}">${fmtAxis(t, range)}</text>`; }
+      const labels = [];
+      drawn.forEach((s) => { const d = s.points.map((p, i) => `${i ? 'L' : 'M'}${X(p.t).toFixed(1)},${Y(p.v).toFixed(1)}`).join(''); g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="1.5" stroke-linejoin="round" ${s.dashed ? 'stroke-dasharray="4 4"' : ''}/>`; const last = s.points[s.points.length - 1]; labels.push({ y: Y(last.v), x: X(last.t), color: s.color, label: s.label }); });
+      if (gutter) { labels.sort((a, b) => a.y - b.y); for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 13) labels[i].y = labels[i - 1].y + 13; labels.forEach((l) => { g += `<circle cx="${l.x.toFixed(1)}" cy="${l.y.toFixed(1)}" r="2.5" fill="${l.color}"/><text class="end-label" x="${(right + 10).toFixed(1)}" y="${(l.y + 4).toFixed(1)}">${esc(l.label)}</text>`; }); }
+      return { svg: `<svg viewBox="0 0 ${width} ${height}" height="${height}" preserveAspectRatio="none">${g}</svg>`, layout: { X, Y, tMin, tMax, left, right, drawn, mode, range } };
+    };
+    const mountChart = (el, series, opts) => {
+      const width = Math.max(320, el.clientWidth || 800);
+      const { svg, layout } = lineChart(series, { ...opts, width });
+      el.innerHTML = `<div class="chart-wrap">${svg}<div class="chart-tooltip" style="display:none"></div><svg class="guide" viewBox="0 0 ${width} ${opts.height || 320}" height="${opts.height || 320}" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;pointer-events:none"></svg></div>`;
+      if (!layout) return;
+      const wrap = $('.chart-wrap', el), tip = $('.chart-tooltip', el), guide = $('.guide', el);
+      wrap.addEventListener('mousemove', (e) => {
+        const r = wrap.getBoundingClientRect(), px = (e.clientX - r.left) * (width / r.width);
+        const t = layout.tMin + ((px - layout.left) / (layout.right - layout.left)) * (layout.tMax - layout.tMin);
+        const rows = layout.drawn.map((s) => { let best = s.points[0]; s.points.forEach((p) => { if (Math.abs(p.t - t) < Math.abs(best.t - t)) best = p; }); return { s, p: best }; });
+        const x = layout.X(rows[0].p.t);
+        guide.innerHTML = `<line x1="${x}" x2="${x}" y1="0" y2="100%" stroke="var(--stroke)"/>` + rows.map(({ s, p }) => `<circle cx="${layout.X(p.t)}" cy="${layout.Y(p.v)}" r="3" fill="${s.color}"/>`).join('');
+        tip.style.display = 'block';
+        tip.innerHTML = `<div class="tt-time">${new Date(rows[0].p.t * 1000).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</div>` + rows.map(({ s, p }) => `<div class="tt-row"><i class="tt-key" style="background:${s.color}"></i><span class="tt-value">${layout.mode === 'pct' ? fmtPct(p.v) : fmtMoney(p.v)}</span><span class="tt-label">${esc(s.label)}</span></div>`).join('');
+        const tx = e.clientX - r.left + 16, flip = tx + 190 > r.width; tip.style.left = (flip ? e.clientX - r.left - 190 : tx) + 'px'; tip.style.top = Math.min(e.clientY - r.top + 12, r.height - tip.offsetHeight - 8) + 'px';
+      });
+      wrap.addEventListener('mouseleave', () => { tip.style.display = 'none'; guide.innerHTML = ''; });
+    };
+
+    // ───────────────────────── views ─────────────────────────
+    const view = $('#view');
+    const scoreline = () => { $('#scoreline').innerHTML = `<span><i style="background:${YOU}"></i>${fmtMoney(total(state.user))}<em class="cash-hint">cash ${fmtMoney(state.user.cash, 0)}</em></span><em>vs</em><span><i style="background:${AI}"></i>${fmtMoney(total(state.ai))}</span>`; };
+    const rangeMove = (pts) => ((pts[pts.length - 1].c - pts[0].c) / pts[0].c) * 100;
+
+    const renderMarket = () => {
+      const q = state.query.trim().toUpperCase();
+      let list = WATCH.map((w) => stocks[w[0]]).filter((s) => !q || s.sym.includes(q) || s.name.toUpperCase().includes(q));
+      const keyOf = { today: (s) => changePct(s), range: (s) => rangeMove(history(s.sym, state.range)), price: (s) => s.price }[state.sort];
+      if (state.sort === 'az') list = [...list].sort((a, b) => a.sym.localeCompare(b.sym)); else if (keyOf) list = [...list].sort((a, b) => keyOf(b) - keyOf(a));
+      const rows = list.map((s) => { const sel = state.selected.indexOf(s.sym), pts = history(s.sym, state.range), mv = rangeMove(pts); return `
+        <div class="stock-row ${sel >= 0 ? 'selected' : ''}" data-sym="${s.sym}" style="${sel >= 0 ? `--sel:${SERIES[sel]}` : ''}">
+          <span class="row-accent"></span>
+          <div class="row-id"><span class="ticker">${s.sym}</span><span class="co-name">${esc(s.name)}</span></div>
+          ${sparkline(pts)}
+          <div class="row-nums"><span class="price">${fmtMoney(s.price)}</span><span class="delta ${mv >= 0 ? 'up' : 'down'}">${fmtPct(mv)}</span></div>
+          <div class="row-actions"><button class="analyze-btn" data-analyze="${s.sym}" title="AI analysis">✦</button><button class="trade-btn" data-trade="${s.sym}">Trade</button></div>
+        </div>`; }).join('');
+      const series = state.selected.map((sym, i) => { const pts = history(sym, state.range), first = pts[0].c; return { key: sym, label: sym, color: SERIES[i], points: pts.map((p) => ({ t: p.t, v: ((p.c - first) / first) * 100 })) }; });
+      view.innerHTML = `
+        <div class="market-layout">
+          <aside class="stock-list">
+            <div class="search-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><input id="q" placeholder="Search stocks" value="${esc(state.query)}" /></div>
+            <div class="sort-row"><label>Sort</label><select id="sort">${[['default', 'Watchlist order'], ['today', "Today's move"], ['range', 'Move over range'], ['price', 'Price'], ['az', 'A–Z']].map(([v, l]) => `<option value="${v}" ${state.sort === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+            <div class="list-hint">Click to chart · ${state.selected.length}/8 selected ${state.selected.length ? '<button class="link-btn" id="clear">clear</button>' : ''}</div>
+            <div class="stock-rows">${rows}</div>
+          </aside>
+          <section class="chart-area">
+            <div class="filter-row">
+              <div class="segmented">${RANGES.map((r) => `<button class="seg ${state.range === r ? 'on' : ''}" data-range="${r}">${r}</button>`).join('')}</div>
+              <button class="primary-btn" id="scan">${state.scan === 'loading' ? 'Hunting…' : '✦ Find opportunities'}</button>
+              <div class="filter-spacer"></div>
+              ${series.length ? `<button class="ghost-btn" id="tableview">${state.tableView ? 'Chart view' : 'Table view'}</button>` : ''}
+            </div>
+            <div class="card">
+              <div class="compare-head"><h2>% change over ${state.range}</h2>${series.length > 1 ? `<div class="legend">${series.map((s) => `<span class="legend-item"><span class="legend-line" style="background:${s.color}"></span>${s.key}</span>`).join('')}</div>` : ''}</div>
+              ${state.tableView && series.length ? `<div class="table-scroll"><table class="data-table"><thead><tr><th>Stock</th><th>Price</th><th>${state.range} move</th><th>Today</th></tr></thead><tbody>${series.map((s) => `<tr><td><span class="legend-line" style="background:${s.color}"></span> ${s.key} <span class="dim">${esc(stocks[s.key].name)}</span></td><td class="num">${fmtMoney(stocks[s.key].price)}</td><td class="num">${fmtPct(rangeMove(history(s.key, state.range)))}</td><td class="num">${fmtPct(changePct(stocks[s.key]))}</td></tr>`).join('')}</tbody></table></div>` : '<div id="chart"></div>'}
+            </div>
+            ${renderScan()}
+          </section>
+        </div>`;
+      if (!state.tableView) mountChart($('#chart'), series, { mode: 'pct', range: state.range, height: 460 });
+      $('#q').addEventListener('input', (e) => { state.query = e.target.value; renderMarket(); $('#q').focus(); $('#q').setSelectionRange(1e4, 1e4); });
+      $('#sort').addEventListener('change', (e) => { state.sort = e.target.value; renderMarket(); });
+      $('#clear')?.addEventListener('click', () => { state.selected = []; renderMarket(); });
+      $$('.stock-row').forEach((r) => r.addEventListener('click', () => { const s = r.dataset.sym, i = state.selected.indexOf(s); if (i >= 0) state.selected.splice(i, 1); else if (state.selected.length < 8) state.selected.push(s); else toast('Up to 8 stocks on one chart'); renderMarket(); }));
+      $$('[data-trade]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); openDetail(b.dataset.trade); }));
+      $$('[data-analyze]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); openDetail(b.dataset.analyze, true); }));
+      $$('[data-range]').forEach((b) => b.addEventListener('click', () => { state.range = b.dataset.range; renderMarket(); }));
+      $('#tableview')?.addEventListener('click', () => { state.tableView = !state.tableView; renderMarket(); });
+      $('#scan').addEventListener('click', () => { if (state.scan) return; state.scan = 'loading'; renderMarket(); setTimeout(() => { state.scan = 'done'; renderMarket(); toast('Scan complete: 6 picks across 4 buckets'); }, 1400); });
+      $$('[data-pick-chart]').forEach((b) => b.addEventListener('click', () => { const s = b.dataset.pickChart; if (!state.selected.includes(s) && state.selected.length < 8) state.selected.push(s); renderMarket(); }));
+      $$('[data-pick-trade]').forEach((b) => b.addEventListener('click', () => openDetail(b.dataset.pickTrade)));
+    };
+    const PICKS = {
+      banger: [{ sym: 'WDS', why: 'Drone strikes shut the Saudi East-West pipeline; Brent above US$106 and repairs take 3–5 weeks. A multi-week physical supply outage is a durable catalyst, not a spike.', move: 6.5, conf: .74, watch: 'Green cross above $33.08 on positive tape', risk: 'ASX energy lagged the move; gate dies if oil fades' }],
+      dip: [{ sym: 'CSL', why: 'Quality large cap 14% off its 52-week high after the guidance reset, with plasma margins recovering into FY27.', move: 4.2, conf: .61, watch: 'Hold above $168', risk: 'Vaccine unit write-down' }, { sym: 'NVDA', why: 'AI complex sold off overnight on FOMC nerves; the capex cycle is unchanged and the print is two weeks out.', move: 5.8, conf: .58, watch: 'Reclaim $185', risk: 'Export licence headlines' }],
+      momentum: [{ sym: 'WTC', why: 'Strongest print on a red tape: +4.04% while the index fell. Relative strength this clean usually carries two more sessions.', move: 3.1, conf: .55, watch: '$118 must hold', risk: 'Valuation' }, { sym: 'XRO', why: 'Broad bounce with gross margin above 84%; sits above every moving average that matters.', move: 3, conf: .52, watch: 'Follow-through volume', risk: 'FX' }],
+      smallcap: [{ sym: 'STO', why: 'Cheapest oil beta on the board with a 9.1% FX-free room to the analyst target. Entry only on a green cross.', move: 7.2, conf: .41, watch: 'Green cross above $8.75', risk: 'Refused by the committee: opponent runs a levered book here' }],
+    };
+    const renderScan = () => {
+      if (!state.scan) return `<div class="ai-panel" style="padding:16px 20px"><span class="hint">✦ Find opportunities researches the macro picture (RBA/Fed, commodities, China, AI capex) and hunts quality dips, strong contenders and small-cap catalysts.</span></div>`;
+      if (state.scan === 'loading') return `<div class="ai-panel"><div class="ai-panel-head"><h3>Opportunity scan</h3><span class="hint" style="animation:pulse 1.6s infinite">Researching 8 web results per analyst…</span></div></div>`;
+      const bucket = (id, title, sub) => `<div class="bucket bucket-${id}"><h4>${title} <span class="thin">${sub}</span></h4><div class="pick-grid">${PICKS[id].map((p) => { const s = stocks[p.sym]; return `<div class="pick-card"><div class="pick-card-head"><span class="pick-sym">${p.sym}</span><span class="pick-name">${esc(s.name)}</span><span class="mkt-tag">${s.mkt}</span></div><div class="pick-stats"><span>${fmtMoney(s.price)}</span><span class="${changePct(s) >= 0 ? 'up' : 'down'}">${fmtPct(changePct(s))} today</span><span class="up">${fmtPct(p.move)} · 2w</span><span class="conf-bar"><span style="width:${p.conf * 100}%"></span></span></div><p class="pick-why">${esc(p.why)}</p><p class="pick-line"><b>Watch</b>${esc(p.watch)}</p><p class="pick-line risk"><b>Risk</b>${esc(p.risk)}</p><div class="pick-actions"><button class="ghost-btn" data-pick-chart="${p.sym}">Chart</button><button class="ghost-btn" data-pick-trade="${p.sym}">Trade</button></div></div>`; }).join('')}</div></div>`;
+      return `<div class="ai-panel"><div class="ai-panel-head"><h3>Opportunity scan <span class="outlook down">Risk-off into FOMC</span></h3><span class="hint">30-min cache · 5 analysts</span></div><p class="scan-summary">The ASX 200 opened at a ten-week low on a 5% ten-year yield, Brent is above US$108 on the Saudi pipeline outage, and the AI complex sold off overnight. Cash wins both FOMC branches for free; the only strength on the board is energy and two software names.</p><div class="buckets">${bucket('banger', 'Banger', 'high reward, high confidence')}${bucket('dip', 'Quality dips', 'large caps at a low')}${bucket('momentum', 'Momentum', 'relative strength')}${bucket('smallcap', 'Small-cap catalysts', 'higher risk')}</div></div>`;
+    };
+
+    const renderPortfolio = () => {
+      const u = state.user, tot = total(u), val = value(u), unreal = u.positions.reduce((a, p) => a + (stocks[p.sym].price - p.avg) * p.shares, 0);
+      const realized = state.trades.user.filter((t) => t.side === 'sell').reduce((a, t) => a + (t.realized || 0), 0) - 3.53;
+      const today = u.positions.reduce((a, p) => a + (stocks[p.sym].price - stocks[p.sym].prevClose) * p.shares, 0);
+      const tile = (label, v, sub, cls = '') => `<div class="pf-tile ${cls}"><span class="pf-tile-label">${label}</span><span class="pf-tile-value">${v}</span><span class="pf-tile-sub">${sub}</span></div>`;
+      view.innerHTML = `
+        <div class="pf-tiles">
+          ${tile('Total equity', fmtMoney(tot), `<span class="${tot >= START ? 'up' : 'down'}">${fmtMoney(tot - START)} · ${fmtPct(((tot - START) / START) * 100)} since base</span>`)}
+          ${tile('Cash', fmtMoney(u.cash), `A$${u.cash.toFixed(2)} + US$0.00 @ 0.7129`)}
+          ${tile('Buying power', fmtMoney(u.cash * 2), `gross ${fmtMoney(val)} · ${(val / tot).toFixed(2)}× of 2× cap`)}
+          ${tile('Unrealised P/L', fmtMoney(unreal), `${fmtPct((unreal / (val - unreal || 1)) * 100)} on ${u.positions.length} open`, unreal >= 0 ? 'up' : 'down')}
+          ${tile('Realised P/L', fmtMoney(realized), 'after fees, FX $0.00 and carry $0.19', realized >= 0 ? 'up' : 'down')}
+          ${tile('Today', fmtMoney(today), 'move of your holdings since prior close', today >= 0 ? 'up' : 'down')}
+        </div>
+        <div class="pf-alloc"><div class="pf-alloc-bar">${u.positions.map((p, i) => `<span style="width:${((p.shares * stocks[p.sym].price) / tot) * 100}%;background:${SERIES[i + 1]}"></span>`).join('')}<span style="width:${(u.cash / tot) * 100}%;background:var(--carbon)"></span></div><div class="pf-alloc-legend">${u.positions.map((p, i) => `<span><i style="background:${SERIES[i + 1]}"></i>${p.sym} ${Math.round(((p.shares * stocks[p.sym].price) / tot) * 100)}%</span>`).join('')}<span><i style="background:var(--carbon)"></i>Cash ${Math.round((u.cash / tot) * 100)}%</span></div></div>
+        <div class="section-card"><h3>Holdings <span class="thin">· ${u.positions.filter((p) => stocks[p.sym].price >= p.avg).length}/${u.positions.length} in profit</span></h3>
+          <div class="table-scroll"><table class="data-table"><thead><tr><th>Position</th><th>Shares</th><th>Avg</th><th>Price</th><th>Value</th><th>Weight</th><th>P/L</th><th></th></tr></thead><tbody>
+          ${u.positions.map((p) => { const s = stocks[p.sym], pl = (s.price - p.avg) * p.shares, plp = ((s.price - p.avg) / p.avg) * 100; return `<tr class="clickable" data-open="${p.sym}"><td><span class="side buy">long</span> <b>${p.sym}</b> <span class="dim">${esc(s.name)}</span></td><td class="num">${fmtShares(p.shares)}</td><td class="num">${fmtMoney(p.avg)}</td><td class="num">${fmtMoney(s.price)}</td><td class="num">${fmtMoney(p.shares * s.price)}</td><td class="num">${Math.round(((p.shares * s.price) / tot) * 100)}%</td><td class="num ${pl >= 0 ? 'up' : 'down'}">${fmtMoney(pl)} <span class="mono">${fmtPct(plp)}</span></td><td class="num"><button class="ghost-btn small" data-sellall="${p.sym}">Sell all</button></td></tr>`; }).join('') || '<tr><td colspan="8" class="dim">No open positions</td></tr>'}
+          </tbody></table></div><p class="hint" style="margin-top:8px">Click a row to buy, sell, short or cover. Values in AUD; fills include a simulated spread and your broker's real fee schedule.</p></div>
+        <div class="section-card"><h3>Equity curve <span class="thin">· total value over time</span></h3><div id="chart"></div></div>
+        <div class="section-card"><h3>Trade history <span class="thin">· ${state.trades.user.length} trades</span></h3><div class="table-scroll"><table class="data-table"><thead><tr><th>When</th><th>Side</th><th>Stock</th><th>Fill</th><th>Amount</th><th>Fee</th></tr></thead><tbody>${state.trades.user.map((t) => `<tr><td class="dim">${fmtClock(t.t)}</td><td class="num"><span class="side ${t.side}">${t.side}</span></td><td class="num">${t.sym}</td><td class="num">${fmtMoney(t.price)}</td><td class="num">${fmtMoney(t.value)}</td><td class="num dim">${fmtMoney(t.value * .001)}</td></tr>`).join('')}</tbody></table></div></div>`;
+      mountChart($('#chart'), [{ key: 'you', label: 'You', color: YOU, points: state.snapshots.map((s) => ({ t: s.t, v: s.user })) }], { mode: 'price', range: '7D', height: 260 });
+      $$('[data-open]').forEach((r) => r.addEventListener('click', () => openDetail(r.dataset.open)));
+      $$('[data-sellall]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); sell(state.user, 'user', b.dataset.sellall); renderPortfolio(); }));
+    };
+
+    const SESSIONS = [
+      { note: 'China data / midday ASX', summary: 'Risk-off into tomorrow\'s ~90%-priced FOMC: the ASX 200 opened at a ten-week low, Brent is above US$108 on the Saudi pipeline outage, and the AI complex sold off overnight. The red-day rotation found the only two strength names, WTC and XRO. Cash wins both FOMC branches for free.', converged: 'The committee converged 5–0: WTC and XRO ride to the binding 15:52 flatten with zero adds into absorbed moves. No new tickets fire in any market; STO is refused on the permanent lesson-2 mirror ban.', targets: [['WTC', '3%', 'RED_DAY', '−1.5% / +3%', '3h'], ['XRO', '3%', 'RED_DAY', '−1.5% / +3%', '3h'], ['Cash', '69.8%', '', '', '']], trade: ['sell', 'WTC', 0.12, 'Executed 1 of 2 planned trades: sold WTC at the 15:52 flatten. Skipped XRO on its own rule (minimum hold 90 min).'] },
+      { note: 'ASX open', summary: 'FOMC held, guidance hawkish; the 10-year backed off 8 bp overnight and the banks are catching a bid. Momentum scout flags CBA and NAB accumulation; macro wants energy trimmed into the Brent fade.', converged: 'Converged 4–1 (risk officer dissents on sizing): add CBA to 21%, trim WDS exposure, keep STO banned, hold 40% cash into the US open.', targets: [['CBA', '21%', 'SWING', '−2% / +4%', '5d'], ['XRO', '5%', 'SWING', '−2% / +5%', '5d'], ['Cash', '74%', '', '', '']], trade: ['buy', 'CBA', 0.09, 'Fundamentals: banks hold up post-FOMC; sized at half Kelly on the SWING playbook. Stop −2%, target +4%.'] },
+      { note: 'US open', summary: 'NVDA gapped up 2.1% on a datacentre order; the AI complex reclaimed yesterday\'s losses. The hedge-fund tracker notes three 13F adds in semis this quarter.', converged: 'Converged 5–0: one US ticket, NVDA on the OPEN_GAP playbook with a hard stop below the gap; nothing on the ASX after hours.', targets: [['NVDA', '8%', 'OPEN_GAP', '−1.8% / +4%', '2d'], ['CBA', '21%', 'SWING', '−2% / +4%', '5d'], ['Cash', '66%', '', '', '']], trade: ['buy', 'NVDA', 0.08, 'OPEN_GAP: gap held for 15 minutes on twice the relative volume. Entry at VWAP, stop below the gap low.'] },
+    ];
+    const renderVersus = () => {
+      const u = total(state.user), a = total(state.ai), lead = u - a, last = state.snapshots[state.snapshots.length - 1], spx = last.spx, xjo = last.xjo;
+      const days = Math.max(1, Math.ceil((NOW - state.warStart) / 86400)), sess = SESSIONS[state.sessions % SESSIONS.length];
+      const holdings = (title, color, book) => `<div class="section-card" style="margin:0"><h3><span class="legend-line" style="background:${color}"></span> ${title} · ${fmtMoney(total(book))}</h3><div class="table-scroll"><table class="data-table"><thead><tr><th>Position</th><th>Shares</th><th>Value</th><th>P/L</th></tr></thead><tbody><tr><td class="dim">Cash</td><td class="dim">A$${book.cash.toFixed(0)} · US$0</td><td class="num">${fmtMoney(book.cash)}</td><td class="num dim"></td></tr>${book.positions.map((p) => { const s = stocks[p.sym]; return `<tr><td>${p.sym}</td><td class="num">${fmtShares(p.shares)}</td><td class="num">${fmtMoney(p.shares * s.price)}</td><td class="num ${s.price >= p.avg ? 'up' : 'down'}">${fmtPct(((s.price - p.avg) / p.avg) * 100)}</td></tr>`; }).join('') || '<tr><td class="dim" colspan="4">No open positions</td></tr>'}</tbody></table></div></div>`;
+      const log = (title, trades, reasons) => `<div class="section-card trade-log" style="margin:0"><h3>${title}</h3><ul>${trades.slice(0, 12).map((t, i) => `<li><button class="log-row ${reasons && t.reason ? 'expandable' : ''}" data-log="${i}"><span class="side ${t.side}">${t.side}</span><span>${t.sym}</span><span class="num">${fmtMoney(t.value)}</span><span class="dim">@ ${fmtMoney(t.price)}</span><span class="log-time">${fmtClock(t.t)}</span></button>${reasons && t.reason ? `<p class="log-reason" data-reason="${i}" hidden>${esc(t.reason)}</p>` : ''}</li>`).join('') || '<li class="dim">No trades yet.</li>'}</ul></div>`;
+      view.innerHTML = `
+        <section class="war-banner light live"><div class="war-text"><h2>War in progress <span class="thin">· day ${days} · since ${fmtClock(state.warStart * 1000)}</span></h2><p>The committee follows the sun — both opens, the China window, both closes — and the fast desk reacts between sessions. ${lead === 0 ? 'Dead heat.' : lead > 0 ? `You lead by ${fmtMoney(lead)}.` : `The machine leads by ${fmtMoney(-lead)}.`} The S&amp;P 500 sits at ${fmtMoney(spx)}${Math.max(u, a) >= spx ? ` — ${u >= a ? 'you' : 'the machine'} beat it by ${fmtMoney(Math.max(u, a) - spx)}.` : ' and is beating you both.'}</p></div><button class="ghost-btn" id="endwar">End the war</button></section>
+        <section class="scoreboard">
+          <div class="score you"><span class="score-label"><span class="legend-line" style="background:${YOU}"></span> You</span><span class="score-value">${fmtMoney(u)}</span><span class="delta ${u >= START ? 'up' : 'down'}">${fmtPct(((u - START) / START) * 100)} since base</span></div>
+          <div class="score-mid"><span class="vs">VS</span><span class="lead ${lead >= 0 ? 'up' : 'down'}">${lead >= 0 ? 'You lead by' : 'AI leads by'} ${fmtMoney(Math.abs(lead))}</span></div>
+          <div class="score ai"><span class="score-label"><span class="legend-line" style="background:${AI}"></span> The Machine</span><span class="score-value">${fmtMoney(a)}</span><span class="delta ${a >= START ? 'up' : 'down'}">${fmtPct(((a - START) / START) * 100)} since base</span></div>
+          <div class="score-mid"><span class="vs">INDEX</span><span class="lead ${a >= spx ? 'up' : 'down'}">${a >= spx ? 'AI beats it by' : 'AI trails it by'} ${fmtMoney(Math.abs(a - spx))}</span></div>
+          <div class="score index"><span class="score-label"><span class="legend-line dashed" style="color:${SERIES[3]}"></span> S&amp;P 500</span><span class="score-value">${fmtMoney(spx)}</span><span class="delta ${spx >= START ? 'up' : 'down'}">${fmtPct(((spx - START) / START) * 100)} since base · same ${fmtMoney(START)} at the start, in AUD</span><span class="delta thin ${u >= spx ? 'up' : 'down'}">${u >= spx ? 'you beat it by' : 'you trail it by'} ${fmtMoney(Math.abs(u - spx))}</span></div>
+        </section>
+        <section class="baseline-strip"><span class="baseline-title">If the same ${fmtMoney(START)} sat in an index fund</span><span class="baseline-item"><span class="legend-line dashed" style="color:${SERIES[6]}"></span>ASX 200 <b>${fmtMoney(xjo)}</b><span class="${xjo >= START ? 'up' : 'down'}">${fmtPct(((xjo - START) / START) * 100)}</span><span class="thin">· you ${u >= xjo ? 'ahead' : 'behind'} by ${fmtMoney(Math.abs(u - xjo))} · AI ${a >= xjo ? 'ahead' : 'behind'} by ${fmtMoney(Math.abs(a - xjo))}</span></span></section>
+        <section class="card" style="margin-bottom:24px"><div class="compare-head"><h2>Equity curves <span class="thin">· total portfolio value</span></h2><div class="legend"><span class="legend-item"><span class="legend-line" style="background:${YOU}"></span> You</span><span class="legend-item"><span class="legend-line" style="background:${AI}"></span> AI</span><span class="legend-item"><span class="legend-line dashed" style="color:${SERIES[3]}"></span> S&amp;P 500 (AUD)</span><span class="legend-item"><span class="legend-line dashed" style="color:${SERIES[6]}"></span> ASX 200</span></div></div><div id="chart"></div></section>
+        <section class="ai-status"><div class="ai-status-head"><h3>AI committee</h3><label class="switch-label"><input type="checkbox" id="ailive" ${state.aiLive ? 'checked' : ''}/> ${state.aiLive ? 'Live' : 'Paused'}</label><button class="trade-btn" data-action="chat">Talk to the desk →</button><div class="ai-controls"><select><option>Follow the sun (10/day)</option><option>Every 10 min</option></select><select><option>Aggressive — most money, fastest</option><option>Balanced</option></select><select><option>5 analysts</option><option>3 analysts</option></select></div></div>
+          <p class="hint">5 × glm-5.3-flash analysts + chair · follows the sun · next 15:30 Sydney (ASX close plan) · last session ${fmtClock(Date.now() - 27 * 60000)} · ${state.sessions} sessions total · spent today <b>$1.59</b> of a $10 budget</p>
+          <p class="hint redday"><b>Red-day mode · ASX −0.83%</b> · sold 2 losers (LTR, XRO) · rotated into LTR, WTC, BOE, XRO, ALL, PME · flat at 15:52 local, then the day is booked</p></section>
+        <section class="section-card"><div class="cm-head"><h3 style="margin:0">Investment committee</h3><span class="hint">last convened ${fmtClock(Date.now() - 27 * 60000)} · ${sess.note} · 5 analysts + chair · 26 min in session · 1 trade</span><button class="ghost-btn" id="convene">Convene now</button></div>
+          <div class="cm-roles">${[['Macro strategist', '40m ago'], ['Momentum scout', '39m ago'], ['Hedge fund tracker', '42m ago'], ['Fundamentals analyst', '39m ago'], ['Risk officer', '36m ago']].map(([n, t]) => `<span class="cm-role"><span class="cm-role-dot"></span>${n} <span class="cm-role-meta">web · ${t}</span></span>`).join('')}<span class="cm-role chair"><span class="cm-role-dot"></span>Portfolio manager <span class="cm-role-meta">chair</span></span></div>
+          <div class="segmented" style="margin-bottom:12px"><button class="seg on">Decision</button><button class="seg">News</button><button class="seg">Consensus</button><button class="seg">Debate</button><button class="seg">Research</button></div>
+          <p class="cm-view">${esc(sess.summary)}</p><div class="thinking">${esc(sess.converged)}</div>
+          <div class="table-scroll"><table class="data-table"><thead><tr><th>Target portfolio</th><th>Weight</th><th>Playbook</th><th>Stop / target</th><th>Max hold</th></tr></thead><tbody>${sess.targets.map((r) => `<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num mono">${r[2]}</td><td class="num">${r[3]}</td><td class="num">${r[4]}</td></tr>`).join('')}</tbody></table></div></section>
+        <div class="versus-cols">${holdings('Your book', YOU, state.user)}${holdings("AI's book", AI, state.ai)}</div>
+        <div class="versus-cols">${log('Your trades', state.trades.user, false)}${log("AI's trades · click one to see its reasoning", state.trades.ai, true)}</div>
+        <section class="danger-zone"><button class="ghost-btn" id="reset">Reset the game…</button><span class="hint">Wipes both books back to ${fmtMoney(START)} (this demo only)</span></section>`;
+      mountChart($('#chart'), [
+        { key: 'you', label: 'YOU', color: YOU, points: state.snapshots.map((s) => ({ t: s.t, v: s.user })) },
+        { key: 'ai', label: 'AI', color: AI, points: state.snapshots.map((s) => ({ t: s.t, v: s.ai })) },
+        { key: 'spx', label: 'SPX', color: SERIES[3], dashed: true, points: state.snapshots.map((s) => ({ t: s.t, v: s.spx })) },
+        { key: 'xjo', label: 'XJO', color: SERIES[6], dashed: true, points: state.snapshots.map((s) => ({ t: s.t, v: s.xjo })) },
+      ], { mode: 'price', range: '7D', height: 260 });
+      $$('.log-row.expandable').forEach((b) => b.addEventListener('click', () => { const p = b.parentElement.querySelector('.log-reason'); p.hidden = !p.hidden; }));
+      $('#ailive').addEventListener('change', (e) => { state.aiLive = e.target.checked; renderVersus(); });
+      $('#convene').addEventListener('click', () => { const b = $('#convene'); b.disabled = true; b.textContent = 'In session…'; setTimeout(() => { state.sessions++; const s = SESSIONS[state.sessions % SESSIONS.length]; const [side, sym, frac, reason] = s.trade; if (side === 'buy') buy(state.ai, 'ai', sym, total(state.ai) * frac, reason); else sell(state.ai, 'ai', sym, reason); toast(`Committee decided: 1 trade executed (${side} ${sym})`); renderVersus(); }, 1800); });
+      $('#endwar').addEventListener('click', () => toast('The war ends when the real books close. This demo keeps going.'));
+      $('#reset').addEventListener('click', () => { state.user = { cash: START, positions: [] }; state.ai = { cash: START, positions: [] }; state.trades = { user: [], ai: [] }; state.snapshots.forEach((s) => { s.user = START; s.ai = START; }); toast(`Both portfolios reset to ${fmtMoney(START)}`); scoreline(); renderVersus(); });
+    };
+    const renderLedger = () => {
+      view.innerHTML = `
+        <div class="pf-tiles">${[['Round trips', '31'], ['Win rate', '45%'], ['Expectancy', '−0.22%'], ['Kelly (half)', '3%'], ['Max drawdown', '−4.1%'], ['Weekly avg', '−0.4%']].map(([l, v]) => `<div class="pf-tile ${v.startsWith('−') ? 'down' : ''}"><span class="pf-tile-label">${l}</span><span class="pf-tile-value">${v}</span><span class="pf-tile-sub">AI book · since the war started</span></div>`).join('')}</div>
+        <div class="section-card"><h3>Weekly spendable <span class="thin">· the goal is A$5–10 a week on a A$1,000 base</span></h3><div class="week-bars">${[['W1', 3.2], ['W2', -1.4], ['W3', 5.6], ['W4', 2.1], ['W5', -3.5], ['W6', 4.4], ['W7', -0.8]].map(([w, v]) => `<div class="week-bar"><span class="week-val ${v >= 0 ? 'up' : 'down'}">${v >= 0 ? '+' : ''}$${Math.abs(v).toFixed(1)}</span><span class="bar" style="height:${Math.abs(v) * 12}px;background:${v >= 0 ? 'var(--up)' : 'var(--down)'}"></span><span class="week-label">${w}</span></div>`).join('')}</div>
+          <div class="ledger-splits"><div class="ledger-split"><h4>By playbook</h4><ul>${[['swing', '+1.8%', 11], ['red_day', '−0.22%', 22], ['open_gap', '+0.9%', 4], ['pead', '−1.1%', 3]].map(([n, v, c]) => `<li><b>${n}</b><span>${c} trades · <span class="${v.startsWith('+') ? 'up' : 'down'}">${v}</span></span></li>`).join('')}</ul></div><div class="ledger-split"><h4>Benchmarks</h4><ul>${[['ASX 200', '−2.62%'], ['S&P 500 (AUD)', '+0.72%'], ['Buy & hold', '−1.9%'], ['AI book', '−2.76%'], ['Your book', '−10.69%']].map(([n, v]) => `<li><b>${n}</b><span class="${v.startsWith('+') ? 'up' : 'down'}">${v}</span></li>`).join('')}</ul></div><div class="ledger-split"><h4>Red days</h4><ul>${[['Sep 11', 'ASX −2.27%', '+$4.20'], ['Sep 15', 'ASX −0.83%', '−$1.10']].map(([d, i, r]) => `<li><b>${d}</b><span>${i} · <span class="${r.startsWith('+') ? 'up' : 'down'}">${r}</span></span></li>`).join('')}</ul></div></div></div>
+        <div class="section-card"><h3>Paper gates before real money</h3><ul style="list-style:none">${[['AI beats you and buy-and-hold over 4–8 weeks', 'in progress'], ['Expectancy > 0 per playbook, n ≥ 30', 'not yet'], ['Max drawdown under 15%', 'passing'], ['Average ≥ 0.65% a week', 'not yet']].map(([g, s]) => `<li style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--hairline);font-size:13px"><span>${g}</span><span class="mono ${s === 'passing' ? 'up' : 'dim'}">${s}</span></li>`).join('')}</ul></div>`;
+    };
+    const renderSettings = () => {
+      view.innerHTML = `<div class="settings">
+        <div class="settings-card"><h3>OpenRouter</h3><p class="hint">The key stays in data/settings.json on your machine and is only ever sent to OpenRouter.</p><div class="field-row"><label>API key</label><input type="password" value="sk-or-v1-••••••••••••••••••••••••" readonly /><button class="primary-btn">Save</button></div><div class="field-row"><label>Trader model</label><select><option>z-ai/glm-5.3-flash</option><option>google/gemini-3.8-flash</option><option>anthropic/claude-sonnet-5</option></select></div><div class="field-row"><label>Daily budget</label><div class="amount-box"><span>$</span><input value="10" readonly /></div></div></div>
+        <div class="settings-card"><h3>Committee</h3><div class="field-row"><label>Schedule</label><select><option>Follow the sun (10/day)</option><option>Every 10 min</option></select></div><div class="field-row"><label>Style</label><select><option>Aggressive</option><option>Balanced</option></select></div><div class="field-row"><label>Broker</label><select><option>Betashares Direct (ASX)</option><option>Alpaca (US)</option></select></div><div class="field-row"><label>Leverage cap</label><select><option>2×</option><option>1×</option></select></div></div>
+        <div class="settings-card"><h3>Watchlist <span class="thin">· ${WATCH.length} of 60</span></h3><div class="chip-cloud">${WATCH.map((w) => `<span class="chip">${w[0]}</span>`).join('')}</div></div></div>`;
+    };
+    const RENDER = { market: renderMarket, portfolio: renderPortfolio, ledger: renderLedger, versus: renderVersus, settings: renderSettings };
+    const viewport = $('#viewport');
+    const setTab = (t) => { state.tab = t; $$('.tab').forEach((b) => b.classList.toggle('on', b.dataset.tab === t)); RENDER[t](); scoreline(); viewport.scrollTo({ top: 0 }); };
+    // tabs inside the frame, the "Jump to" chips and the how-it-works buttons all drive the same preview
+    $$('[data-tab]').forEach((b) => b.addEventListener('click', () => {
+      setTab(b.dataset.tab);
+      if (!viewport.contains(b)) $('#preview').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (b.dataset.then === 'scan') setTimeout(() => $('#scan')?.click(), 500);
+      if (b.dataset.then === 'convene') setTimeout(() => $('#convene')?.click(), 500);
+    }));
+
+    // ───────────────────────── trading ─────────────────────────
+    const buy = (book, who, sym, amount, reason = '') => { const s = stocks[sym]; amount = Math.min(amount, book.cash); if (amount < 3) return false; const fee = amount * .001, shares = (amount - fee) / s.price; book.cash -= amount; const p = book.positions.find((x) => x.sym === sym); if (p) { p.avg = (p.avg * p.shares + s.price * shares) / (p.shares + shares); p.shares += shares; } else book.positions.push({ sym, shares, avg: s.price }); state.trades[who].unshift(mkTrade(who, 'buy', sym, amount, s.price, reason, 0)); scoreline(); return true; };
+    const sell = (book, who, sym, reason = '') => { const i = book.positions.findIndex((x) => x.sym === sym); if (i < 0) return false; const p = book.positions[i], s = stocks[sym], v = p.shares * s.price, fee = v * .001; book.cash += v - fee; const t = mkTrade(who, 'sell', sym, v, s.price, reason, 0); t.realized = (s.price - p.avg) * p.shares - fee; state.trades[who].unshift(t); book.positions.splice(i, 1); scoreline(); return true; };
+
+    const overlay = $('#overlay');
+    const closeOverlay = () => { overlay.innerHTML = ''; };
+    overlay.addEventListener('click', (e) => { if (e.target === overlay.firstElementChild) closeOverlay(); });
+    const openDetail = (sym, analyse = false) => {
+      const s = stocks[sym], p = state.user.positions.find((x) => x.sym === sym), ch = changePct(s);
+      overlay.innerHTML = `<div class="overlay"><div class="detail">
+        <div class="detail-head"><div><div class="detail-ticker">${sym}</div><div class="dim" style="font-size:13px">${esc(s.name)} <span class="mkt-tag">${s.mkt}</span></div></div><div class="detail-price"><div class="price big">${fmtMoney(s.price)}</div><div class="delta ${ch >= 0 ? 'up' : 'down'}">${fmtPct(ch)} today</div></div><button class="close-btn" id="close">✕</button></div>
+        <div id="dchart"></div>
+        <div class="panel-section"><div class="section-head"><h3>Trade</h3><span class="hint">cash ${fmtMoney(state.user.cash)}</span></div>
+          ${p ? `<div class="position-strip">You hold ${fmtShares(p.shares)} shares · avg ${fmtMoney(p.avg)} · worth ${fmtMoney(p.shares * s.price)} · <span class="${s.price >= p.avg ? 'up' : 'down'}">${fmtPct(((s.price - p.avg) / p.avg) * 100)}</span></div>` : ''}
+          <div class="trade-row"><div class="amount-box"><span>A$</span><input id="amt" value="100" inputmode="decimal" /></div><button class="buy-btn" id="buy">Buy</button>${p ? '<button class="sell-btn" id="sellall">Sell all</button>' : ''}</div>
+          <p class="hint">Fractional shares at the live price · 0.10% brokerage · fills include a simulated spread.</p></div>
+        <div class="panel-section analysis"><div class="section-head"><h3>AI analysis</h3>${analyse ? '' : '<button class="analyze-btn" id="analyse">✦ Analyse</button>'}</div><div id="ana">${analyse ? analysisHTML(s) : '<p class="hint">Direction, confidence and a target range with reasoning drawn from price action and live news.</p>'}</div></div>
+      </div></div>`;
+      const pts = history(sym, '24H'), first = pts[0].c;
+      mountChart($('#dchart'), [{ key: sym, label: sym, color: SERIES[0], points: pts.map((q) => ({ t: q.t, v: ((q.c - first) / first) * 100 })) }], { mode: 'pct', range: '24H', height: 180 });
+      $('#close').addEventListener('click', closeOverlay);
+      $('#buy').addEventListener('click', () => { const amt = parseFloat($('#amt').value); if (!(amt > 0)) return; if (!buy(state.user, 'user', sym, amt)) return toast('Not enough cash'); toast(`Bought ${fmtMoney(amt)} of ${sym} at ${fmtMoney(s.price)}`); closeOverlay(); RENDER[state.tab](); });
+      $('#sellall')?.addEventListener('click', () => { sell(state.user, 'user', sym); toast(`Sold all ${sym}`); closeOverlay(); RENDER[state.tab](); });
+      $('#analyse')?.addEventListener('click', () => { $('#ana').innerHTML = '<p class="hint" style="animation:pulse 1.6s infinite">Reading the tape and the news…</p>'; setTimeout(() => { $('#ana').innerHTML = analysisHTML(s); }, 1200); });
+    };
+    const analysisHTML = (s) => { const up = s.drift >= 0, mv = (Math.abs(s.drift) * 8 + 1.5) * (up ? 1 : -1); return `<div class="verdict-row"><span class="verdict ${up ? 'up' : 'down'}">${up ? 'Lean long' : 'Stand aside'}</span><span class="verdict-meta">confidence ${Math.round(48 + Math.abs(s.drift) * 120)}% · 2-week horizon</span></div><p class="target">Target ${fmtMoney(s.price * (1 + mv / 100))} (${fmtPct(mv)}) · stop ${fmtMoney(s.price * (1 - .02))}</p><h4>Price action</h4><p>${s.sym} is ${fmtPct(changePct(s))} on the day against a ${changePct(stocks.CBA) >= 0 ? 'firm' : 'soft'} index. ${up ? 'Higher lows over the range and it sits above the 24H VWAP.' : 'Lower highs over the range and sellers reload into every bounce.'}</p><h4>News</h4><p>${s.mkt === 'asx' ? 'No price-sensitive announcements in the last 48 hours. The macro tape is risk-off into the FOMC with Brent above US$108.' : 'The AI complex sold off overnight on FOMC nerves; the capex cycle is unchanged and the print is two weeks out.'}</p><h4 class="down">Risk</h4><p>${up ? 'A hawkish FOMC unwinds the move; the stop sits 2% below.' : 'The committee\'s own rule refuses new entries here until a green cross prints.'}</p>`; };
+
+    // chat drawer
+    const REPLIES = { chair: ["We're 70% cash into the FOMC on purpose. Both branches are priced; cash wins them for free and the only strength on the board is WTC and XRO, which the engine flattens at 15:52 regardless.", "The STO ban is permanent: lesson 2. Your book runs it 2× levered, which is exactly the trade we refuse to mirror.", "If you want the desk to lean into energy, pin a directive. Otherwise the post-FOMC ladder is already written: WDS-first oil re-venue on a green cross above $33.08."], risk: ["Drawdown is −4.1% against a 12% kill line. Daily loss cap is 3%; today we're −0.8%. Nothing is close to a bench.", "Your STO position is 199% gross. I would not carry that into a 90%-priced FOMC, but it's your book."] };
+    const openChat = () => {
+      overlay.innerHTML = `<div class="overlay"><div class="detail chat"><div class="chat-head"><div><span class="eyebrow chat-eyebrow"><i></i>Talk to the desk</span><select id="persona"><option value="chair">Portfolio manager (chair)</option><option value="risk">Risk officer</option></select></div><button class="close-btn" id="close">✕</button></div><div class="chat-list" id="chatlist"></div><div class="chat-input"><input id="chatin" placeholder="Ask the chair anything about the book…" /><button class="primary-btn" id="send">Send</button></div></div></div>`;
+      const list = $('#chatlist');
+      const render = () => { list.innerHTML = state.chat.length ? state.chat.map((m) => `<div class="chat-msg ${m.who}"><span class="chat-who">${m.who === 'user' ? 'You' : m.persona}</span><p>${esc(m.text)}</p></div>`).join('') : `<div class="chat-empty"><p class="hint">Every persona is the same agent that sits on the committee, with the same memory. Try:</p><div class="chat-starters">${['Why so much cash?', 'What is the plan after the FOMC?', 'Should I cut STO?'].map((q) => `<button class="chip" data-q="${q}">${q}</button>`).join('')}</div></div>`; list.scrollTop = list.scrollHeight; $$('[data-q]', list).forEach((b) => b.addEventListener('click', () => send(b.dataset.q))); };
+      const send = (text) => { if (!text.trim()) return; const persona = $('#persona').value; state.chat.push({ who: 'user', text }); render(); setTimeout(() => { const pool = REPLIES[persona]; state.chat.push({ who: 'assistant', persona: persona === 'chair' ? 'Portfolio manager' : 'Risk officer', text: pool[state.chat.filter((m) => m.who === 'assistant').length % pool.length] }); render(); }, 900); };
+      render(); $('#close').addEventListener('click', closeOverlay); $('#send').addEventListener('click', () => { send($('#chatin').value); $('#chatin').value = ''; }); $('#chatin').addEventListener('keydown', (e) => { if (e.key === 'Enter') { send($('#chatin').value); $('#chatin').value = ''; } });
+    };
+    document.addEventListener('click', (e) => { const b = e.target.closest('[data-action="chat"]'); if (!b) return; if (!viewport.contains(b)) $('#preview').scrollIntoView({ behavior: 'smooth', block: 'start' }); openChat(); });
+
+    // toast
+    let toastT;
+    const toast = (msg) => { const t = $('#toast'); t.innerHTML = `<div class="toast">${esc(msg)}</div>`; clearTimeout(toastT); toastT = setTimeout(() => { t.innerHTML = ''; }, 2600); };
+
+    // ───────────────────────── live tick ─────────────────────────
+    setInterval(() => {
+      Object.values(stocks).forEach((s) => { s.price *= 1 + gauss() * .0012 + s.drift * .00004; const h = s.hist['24H']; if (h) { h[h.length - 1].c = s.price; if (rnd() < .08) { h.push({ t: h[h.length - 1].t + 600, c: s.price }); h.shift(); } } });
+      const last = state.snapshots[state.snapshots.length - 1]; last.user = total(state.user); last.ai = total(state.ai);
+      scoreline();
+      if (state.tab === 'market' && !state.query && document.activeElement?.id !== 'q') renderMarket();
+      else if (state.tab === 'portfolio') renderPortfolio();
+    }, 4000);
+
+    scoreline();
+    const params = new URLSearchParams(location.search);
+    setTab(['market', 'portfolio', 'ledger', 'versus', 'settings'].includes(params.get('tab')) ? params.get('tab') : 'market');
+  })();
+  </script>
+</body>
+</html>

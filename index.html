@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Max's Gallery</title>
+  <meta name="description" content="Max's Gallery — a place for the websites and tools I build for fun, each with its own look." />
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <!-- General Sans stands in for Neue Montreal -->
+  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,700&display=swap" rel="stylesheet" />
+  <!-- Fonts used by the project tabs -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist:wght@400;500&family=Geist+Mono&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400&family=Karla:wght@400;500&family=Caveat:wght@400;500&family=JetBrains+Mono:wght@400;600&family=Pixelify+Sans:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=20260915i" />
+  <link rel="stylesheet" href="tabs.css?v=20260915i" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=20260915i" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <nav class="nav">
+    <a class="nav__mark" href="#top" data-scroll><i></i>Max's Gallery</a>
+    <div class="nav__links" id="nav-links">
+      <span class="nav__glow" aria-hidden="true"></span>
+      <a href="#work" data-scroll data-section="work">Projects</a>
+      <a href="#about" data-scroll data-section="about">About</a>
+      <a href="#contact" data-scroll data-section="contact" class="nav__hi"><i></i>Say hi</a>
+    </div>
+  </nav>
+
+  <!-- ================= HERO ================= -->
+  <header class="hero" id="top">
+    <div class="prism" id="prism" aria-hidden="true"></div>
+    <div class="hero__stage">
+      <h1 class="display">
+        <span class="ln"><span>Hi, I'm Max.</span></span>
+        <span class="ln"><span>I make things</span></span>
+        <span class="ln"><span>for fun.</span></span>
+      </h1>
+      <div class="hero__meta">
+        <span>14 · Australia · builds things at night</span>
+        <span>Four projects on the wall so far</span>
+        <a class="hero__scroll" href="#work" data-scroll>↓ Have a look</a>
+      </div>
+      <p class="hero__lead">
+        This is where I keep the stuff I build when I should probably be sleeping. Games, tools, experiments,
+        whatever I got obsessed with that month. Every project gets its own look, because that's the fun part.
+      </p>
+    </div>
+  </header>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee__track" id="marquee">
+      <span>Stuff I made</span><span><em>For fun</em></span><span>No clients, no ads</span><span><em>Minebro</em></span><span><em>Night Desk</em></span><span><em>Notepad</em></span><span><em>Astral Coder</em></span><span>More soon</span>
+    </div>
+  </div>
+
+  <!-- ================= WORK ================= -->
+  <section class="section" id="work">
+    <div class="wrap">
+      <p class="eyebrow reveal"><span>Projects</span><small>Click one to poke around.</small></p>
+      <ul class="work" id="work-list"></ul>
+    </div>
+  </section>
+
+  <!-- ================= ABOUT ================= -->
+  <section class="section section--veil" id="about">
+    <div class="wrap">
+      <p class="eyebrow reveal"><span>About me</span><small>The person behind the glass.</small></p>
+      <div class="section__head">
+        <h2 class="section__display reveal">I'm 14 and I can't stop making things.</h2>
+        <p class="section__lead reveal" data-delay="1">Most of these started as "I wonder if I could…" and got out of hand. I like dark UIs, things that glow, and giving every project its own personality.</p>
+      </div>
+      <ul class="about__list reveal" data-delay="2">
+        <li><span>Name</span><span>Max</span></li>
+        <li><span>Age</span><span>14 yrs old</span></li>
+        <li><span>Right now</span><span>Building the next one</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= HOW ================= -->
+  <section class="section" id="process">
+    <div class="wrap">
+      <p class="eyebrow reveal"><span>How stuff gets here</span><small>Same three steps every time.</small></p>
+      <div class="section__head">
+        <h2 class="section__display reveal">Get obsessed, build it, hang it up.</h2>
+        <p class="section__lead reveal" data-delay="1">There's no plan. Something looks fun, I make it, and once it works it gets its own look and a spot on the wall.</p>
+      </div>
+      <ol class="steps">
+        <li class="reveal" data-delay="1">
+          <b>01 — Get obsessed</b>
+          <h3>An idea shows up and won't leave.</h3>
+          <p>Usually at 11pm. Usually something I've never built before, which is the whole point.</p>
+        </li>
+        <li class="reveal" data-delay="2">
+          <b>02 — Build it for real</b>
+          <h3>Working code, not mockups.</h3>
+          <p>If it's a visualiser, it runs. If it's a game, you can play it. Screenshots are boring.</p>
+        </li>
+        <li class="reveal" data-delay="3">
+          <b>03 — Give it a look</b>
+          <h3>Every project gets its own outfit.</h3>
+          <p>Brutalist, pastel, paper, neon. Then it goes on the wall and the glass shuffles up to make room.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ================= SAY HI ================= -->
+  <section class="section" id="contact">
+    <div class="wrap">
+      <p class="eyebrow reveal"><span>Say hi</span><small>I do reply, eventually.</small></p>
+      <div class="section__head">
+        <h2 class="section__display reveal">Want to say hi?</h2>
+        <p class="section__lead reveal" data-delay="1">If you liked something here, built something cool, or want to make something together, send me an email.</p>
+      </div>
+      <a class="contact__mail reveal" data-delay="2" href="mailto:maxwitanowski@gmail.com">maxwitanowski@gmail.com</a>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="footer">
+    <div class="wrap">
+      <hr class="footer__rule" />
+      <div class="footer__row">
+        <span>© <span id="year2"></span> Max <span class="dim">· Made at night in Australia</span></span>
+        <span>
+          <a href="#work" data-scroll>Projects</a>
+          <a href="#about" data-scroll>About</a>
+          <a href="#contact" data-scroll>Say hi</a>
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="projects.js?v=20260915i"></script>
+  <script src="gallery.js?v=20260915i"></script>
+  <script type="module" src="prism.js?v=20260915i"></script>
+</body>
+</html>

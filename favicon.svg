@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="t" x1="0" y1="0" x2="0.65" y2="1">
+      <stop offset="0" stop-color="#f5f8ff"/>
+      <stop offset="1" stop-color="#bccdff"/>
+    </linearGradient>
+    <linearGradient id="l" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5875f4"/>
+      <stop offset="1" stop-color="#18246c"/>
+    </linearGradient>
+    <linearGradient id="r" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ec5074"/>
+      <stop offset="1" stop-color="#67122e"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.58">
+      <stop offset="0" stop-color="#3b4aa4" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#0a0a0a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- obsidian tile + inner glow -->
+  <rect x="3" y="3" width="58" height="58" rx="15" fill="#0a0a0a"/>
+  <rect x="3" y="3" width="58" height="58" rx="15" fill="url(#glow)"/>
+
+  <!-- chromatic dispersion: the silhouette splits into the site's blue and red -->
+  <path d="M32 10.4 L9.6 22.4 L9.6 45.6 L32 57.6" fill="none" stroke="#2a7fff" stroke-width="1.7" stroke-opacity="0.75" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M32 10.4 L54.4 22.4 L54.4 45.6 L32 57.6" fill="none" stroke="#ff2a4a" stroke-width="1.7" stroke-opacity="0.75" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- glass cube, three faces -->
+  <g stroke="#0a0a12" stroke-width="1" stroke-linejoin="round">
+    <path d="M32 11.5 L53 23 L32 34.5 L11 23 Z" fill="url(#t)"/>
+    <path d="M11 23 L32 34.5 L32 56 L11 44.5 Z" fill="url(#l)"/>
+    <path d="M53 23 L32 34.5 L32 56 L53 44.5 Z" fill="url(#r)"/>
+  </g>
+
+  <!-- glass sheen: rim light on the lit top face + specular streaks -->
+  <path d="M32 11.5 L53 23 L32 34.5 L11 23 Z" fill="none" stroke="#ffffff" stroke-opacity="0.55" stroke-width="0.9"/>
+  <path d="M20 15.6 L35 24" stroke="#ffffff" stroke-opacity="0.55" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M14.5 25 L30 33.6" stroke="#d6e2ff" stroke-opacity="0.55" stroke-width="1.1" stroke-linecap="round"/>
+</svg>
