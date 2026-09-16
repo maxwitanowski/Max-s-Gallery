@@ -321,10 +321,73 @@
 .tab--astral .tab__open { right: 24px; bottom: 18px; font-family: var(--sans); text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 999px; background: var(--fg); color: var(--bg); }
 .tab--astral:hover .tab__open { filter: brightness(1.15); }
 
+/* ============ 05 MAX PHOTOS — dark editorial gallery ============ */
+.tab--maxphotos {
+  --ink: #0a0a0b; --ink-card: #101012;
+  --ivory: #ece7df; --ivory-dim: #a8a29a; --ivory-faint: #6b6660;
+  --hairline: rgba(236, 231, 223, 0.12); --gold: #c9a86a;
+  --serif: 'Cormorant Garamond', Georgia, serif; --script: 'Pinyon Script', cursive;
+  background: var(--ink); color: var(--ivory); font-family: var(--serif);
+  grid-template-columns: 1.05fr 1fr;
+  min-height: 424px;
+  border: 1px solid rgba(236, 231, 223, 0.1);
+}
+/* film grain, the same quiet layer the real site puts over everything */
+.tab--maxphotos::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 4; opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.tab--maxphotos .mp-side {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: flex-start;
+  padding: 34px 44px 92px;
+}
+.tab--maxphotos .mp-kicker {
+  display: flex; justify-content: space-between; gap: 16px; width: 100%; margin: 0;
+  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ivory-faint);
+}
+.tab--maxphotos .mp-brand { margin-top: auto; }
+.tab--maxphotos h3 {
+  margin: 0; font-weight: 300; font-size: clamp(32px, 3.3vw, 48px);
+  letter-spacing: 0.28em; text-indent: 0.28em; line-height: 1.05; white-space: nowrap;
+}
+.tab--maxphotos .mp-script {
+  margin: 2px 0 0 6px; font-family: var(--script); font-size: clamp(19px, 1.9vw, 27px);
+  color: var(--gold); opacity: 0.9; transform: rotate(-2deg);
+}
+.tab--maxphotos .mp-intro {
+  margin: 20px 0 0; max-width: 350px;
+  font-size: 16px; font-weight: 300; line-height: 1.6; color: var(--ivory-dim);
+}
+.tab--maxphotos .mp-meta {
+  margin: 22px 0 auto; padding-top: 15px; width: 100%; max-width: 380px;
+  border-top: 1px solid var(--hairline);
+  display: flex; flex-direction: column; gap: 5px;
+  font-size: 10.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ivory-faint);
+}
+.tab--maxphotos .mp-meta span:first-child { color: var(--ivory-dim); }
+/* one photograph, bled off the right edge and melted into the ink on its left */
+.tab--maxphotos .mp-shot { position: relative; overflow: hidden; background: var(--ink-card); }
+.tab--maxphotos .mp-shot img {
+  width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.02);
+  transition: transform 1.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.tab:hover .mp-shot img { transform: scale(1.065); }
+.tab--maxphotos .mp-shot::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, var(--ink) 0%, rgba(10, 10, 11, 0) 26%);
+}
+.tab--maxphotos .tab__open {
+  left: 44px; right: auto; bottom: 38px;
+  font-family: var(--serif); font-size: 11.5px; letter-spacing: 0.24em;
+  color: var(--ivory-dim); border-bottom: 1px solid var(--hairline); padding-bottom: 7px;
+}
+.tab--maxphotos:hover .tab__open { color: var(--gold); border-bottom-color: var(--gold); }
+
 /* ============ responsive ============ */
 @media (max-width: 960px) {
   .tab { min-height: 0; }
-  .tab--minebro, .tab--nightdesk .nd-body, .tab--notepad, .tab--astral { grid-template-columns: 1fr; }
+  .tab--minebro, .tab--nightdesk .nd-body, .tab--notepad, .tab--astral, .tab--maxphotos { grid-template-columns: 1fr; }
   .tab--astral .ac-side, .tab--astral .ac-panel { display: none; }
   .tab--astral .ac-pills, .tab--astral .ac-tabs .views { display: none; }
   .tab--notepad .np-side, .tab--notepad .np-panel { display: none; }
@@ -333,5 +396,10 @@
   .tab--minebro .mb-left { padding-bottom: 20px; }
   .tab--minebro .mb-right { padding-top: 0; }
   .tab--minebro .mb-splash { display: none; }
+  .tab--maxphotos { min-height: 0; }
+  .tab--maxphotos .mp-shot { height: 190px; }
+  .tab--maxphotos .mp-side { padding: 28px 24px 10px; }
+  .tab--maxphotos h3 { letter-spacing: 0.2em; text-indent: 0.2em; }
+  .tab--maxphotos .tab__open { justify-self: start; }
   .tab__open { position: static; display: inline-block; margin: 0 28px 24px; }
 }

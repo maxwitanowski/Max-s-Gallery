@@ -161,5 +161,24 @@ window.PROJECTS = [
           <div class="ac-check"><i class="ok">✓</i>build<small>1m 12s</small></div><div class="ac-check"><i class="ok">✓</i>lint<small>58s</small></div><div class="ac-check"><i class="pend">◌</i>test (windows-latest)<small>running</small></div></div>
       </div>
       <span class="tab__open">Open the console →</span>`
+  },
+  {
+    slug: "maxphotos",
+    title: "Max Photos",
+    year: "2026",
+    href: "https://maxwitanowski.github.io/MaxPhotos/",
+    cls: "tab--maxphotos",
+    tab: `
+      <div class="mp-side">
+        <p class="mp-kicker"><span>05 / Photography portfolio</span><span>2026</span></p>
+        <div class="mp-brand">
+          <h3>MAXWELL</h3>
+          <p class="mp-script">photography</p>
+        </div>
+        <p class="mp-intro">Planes, stars and the odd mountain, shot on a Canon R100 around New South Wales.</p>
+        <p class="mp-meta"><span>Twenty-six photographs</span><span>Plane spotting · Astrophotography · Landscape</span></p>
+      </div>
+      <div class="mp-shot" aria-hidden="true"><img src="projects/media/maxphotos/hero.jpg" alt="" loading="lazy"></div>
+      <span class="tab__open">View the gallery →</span>`
   }
 ];
