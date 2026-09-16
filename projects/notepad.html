@@ -73,12 +73,12 @@
     .titlebar .dots { display: inline-flex; gap: 6px; } .titlebar .dots i { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--ash); }
     .titlebar .cap { flex: 1; text-align: center; } .titlebar .sim { font-family: var(--hand); font-style: normal; font-size: 18px; color: var(--sepia); }
     .viewport { height: 640px; position: relative; overflow: hidden; transform: translateZ(0); user-select: none; }
-    .callouts { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 24px; margin: 22px 0 0; }
-    .callouts li { display: grid; grid-template-columns: 30px 1fr; gap: 8px; font-size: 14px; color: var(--slate); line-height: 1.5; }
+    .callouts { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 24px; margin: 22px 0 0; }
+    .callouts li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 8px; font-size: 14px; color: var(--slate); line-height: 1.5; }
     .callouts li b { font-family: var(--hand); font-size: 22px; color: var(--sepia); font-weight: 400; line-height: 1; padding-top: 2px; } .callouts strong { color: var(--ink); font-weight: 500; }
     .how { max-width: 1180px; margin: 0 auto; padding: 40px 28px 20px; border-top: 1px solid var(--rule); }
     .how-head { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; flex-wrap: wrap; margin-bottom: 20px; } .how-head h2 { font-family: var(--serif); font-weight: 400; font-size: 34px; margin: 0; }
-    .feat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+    .feat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 18px; }
     .feat { background: var(--ivory); border: 1px solid var(--ash); padding: 22px 24px; display: flex; flex-direction: column; gap: 10px; position: relative; isolation: isolate; }
     .feat::before { content: ''; position: absolute; inset: 6px -6px -6px 6px; border-right: 1px solid var(--ash); border-bottom: 1px solid var(--ash); pointer-events: none; z-index: -1; }
     .feat .tag { font-family: var(--hand); font-size: 20px; color: var(--forest); line-height: 1; } .feat h3 { font-family: var(--serif); font-weight: 400; font-size: 22px; margin: 0; }
@@ -89,12 +89,12 @@
     .install pre { background: var(--ivory); border: 1px solid var(--ash); padding: 14px 16px; font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; font-size: 13.5px; line-height: 1.6; overflow-x: auto; margin: 10px 0 16px; }
     .install ol { padding-left: 20px; color: var(--slate); font-size: 14px; line-height: 1.6; } .install li { margin: 4px 0; }
     .install table { width: 100%; border-collapse: collapse; font-size: 14px; } .install th, .install td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); } .install th { font-family: var(--serif); font-style: italic; font-weight: 400; color: var(--slate); } .install td:first-child { font-family: ui-monospace, Consolas, monospace; font-size: 13px; white-space: nowrap; }
-    .install ul.spec { list-style: none; padding: 0; margin: 0; } .install ul.spec li { display: grid; grid-template-columns: 120px 1fr; gap: 12px; padding: 8px 0; border-top: 1px solid var(--rule); font-size: 14px; color: var(--slate); } .install ul.spec b { font-family: var(--serif); font-style: italic; font-weight: 400; color: var(--smoke); }
+    .install ul.spec { list-style: none; padding: 0; margin: 0; } .install ul.spec li { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; padding: 8px 0; border-top: 1px solid var(--rule); font-size: 14px; color: var(--slate); } .install ul.spec b { font-family: var(--serif); font-style: italic; font-weight: 400; color: var(--smoke); }
     .foot { max-width: 1180px; margin: 0 auto; padding: 14px 28px 40px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--smoke); border-top: 1px solid var(--rule); }
 
     /* ── the app shell (inside the frame) ── */
-    .app { display: grid; height: 100%; grid-template-columns: var(--sidebar-w) 1fr auto; grid-template-rows: var(--topbar-h) 1fr; }
-    .app.no-sidebar { grid-template-columns: 0 1fr auto; }
+    .app { display: grid; height: 100%; grid-template-columns: var(--sidebar-w) minmax(0, 1fr) auto; grid-template-rows: var(--topbar-h) 1fr; }
+    .app.no-sidebar { grid-template-columns: 0 minmax(0, 1fr) auto; }
     .sidebar { grid-column: 1; grid-row: 1 / 3; } .topbar { grid-column: 2 / 4; grid-row: 1; } .main { grid-column: 2; grid-row: 2; } .panel { grid-column: 3; grid-row: 2; }
     .sidebar { background: var(--halo); border-right: 1px solid var(--rule); display: flex; flex-direction: column; min-width: 0; overflow: hidden; position: relative; }
     .app.no-sidebar .sidebar { display: none; }
@@ -197,15 +197,15 @@
     .modal { width: 560px; max-width: calc(100% - 32px); max-height: 80%; overflow-y: auto; background: var(--ivory); border: 1px solid var(--ash); padding: 28px 32px; animation: sheet-in .25s ease both; position: relative; }
     .modal::before { content: ''; position: absolute; inset: 6px -6px -6px 6px; border-right: 1px solid var(--ash); border-bottom: 1px solid var(--ash); pointer-events: none; z-index: -1; }
     .modal h2 { font-family: var(--serif); font-weight: 400; font-size: 34px; margin: 0 0 2px; line-height: 1.1; } .modal .sub { font-family: var(--serif); font-style: italic; color: var(--smoke); font-size: 15px; margin: 0 0 22px; }
-    .form-row { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: center; margin-bottom: 14px; } .form-row .label { font-family: var(--serif); font-size: 15px; color: var(--slate); }
+    .form-row { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; align-items: center; margin-bottom: 14px; } .form-row .label { font-family: var(--serif); font-size: 15px; color: var(--slate); }
     .modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
     .quick { padding: 0; width: 520px; }
     .quick input { width: 100%; border: 0; border-bottom: 1px solid var(--rule); padding: 18px 24px; font-size: 22px; font-family: var(--serif); font-style: italic; outline: none; background: transparent; }
     .quick ul { list-style: none; margin: 0; padding: 8px; max-height: 300px; overflow-y: auto; } .quick li { padding: 8px 14px; cursor: pointer; display: flex; justify-content: space-between; gap: 12px; font-family: var(--serif); font-size: 16px; } .quick li.sel { background: var(--wash); } .quick li .p { font-size: 13px; font-style: italic; color: var(--smoke); }
     .toast { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 60; animation: rise .25s ease both; background: var(--ink); color: var(--ivory); padding: 8px 16px; border-radius: var(--radius); font-size: 14px; max-width: 70%; }
     .viewport ::-webkit-scrollbar { width: 10px; height: 10px; } .viewport ::-webkit-scrollbar-thumb { background: var(--ash); border-radius: 5px; border: 3px solid transparent; background-clip: padding-box; }
-    @media (max-width: 1000px) { .callouts { grid-template-columns: 1fr 1fr; } .install { grid-template-columns: 1fr; } .viewport { height: 560px; } .app { --sidebar-w: 220px; --panel-w: 280px; } .marginalia { display: none; } }
-    @media (max-width: 700px) { .callouts { grid-template-columns: 1fr; } .app { grid-template-columns: 0 1fr auto; } .sidebar { display: none; } .panel { width: 240px; } .sheet-body { padding: 32px 24px 0 48px; } .sheet::after { left: 34px; } .sheet-foot { padding: 12px 24px 14px 48px; } }
+    @media (max-width: 1000px) { .callouts { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .install { grid-template-columns: minmax(0, 1fr); } .viewport { height: 560px; } .app { --sidebar-w: 220px; --panel-w: 280px; } .marginalia { display: none; } }
+    @media (max-width: 700px) { .callouts { grid-template-columns: minmax(0, 1fr); } .app { grid-template-columns: 0 minmax(0, 1fr) auto; } .sidebar { display: none; } .panel { width: 240px; } .sheet-body { padding: 32px 24px 0 48px; } .sheet::after { left: 34px; } .sheet-foot { padding: 12px 24px 14px 48px; } }
   </style>
 </head>
 <body>

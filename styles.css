@@ -181,7 +181,7 @@ a:hover { color: var(--color-fog-blue); }
   margin: 0 auto;
   padding: 120px var(--page-gutter) 80px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-rows: auto auto;
   column-gap: var(--spacing-40);
   pointer-events: none;
@@ -298,7 +298,7 @@ a:hover { color: var(--color-fog-blue); }
 .about__list li span:first-child { color: var(--color-fog-blue); }
 
 /* ---------- Process ---------- */
-.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--color-ash-border); }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--color-ash-border); }
 .steps li { padding: var(--spacing-40) var(--spacing-40) var(--spacing-40) 0; border-bottom: 1px solid var(--color-ash-border); }
 .steps li + li { border-left: 1px solid var(--color-ash-border); padding-left: var(--spacing-40); }
 .steps b { display: block; font-weight: var(--font-weight-regular); font-size: var(--text-caption); letter-spacing: 0.02em; text-transform: uppercase; color: var(--color-fog-blue); margin-bottom: var(--spacing-40); }
@@ -348,13 +348,13 @@ a:hover { color: var(--color-fog-blue); }
   .nav__links { font-size: 13px; padding: 3px; }
   .nav__links a { padding: 8px 12px; gap: 7px; }
   .nav__glow { top: 3px; height: calc(100% - 6px); }
-  .hero__stage { grid-template-columns: 1fr; padding-top: 100px; }
+  .hero__stage { grid-template-columns: minmax(0, 1fr); padding-top: 100px; }
   .display { grid-column: 1; padding-left: 0; }
   .display .ln { white-space: normal; }
   .hero__lead { grid-column: 1; margin-top: 44vh; }
   .hero__meta { grid-column: 1; grid-row: 3; padding-left: 0; margin-top: var(--spacing-20); }
-  .section__head, .about__list li { grid-template-columns: 1fr; gap: var(--spacing-20); }
-  .steps { grid-template-columns: 1fr; }
+  .section__head, .about__list li { grid-template-columns: minmax(0, 1fr); gap: var(--spacing-20); }
+  .steps { grid-template-columns: minmax(0, 1fr); }
   .steps li + li { border-left: 0; padding-left: 0; }
   .footer__row { flex-direction: column; gap: 14px; }
 }

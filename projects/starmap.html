@@ -145,9 +145,9 @@
     .cap { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; color: var(--dim); font-size: 12.5px; }
 
     /* ── how to use ── */
-    .keys { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
+    .keys { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 10px; }
     .key {
-      display: grid; grid-template-columns: 116px 1fr; gap: 14px; align-items: start;
+      display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 14px; align-items: start;
       background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius); padding: 13px 15px;
     }
     .key .k { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -156,7 +156,7 @@
 
     .steps { counter-reset: s; display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
     .steps li {
-      counter-increment: s; display: grid; grid-template-columns: 30px 1fr; gap: 14px; align-items: start;
+      counter-increment: s; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 14px; align-items: start;
       background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius); padding: 14px 16px;
     }
     .steps li::before {
@@ -191,10 +191,19 @@
       display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; color: var(--dim); font-size: 12.5px;
     }
 
+    @media (max-width: 700px) {
+      /* stack the layer table into labelled blocks rather than squeezing 3 columns */
+      table.data thead { display: none; }
+      table.data tr { display: block; padding: 10px 0; border-bottom: 1px solid var(--panel-border); }
+      table.data tr:last-child { border-bottom: 0; }
+      table.data td { display: block; border: 0; padding: 1px 14px; }
+      table.data td:first-child { font-weight: 600; font-size: 14px; }
+      table.data td:nth-child(2) { color: var(--accent2); }
+    }
     @media (max-width: 900px) {
-      .two { grid-template-columns: 1fr; gap: 24px; }
+      .two { grid-template-columns: minmax(0, 1fr); gap: 24px; }
       .demo-body { height: 460px; }
-      .key { grid-template-columns: 100px 1fr; }
+      .key { grid-template-columns: 100px minmax(0, 1fr); }
       .gbar .brand-sub, .gbar .mid { display: none; }
     }
   </style>

@@ -106,7 +106,7 @@
     .tipf span { color: var(--grey); }
     .toasts { position: fixed; top: 70px; right: 14px; z-index: 70; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
     .toast {
-      width: 330px; padding: 10px 12px; display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: center;
+      width: 330px; padding: 10px 12px; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; align-items: center;
       background: #c6c6c6; border: 3px solid #000; box-shadow: inset 3px 3px 0 #fff, inset -3px -3px 0 #555;
       color: #3f3f3f; animation: toast-in .45s steps(5) both, toast-out .45s steps(5) 3.4s forwards;
     }
@@ -192,7 +192,7 @@
     .result .slot { width: 100%; height: 100%; font-size: 15px; }
     .result .slot .ico { width: 48px; height: 48px; }
     .craft:hover .result .slot { background: #b3d38f; }
-    .how { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .how { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
     .how .panel { transition: transform .2s steps(2); }
     .how .panel:hover { transform: translateY(-3px); }
     .how .panel p { margin: 0; font-size: 17.5px; color: #eee; }
@@ -226,8 +226,8 @@
     .quick .mc-btn { font-family: var(--mono); font-size: 20px; text-shadow: 2px 2px 0 #3f3f3f; }
 
     /* ---------- install (advancements) ---------- */
-    .adv { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-    .adv__c { display: grid; grid-template-columns: 64px 1fr; gap: 16px; align-items: start; padding: 16px; background: rgba(4,5,9,.78); border: 3px solid #000; box-shadow: inset 3px 3px 0 rgba(255,255,255,.18), inset -3px -3px 0 rgba(0,0,0,.6); transition: box-shadow .2s steps(2); }
+    .adv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .adv__c { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 16px; align-items: start; padding: 16px; background: rgba(4,5,9,.78); border: 3px solid #000; box-shadow: inset 3px 3px 0 rgba(255,255,255,.18), inset -3px -3px 0 rgba(0,0,0,.6); transition: box-shadow .2s steps(2); }
     .adv__c.done { box-shadow: inset 3px 3px 0 #63b34a, inset -3px -3px 0 #1e4d12, 0 0 0 3px #3c8527; }
     .adv__i { width: 64px; height: 64px; display: grid; place-items: center; background: #8b8b8b; border: 2px solid #000; box-shadow: inset 2px 2px 0 #b5b5b5, inset -2px -2px 0 #545454; }
     .adv__i .ico { width: 40px; height: 40px; }
@@ -239,7 +239,7 @@
     .adv__c > div, .panel, .how .panel p, table.cmds td { min-width: 0; overflow-wrap: anywhere; }
     .adv__c .cmd { display: inline-block; margin: 4px 0; padding: 4px 10px; background: rgba(0,0,0,.6); font-family: var(--mono); font-size: 21px; color: #fff; text-shadow: 2px 2px 0 #3f3f3f; }
     .adv__c .mc-btn { margin-top: 8px; }
-    .providers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0 6px; }
+    .providers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 8px 0 6px; }
     .providers .panel { padding: 12px 14px; }
     .providers .panel__t { font-size: 19px; }
     .providers p { margin: 0; font-size: 15.5px; color: #eee; }
@@ -258,16 +258,16 @@
     .foot { padding: 34px 0 120px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 16px; color: #ddd; text-shadow: 2px 2px 0 #000; }
 
     @media (max-width: 860px) {
-      .how, .providers, .adv { grid-template-columns: 1fr; }
-      .craft { grid-template-columns: 1fr; justify-items: start; }
+      .how, .providers, .adv { grid-template-columns: minmax(0, 1fr); }
+      .craft { grid-template-columns: minmax(0, 1fr); justify-items: start; }
       .arrow { transform: rotate(90deg); }
-      .splash { left: 50%; bottom: -34%; font-size: 14px; transform: translate(-50%, 0) rotate(-20deg); animation: none; }
+      .splash { left: 50%; bottom: -58%; font-size: 13px; transform: translate(-50%, 0) rotate(-20deg); animation: none; }
       .hotbar a { width: 36px; height: 36px; } .hotbar .ico { width: 22px; height: 22px; }
       .title__hint { display: none; }
       .bro { left: 8%; }
-      .lever { top: 64px; }
+      .lever { top: 104px; font-size: 13px; }
       .chatlog { height: 240px; font-size: 19px; } .chatrow input { font-size: 19px; }
-      .inv { grid-template-columns: repeat(9, 76px); } .inv .slot { width: 76px; height: 76px; font-size: 10.5px; padding: 4px 2px; } .inv .slot .ico { width: 20px; height: 20px; margin-bottom: 3px; }
+      .inv { grid-template-columns: repeat(9, 68px); } .inv .slot { width: 68px; height: 68px; font-size: 10.5px; padding: 4px 2px; } .inv .slot .ico { width: 20px; height: 20px; margin-bottom: 3px; }
       table.cmds td:first-child { white-space: normal; }
     }
   </style>
