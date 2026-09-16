@@ -542,9 +542,10 @@
   .tab { min-height: 0; }
   .tab--minebro, .tab--nightdesk .nd-body, .tab--notepad, .tab--astral, .tab--maxphotos { grid-template-columns: minmax(0, 1fr); }
   .tab--astral .ac-side, .tab--astral .ac-panel { display: none; }
-  /* these were .ac-pills / .views, which match nothing — the real classes are
-     singular, so the card's top bar kept overflowing on a phone */
-  .tab--astral .ac-pill, .tab--astral .ac-win, .tab--astral .ac-chip.pr { display: none; }
+  /* .ac-pills is the top-bar button group (Open in / Run / PR) and .ac-chip.pr
+     is the #43 badge. Do NOT swap these for .ac-pill — that is a different
+     element down in the diff panel, and hiding it leaves the top bar clipping. */
+  .tab--astral .ac-pills, .tab--astral .ac-chip.pr { display: none; }
   .tab--astral .ac-top { padding-right: 12px; }
   .tab--notepad .np-side, .tab--notepad .np-panel { display: none; }
   .tab--notepad .np-sheet { margin: 14px; }
@@ -553,9 +554,21 @@
   .tab--minebro .mb-right { padding-top: 0; }
   .tab--minebro .mb-splash { display: none; }
   .tab--maxphotos { min-height: 0; }
-  .tab--maxphotos .mp-shot { height: 190px; }
-  .tab--maxphotos .mp-side { padding: 28px 24px 10px; }
+  .tab--maxphotos .mp-side { padding: 30px 24px 22px; }
   .tab--maxphotos h3 { letter-spacing: 0.2em; text-indent: 0.2em; }
+  /* stacked, the auto margins that centred the group on desktop collapse, so
+     set the rhythm explicitly instead of letting everything bunch up */
+  .tab--maxphotos .mp-brand { margin-top: 0; }
+  .tab--maxphotos .mp-intro { margin-top: 16px; }
+  .tab--maxphotos .mp-meta { margin: 18px 0 0; }
+  .tab--maxphotos .mp-shot { height: 240px; }
+  /* the idle zoom overflows the frame and there is no hover on touch anyway */
+  .tab--maxphotos .mp-shot img { transform: none; }
+  /* the fade was built to melt into type on its LEFT; stacked it needs to come
+     from the top instead, or it just looks like a dark band down one edge */
+  .tab--maxphotos .mp-shot::after {
+    background: linear-gradient(180deg, rgba(10, 10, 11, 0.55), transparent 42%);
+  }
   .tab--starmap { min-height: 420px; }
   .tab--starmap .sm-body { padding: 0 20px; }
   .tab--starmap .sm-brand { display: none; }
@@ -582,6 +595,42 @@
     justify-self: start; align-self: start;
     margin: 0 28px 24px;
   }
+}
+
+/* ---- phone tuning: stop the cards reading as cramped ---- */
+@media (max-width: 620px) {
+  /* Every kicker is two spans pushed to opposite ends. At this width both
+     halves wrap mid-phrase ("TO-SCALE 3D / UNIVERSE"), which is what makes the
+     cards look unnatural. Drop the trailing year and tighten the tracking. */
+  .tab--minebro .mb-kicker span + span,
+  .tab--nightdesk .nd-kicker span + span,
+  .tab--notepad .np-kicker span + span,
+  .tab--astral .ac-kicker span + span,
+  .tab--maxphotos .mp-kicker span + span,
+  .tab--starmap .sm-kicker span + span,
+  .tab--malt .ml-kicker span + span { display: none; }
+  .tab--maxphotos .mp-kicker,
+  .tab--starmap .sm-kicker,
+  .tab--astral .ac-kicker,
+  .tab--malt .ml-kicker { letter-spacing: 0.14em; }
+
+  /* give every card the same comfortable gutter and let the copy breathe */
+  .tab--starmap .sm-body { padding: 26px 22px; }
+  .tab--starmap .sm-lead { margin-top: 14px; line-height: 1.6; }
+  .tab--starmap .sm-facts { margin-top: 16px; }
+  .tab--astral .ac-body { padding: 24px 22px 0; }
+  .tab--astral .ac-lead { margin-top: 14px; }
+  /* the branch name is long enough to crowd the workspace title on a phone */
+  .tab--astral .ac-chip { display: none; }
+  .tab--malt .ml-left { padding: 26px 22px 6px; }
+  .tab--malt .ml-lead { margin-top: 16px; }
+  .tab--notepad .np-sheet { padding: 22px 22px 0; }
+  .tab--minebro .mb-left { padding: 26px 22px 20px; }
+
+  /* headlines were sized for a wide card and crowd the edges on a phone */
+  .tab--starmap h3 { font-size: clamp(38px, 12vw, 52px); }
+  .tab--malt h3 { font-size: clamp(38px, 12vw, 52px); }
+  .tab--astral h3 { font-size: clamp(34px, 11vw, 46px); }
 }
 
 @media (max-width: 560px) {
