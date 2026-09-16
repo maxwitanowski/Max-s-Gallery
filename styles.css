@@ -196,7 +196,7 @@ a:hover { color: var(--color-fog-blue); }
   letter-spacing: var(--tracking-display);
   font-weight: var(--font-weight-regular);
   text-align: left;
-  padding-left: clamp(0px, 8vw, 120px);
+  padding-left: clamp(0px, 2.5vw, 44px);
 }
 .display .ln { display: block; overflow: hidden; padding-bottom: 0.06em; margin-bottom: -0.06em; white-space: nowrap; }
 .display .ln span {
@@ -222,7 +222,7 @@ a:hover { color: var(--color-fog-blue); }
 .hero__meta {
   grid-column: 1 / 2;
   align-self: end;
-  padding-left: clamp(0px, 8vw, 120px);
+  padding-left: clamp(0px, 2.5vw, 44px);
   margin-top: var(--spacing-40);
   font-size: var(--text-caption);
   letter-spacing: 0.02em;
