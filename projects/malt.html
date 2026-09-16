@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Malt · Max's Gallery</title>
+  <meta name="description" content="Malt: every AI model in one chat. Compare them side by side, chain them together, or sit them round a table until they agree. What it is and how to use it, shown not told." />
+  <link rel="icon" href="../favicon.svg?v=20260916k" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Malt · ported from the app's src/index.css and landing.css ──
+       Warm cream, one tan accent, DM Sans everywhere and Fraunces for
+       display. The mode mock-ups reuse the app's own .mk-* language:
+       Compare columns take a coloured top edge, Round Table lines take a
+       coloured left bar, and the consensus row is tinted with the accent. */
+    :root {
+      --cream: #FFF8F0; --cream-deep: #F3EBE0; --surface: #FFFFFF;
+      --primary: #C9975E; --primary-hover: #B8864E;
+      --primary-soft: rgba(201, 151, 94, 0.10); --primary-glow: rgba(201, 151, 94, 0.18);
+      --secondary: #7D6B52; --secondary-soft: rgba(125, 107, 82, 0.08);
+      --text: #2B2825; --text-2: #6E6862; --text-3: #A9A29B;
+      --rule: rgba(125, 107, 82, 0.12); --rule-strong: rgba(125, 107, 82, 0.22);
+      --shadow-sm: 0 1px 4px rgba(40,36,30,0.06), 0 1px 2px rgba(40,36,30,0.04);
+      --shadow-md: 0 4px 12px rgba(40,36,30,0.07), 0 1px 3px rgba(40,36,30,0.05);
+      --shadow-lg: 0 12px 40px rgba(40,36,30,0.10), 0 2px 8px rgba(40,36,30,0.04);
+      --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-full: 9999px;
+      --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--cream); scroll-behavior: smooth; }
+    body {
+      margin: 0; background: var(--cream); color: var(--text);
+      font-family: var(--font-sans); font-size: 15px; line-height: 1.6;
+      -webkit-font-smoothing: antialiased; position: relative;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(160,142,120,0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(160,142,120,0.055) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    body > * { position: relative; z-index: 1; }
+    a { color: var(--primary-hover); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    button { font: inherit; color: inherit; cursor: pointer; }
+    [hidden] { display: none !important; }
+    code { font-family: var(--font-mono); font-size: .9em; background: var(--primary-soft); border-radius: 5px; padding: 1px 6px; color: var(--secondary); }
+    ::selection { background: var(--primary-glow); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--surface); border: 1px solid var(--rule); color: var(--text);
+      padding: 9px 16px; border-radius: var(--r-full); font-size: 14px; font-weight: 500;
+      box-shadow: var(--shadow-sm); transition: box-shadow .18s, transform .18s, border-color .18s;
+      white-space: nowrap;
+    }
+    .btn:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); text-decoration: none; border-color: var(--rule-strong); }
+    .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .btn.primary:hover { background: var(--primary-hover); }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--surface); border: 1px solid var(--rule); color: var(--text-2);
+      border-radius: var(--r-full); padding: 5px 13px; font-size: 13px; box-shadow: var(--shadow-sm);
+    }
+    .chip i { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: block; }
+
+    .gbar {
+      height: 56px; display: flex; align-items: center; gap: 14px; padding: 0 22px;
+      border-bottom: 1px solid var(--rule); background: rgba(255,248,240,.85); backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 30; font-size: 14px;
+    }
+    .gbar a { color: var(--text-2); } .gbar a:hover { color: var(--text); text-decoration: none; }
+    .gbar .mark { display: inline-flex; align-items: center; gap: 9px; font-weight: 600; color: var(--text); }
+    .gbar .mark span { font-family: var(--font-display); font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+    .gbar .sp { flex: 1; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+
+    .hero { padding: 62px 0 30px; }
+    .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: .18em; color: var(--text-3); margin: 0 0 20px; font-weight: 500; }
+    .hero-title { display: flex; align-items: center; gap: 18px; margin: 0 0 20px; }
+    .hero h1 {
+      margin: 0; font-family: var(--font-display); font-size: clamp(50px, 8vw, 92px);
+      font-weight: 600; line-height: .95; letter-spacing: -.03em; color: var(--text);
+    }
+    .lead { font-size: 19px; line-height: 1.6; color: var(--text-2); max-width: 730px; margin: 0 0 26px; }
+    .lead b { color: var(--text); font-weight: 600; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    section { padding: 46px 0 0; }
+    .sec-head { margin-bottom: 26px; }
+    .sec-head h2 { margin: 0 0 8px; font-family: var(--font-display); font-size: 34px; font-weight: 600; letter-spacing: -.02em; }
+    .sec-head p { margin: 0; color: var(--text-2); font-size: 15px; max-width: 720px; }
+
+    /* ───────── the app mock-up ───────── */
+    .app { background: var(--cream); border: 1px solid var(--rule); border-radius: var(--r-lg); box-shadow: var(--shadow-lg); overflow: hidden; }
+    .app-bar { display: flex; align-items: center; gap: 10px; padding: 9px 13px; border-bottom: 1px solid var(--rule); background: var(--surface); }
+    .traffic { display: inline-flex; gap: 5px; flex: none; }
+    .traffic i { width: 9px; height: 9px; border-radius: 50%; background: var(--rule-strong); display: block; }
+    .mtabs { display: flex; gap: 3px; margin: 0 auto; background: var(--secondary-soft); border-radius: 8px; padding: 3px; }
+    .mtabs span { padding: 4px 13px; border-radius: 6px; font-size: 11.5px; font-weight: 600; color: var(--text-3); }
+    .mtabs span.on { background: var(--surface); color: var(--primary-hover); box-shadow: var(--shadow-sm); }
+    .app-body { padding: 16px; }
+    .you {
+      background: var(--cream-deep); border-radius: var(--r-md); padding: 9px 14px;
+      font-size: 13.5px; font-weight: 500; color: var(--text); display: inline-block; margin-bottom: 14px;
+    }
+    .app-foot {
+      display: flex; align-items: center; gap: 8px; padding: 10px 13px;
+      border-top: 1px solid var(--rule); background: var(--surface);
+    }
+    .mchip { background: var(--primary-soft); color: var(--primary-hover); border-radius: var(--r-full); padding: 4px 11px; font-weight: 600; font-size: 11px; white-space: nowrap; }
+    .mchip.ghost { background: transparent; border: 1px solid var(--rule); color: var(--text-3); }
+    .mbox {
+      flex: 1; display: flex; align-items: center; justify-content: space-between;
+      background: var(--cream-deep); border: 1px solid var(--rule); border-radius: var(--r-full);
+      padding: 7px 8px 7px 14px; color: var(--text-3); font-size: 12px;
+    }
+    .msend { width: 22px; height: 22px; border-radius: 50%; background: var(--primary); display: block; flex: none; }
+
+    /* Compare: coloured top edge per model */
+    .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .col {
+      background: var(--surface); border: 1px solid var(--rule); border-top: 3px solid var(--c);
+      border-radius: 10px; padding: 12px 13px; min-width: 0;
+    }
+    .col-head { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 11.5px; margin-bottom: 8px; color: var(--text); }
+    .col-head i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); display: block; flex: none; }
+    .col p { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--text-2); }
+    .analysis {
+      margin-top: 11px; display: inline-flex; align-items: center; gap: 7px;
+      background: var(--primary-soft); color: var(--primary-hover); border-radius: var(--r-full);
+      padding: 6px 14px; font-size: 12px; font-weight: 600;
+    }
+
+    /* Round Table: coloured left bar, tinted consensus row */
+    .rt { display: grid; gap: 8px; }
+    .rt-line {
+      display: grid; grid-template-columns: 86px minmax(0, 1fr); gap: 12px; align-items: start;
+      background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--c);
+      border-radius: 10px; padding: 10px 14px;
+    }
+    .rt-line .who { font-weight: 700; font-size: 11.5px; color: var(--c); padding-top: 1px; }
+    .rt-line p { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--text-2); }
+    .rt-line.final { background: var(--primary-soft); border-color: var(--primary); }
+    .rt-line.final p { color: var(--text); font-weight: 500; }
+    .rt-turn {
+      display: flex; align-items: center; gap: 9px; margin: 2px 0 6px;
+      font-size: 10.5px; text-transform: uppercase; letter-spacing: .14em; color: var(--text-3); font-weight: 600;
+    }
+    .rt-turn::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
+
+    /* Handoff: nodes joined by arrows */
+    .flow { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; padding: 12px 0 4px; }
+    .node {
+      background: var(--surface); border: 1px solid var(--rule); border-top: 3px solid var(--c);
+      border-radius: 10px; padding: 11px 15px; font-weight: 600; font-size: 12.5px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .node i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); display: block; }
+    .node em { font-style: normal; font-weight: 400; color: var(--text-3); font-size: 11px; }
+    .arrow { width: 38px; height: 2px; background: var(--rule-strong); position: relative; flex: none; }
+    .arrow::after {
+      content: ''; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+      border-left: 6px solid var(--rule-strong); border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+    }
+    .flow-note { text-align: center; color: var(--text-3); font-size: 12px; margin: 10px 0 0; }
+
+    /* Canvas: a real-looking chart */
+    .canvas-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 12px; align-items: stretch; }
+    .code {
+      background: #2B2825; border-radius: 10px; padding: 12px 13px; overflow: hidden;
+      font-family: var(--font-mono); font-size: 10.5px; line-height: 1.6; color: #E8DCCB;
+    }
+    .code .k { color: #C9975E; } .code .s { color: #9CC5A1; } .code .c { color: #6E6862; }
+    .chart-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 13px; display: flex; flex-direction: column; }
+    .chart-head { font-size: 11.5px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+    .chart { flex: 1; display: flex; align-items: flex-end; gap: 7px; min-height: 140px; }
+    .chart div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .chart i { width: 100%; background: linear-gradient(to top, var(--primary), var(--primary-hover)); border-radius: 4px 4px 0 0; display: block; }
+    .chart span { font-size: 9.5px; color: var(--text-3); }
+
+    /* chat mock */
+    .bubbles { display: grid; gap: 9px; }
+    .bub { max-width: 84%; border-radius: var(--r-md); padding: 10px 14px; font-size: 13px; line-height: 1.55; }
+    .bub.me { background: var(--cream-deep); justify-self: end; color: var(--text); font-weight: 500; }
+    .bub.ai { background: var(--surface); border: 1px solid var(--rule); color: var(--text-2); justify-self: start; }
+    .bub.ai b { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text); margin-bottom: 5px; }
+    .bub.ai b i { width: 8px; height: 8px; border-radius: 50%; background: #D4A574; display: block; }
+
+    /* ───────── mode showcase blocks ───────── */
+    .mode { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 36px; align-items: center; margin-bottom: 52px; }
+    .mode.alt .mode-vis { order: 2; }
+    .mode.alt .mode-txt { order: 1; }
+    .mode-txt h3 {
+      margin: 0 0 4px; font-family: var(--font-display); font-size: 27px; font-weight: 600; letter-spacing: -.02em;
+      display: flex; align-items: center; gap: 11px;
+    }
+    .mode-txt h3 .ic { width: 32px; height: 32px; border-radius: 10px; background: var(--primary); color: #fff; display: grid; place-items: center; flex: none; }
+    .mode-txt h3 .ic svg { width: 17px; height: 17px; }
+    .mode-txt .sub { margin: 0 0 16px; color: var(--text-2); font-size: 14.5px; line-height: 1.6; }
+    .mode-txt ol { margin: 0; padding: 0; list-style: none; counter-reset: t; display: grid; gap: 10px; }
+    /* NOT a grid: inline children like <b> would each become their own grid item */
+    .mode-txt li {
+      counter-increment: t; position: relative; padding-left: 34px;
+      font-size: 14px; line-height: 1.55; color: var(--text-2);
+    }
+    .mode-txt li b { color: var(--text); font-weight: 600; }
+    .mode-txt li::before {
+      content: counter(t); position: absolute; left: 0; top: 1px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--primary-soft); color: var(--primary-hover);
+      display: grid; place-items: center; font-size: 12px; font-weight: 600; font-family: var(--font-mono);
+    }
+
+    /* what it is */
+    .feats { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+    .feat {
+      background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r-lg);
+      padding: 20px 22px; box-shadow: var(--shadow-sm); transition: box-shadow .2s, transform .2s;
+    }
+    .feat:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .feat .ic { width: 32px; height: 32px; border-radius: 10px; background: var(--primary-soft); display: grid; place-items: center; margin-bottom: 12px; color: var(--primary-hover); }
+    .feat .ic svg { width: 17px; height: 17px; }
+    .feat h3 { margin: 0 0 5px; font-size: 15.5px; font-weight: 600; letter-spacing: -.01em; }
+    .feat p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--text-2); }
+
+    .note {
+      margin-top: 26px; background: var(--cream-deep); border: 1px solid var(--rule);
+      border-radius: var(--r-lg); padding: 20px 24px; color: var(--text-2); font-size: 14.5px; line-height: 1.6;
+    }
+    .note b { color: var(--text); font-weight: 600; }
+
+    .foot {
+      margin-top: 56px; padding: 22px 0 48px; border-top: 1px solid var(--rule);
+      display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      color: var(--text-3); font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .mode, .mode.alt { grid-template-columns: 1fr; gap: 22px; }
+      .mode.alt .mode-vis, .mode.alt .mode-txt { order: 0; }
+      .cols { grid-template-columns: 1fr; }
+      .canvas-split { grid-template-columns: 1fr; }
+      .rt-line { grid-template-columns: 1fr; gap: 4px; }
+      .feats { grid-template-columns: 1fr; }
+      .gbar .mid { display: none; }
+      .hero { padding: 42px 0 24px; }
+      .flow { flex-direction: column; }
+      .arrow { width: 2px; height: 26px; }
+      .arrow::after { right: 50%; top: auto; bottom: 0; transform: translateX(50%); border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid var(--rule-strong); border-bottom: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="gbar">
+    <a href="../index.html">← Max's Gallery</a>
+    <span class="mid mark">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="url(#g)"/>
+        <rect x="5" y="7" width="14" height="11" rx="3" fill="rgba(255,255,255,0.35)"/>
+        <rect x="8" y="16" width="3" height="4" rx="1" fill="rgba(255,255,255,0.35)"/>
+        <rect x="13" y="12" width="14" height="11" rx="3" fill="rgba(255,255,255,0.9)"/>
+        <rect x="21" y="21" width="3" height="4" rx="1" fill="rgba(255,255,255,0.9)"/>
+        <circle cx="18" cy="17.5" r="1.2" fill="#C9975E" opacity=".5"/>
+        <circle cx="22" cy="17.5" r="1.2" fill="#C9975E" opacity=".5"/>
+        <circle cx="26" cy="17.5" r="1.2" fill="#C9975E" opacity=".5"/>
+        <defs><linearGradient id="g" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#C9975E"/><stop offset="1" stop-color="#B8864E"/></linearGradient></defs>
+      </svg>
+      <span>Malt</span>
+    </span>
+    <span class="sp"></span>
+    <a href="#modes">The modes ↓</a>
+    <a href="#what">What else ↓</a>
+  </div>
+
+  <header class="hero wrap">
+    <p class="eyebrow">07 / Multi-model AI chat · 2026</p>
+    <div class="hero-title">
+      <svg width="62" height="62" viewBox="0 0 32 32" fill="none" aria-hidden="true" style="border-radius:16px;box-shadow:0 8px 24px rgba(201,151,94,.28)">
+        <rect width="32" height="32" rx="8" fill="url(#g2)"/>
+        <rect x="5" y="7" width="14" height="11" rx="3" fill="rgba(255,255,255,0.35)"/>
+        <rect x="8" y="16" width="3" height="4" rx="1" fill="rgba(255,255,255,0.35)"/>
+        <rect x="13" y="12" width="14" height="11" rx="3" fill="rgba(255,255,255,0.9)"/>
+        <rect x="21" y="21" width="3" height="4" rx="1" fill="rgba(255,255,255,0.9)"/>
+        <circle cx="18" cy="17.5" r="1.2" fill="#C9975E" opacity=".5"/>
+        <circle cx="22" cy="17.5" r="1.2" fill="#C9975E" opacity=".5"/>
+        <circle cx="26" cy="17.5" r="1.2" fill="#C9975E" opacity=".5"/>
+        <defs><linearGradient id="g2" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#C9975E"/><stop offset="1" stop-color="#B8864E"/></linearGradient></defs>
+      </svg>
+      <h1>Malt</h1>
+    </div>
+    <p class="lead">Every AI model in one place. Ask <b>Claude, GPT, Gemini, Grok and DeepSeek</b> the same question and read their answers side by side, chain them so each one improves the last one's draft, or sit them round a table and let them argue until they agree. No juggling tabs, no API keys.</p>
+    <div class="actions">
+      <a class="btn primary" href="https://www.malt.quest/" target="_blank" rel="noopener">Open malt.quest ↗</a>
+      <a class="btn" href="#modes">See the modes ↓</a>
+    </div>
+    <div class="chips">
+      <span class="chip"><i></i>Chat</span>
+      <span class="chip"><i></i>Compare</span>
+      <span class="chip"><i></i>Handoff</span>
+      <span class="chip"><i></i>Round Table</span>
+      <span class="chip"><i></i>Live Canvas</span>
+    </div>
+  </header>
+
+  <section class="wrap" id="modes">
+    <div class="sec-head">
+      <h2>The four ways to use it</h2>
+      <p>One model at a time is just chat. The other three are what Malt is actually for. Every screen below is the real interface.</p>
+    </div>
+
+    <!-- ───── COMPARE ───── -->
+    <div class="mode">
+      <div class="mode-vis">
+        <div class="app">
+          <div class="app-bar">
+            <span class="traffic"><i></i><i></i><i></i></span>
+            <span class="mtabs"><span>Chat</span><span class="on">Compare</span><span>Swarm</span></span>
+          </div>
+          <div class="app-body">
+            <span class="you">Explain why the sky is blue, in one sentence.</span>
+            <div class="cols">
+              <div class="col" style="--c:#D4A574">
+                <div class="col-head"><i></i>Claude Sonnet</div>
+                <p>Sunlight scatters off air molecules, and blue light, being shorter in wavelength, scatters most, washing the whole sky in blue.</p>
+              </div>
+              <div class="col" style="--c:#10A37F">
+                <div class="col-head"><i></i>GPT-5.4</div>
+                <p>Tiny gas molecules scatter the sun's shorter blue wavelengths far more than the longer reds, an effect called Rayleigh scattering.</p>
+              </div>
+              <div class="col" style="--c:#4285F4">
+                <div class="col-head"><i></i>Gemini 3.1</div>
+                <p>Because blue light's short wavelength gets bounced around the atmosphere in every direction more than any other colour.</p>
+              </div>
+            </div>
+            <span class="analysis">✦ Analysis · synthesise all three</span>
+          </div>
+          <div class="app-foot">
+            <span class="mchip">3 models ▾</span>
+            <span class="mbox">Message Malt…<span class="msend"></span></span>
+          </div>
+        </div>
+      </div>
+      <div class="mode-txt">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/></svg></span>Compare</h3>
+        <p class="sub">One prompt, every model, answers in parallel. The fastest way to find out which model is actually good at the thing you are asking, instead of guessing.</p>
+        <ol>
+          <li>Switch to the <b>Compare</b> tab in the header.</li>
+          <li>Add the models you want from the sidebar with "Add model".</li>
+          <li>Send one prompt. They all answer at once, side by side.</li>
+          <li>Drag, resize or dismiss cards, then hit <b>Analysis</b> for a synthesis of all of them.</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ───── ROUND TABLE ───── -->
+    <div class="mode alt">
+      <div class="mode-vis">
+        <div class="app">
+          <div class="app-bar">
+            <span class="traffic"><i></i><i></i><i></i></span>
+            <span class="mtabs"><span>Chat</span><span>Compare</span><span class="on">Swarm · Round Table</span></span>
+          </div>
+          <div class="app-body">
+            <span class="you">Best name for a craft AI startup?</span>
+            <div class="rt">
+              <div class="rt-turn">Turn 1</div>
+              <div class="rt-line" style="--c:#D4A574">
+                <span class="who">Claude</span>
+                <p>I'd lean into warmth and craft, something short like "Malt" or "Kiln".</p>
+              </div>
+              <div class="rt-line" style="--c:#10A37F">
+                <span class="who">GPT-5.4</span>
+                <p>Agree on the craft angle. "Malt" is short, memorable, and easy to own.</p>
+              </div>
+              <div class="rt-line" style="--c:#4285F4">
+                <span class="who">Gemini</span>
+                <p>"Malt" works, it evokes brewing many things into one. I'm convinced. ✓</p>
+              </div>
+              <div class="rt-turn">Consensus reached</div>
+              <div class="rt-line final" style="--c:#C9975E">
+                <span class="who">Moderator</span>
+                <p>Consensus: Malt. Warm, craft-forward, and instantly memorable.</p>
+              </div>
+            </div>
+          </div>
+          <div class="app-foot">
+            <span class="mchip">Round Table · 3 seated</span>
+            <span class="mchip ghost">Pause</span>
+            <span class="mbox">Interject…<span class="msend"></span></span>
+          </div>
+        </div>
+      </div>
+      <div class="mode-txt">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Round Table</h3>
+        <p class="sub">The models talk to <b>each other</b>, not just to you. They take turns, read what the others said, change their minds, and keep going until they agree. Then a moderator writes the verdict.</p>
+        <ol>
+          <li>In the <b>Swarm</b> tab, choose "Round Table".</li>
+          <li>Add the models you want seated at the table.</li>
+          <li>Send a prompt. They discuss in turns, reading each other's points.</li>
+          <li>They continue until consensus, then a moderator writes the final answer. <b>Pause any time</b> to step in yourself.</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ───── HANDOFF ───── -->
+    <div class="mode">
+      <div class="mode-vis">
+        <div class="app">
+          <div class="app-bar">
+            <span class="traffic"><i></i><i></i><i></i></span>
+            <span class="mtabs"><span>Chat</span><span>Compare</span><span class="on">Swarm · Handoff</span></span>
+          </div>
+          <div class="app-body">
+            <span class="you">Write the launch paragraph, then tighten it.</span>
+            <div class="flow">
+              <span class="node" style="--c:#D4A574"><i></i>Claude <em>drafts</em></span>
+              <span class="arrow"></span>
+              <span class="node" style="--c:#10A37F"><i></i>GPT-5.4 <em>edits</em></span>
+              <span class="arrow"></span>
+              <span class="node" style="--c:#4285F4"><i></i>Gemini <em>polishes</em></span>
+            </div>
+            <p class="flow-note">Each model receives the previous one's draft, not the original prompt.</p>
+          </div>
+          <div class="app-foot">
+            <span class="mchip">Handoff · 3 in chain</span>
+            <span class="mbox">Message Malt…<span class="msend"></span></span>
+          </div>
+        </div>
+      </div>
+      <div class="mode-txt">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 0 0 9 9"/></svg></span>Handoff</h3>
+        <p class="sub">An assembly line. One model drafts, the next edits, the last one polishes. Useful when one model writes well and another is better at cutting.</p>
+        <ol>
+          <li>Open the <b>Swarm</b> tab and choose "Handoff".</li>
+          <li>Add two or more models. They appear as cards on the canvas.</li>
+          <li>Tap one model's right dot, then another's left dot, to set the order.</li>
+          <li>Send a prompt. Each model refines the previous draft down the chain.</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ───── CANVAS ───── -->
+    <div class="mode alt">
+      <div class="mode-vis">
+        <div class="app">
+          <div class="app-bar">
+            <span class="traffic"><i></i><i></i><i></i></span>
+            <span class="mtabs"><span class="on">Chat</span><span>Compare</span><span>Swarm</span></span>
+          </div>
+          <div class="app-body">
+            <span class="you">Chart my prompts this week.</span>
+            <div class="canvas-split">
+              <div class="code"><span class="c">// Malt writes it</span><br>new <span class="k">Chart</span>(ctx, {<br>&nbsp;&nbsp;type: <span class="s">'line'</span>,<br>&nbsp;&nbsp;data: [<span class="k">12</span>,<span class="k">19</span>,<span class="k">14</span>,<span class="k">27</span>,<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">22</span>,<span class="k">31</span>,<span class="k">28</span>],<br>&nbsp;&nbsp;borderColor: <span class="s">'#C9975E'</span>,<br>&nbsp;&nbsp;fill: true,<br>});</div>
+              <div class="chart-card">
+                <div class="chart-head">Prompts this week</div>
+                <div class="chart">
+                  <div><i style="height:43px"></i><span>Mon</span></div>
+                  <div><i style="height:67px"></i><span>Tue</span></div>
+                  <div><i style="height:50px"></i><span>Wed</span></div>
+                  <div><i style="height:96px"></i><span>Thu</span></div>
+                  <div><i style="height:78px"></i><span>Fri</span></div>
+                  <div><i style="height:110px"></i><span>Sat</span></div>
+                  <div><i style="height:99px"></i><span>Sun</span></div>
+                </div>
+              </div>
+            </div>
+            <p class="flow-note">Real, live render. The code the AI wrote runs right there in a sandbox.</p>
+          </div>
+          <div class="app-foot">
+            <span class="mchip">Claude ▾</span>
+            <span class="mchip ghost">Canvas</span>
+            <span class="mbox">Message Malt…<span class="msend"></span></span>
+          </div>
+        </div>
+      </div>
+      <div class="mode-txt">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.94 14.34 12 20l2.06-5.66L20 12l-5.94-2.34L12 4 9.94 9.66 4 12z"/></svg></span>Live Canvas</h3>
+        <p class="sub">When the answer is a chart, a page or a small app, Malt runs it instead of just printing the code at you.</p>
+        <ol>
+          <li>Ask for a chart, web page or small app in normal chat.</li>
+          <li>Charts render inline. Full pages and apps open in the side Canvas.</li>
+          <li>Everything runs in a safe sandbox, with no setup needed.</li>
+          <li>Open any code block in the Canvas with the <b>Canvas</b> button.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="start">
+    <div class="sec-head">
+      <h2>Starting from scratch</h2>
+      <p>Plain chat is the front door, and it works the way you would expect.</p>
+    </div>
+    <div class="mode">
+      <div class="mode-vis">
+        <div class="app">
+          <div class="app-bar">
+            <span class="traffic"><i></i><i></i><i></i></span>
+            <span class="mtabs"><span class="on">Chat</span><span>Compare</span><span>Swarm</span></span>
+          </div>
+          <div class="app-body">
+            <div class="bubbles">
+              <span class="bub me">Draft a haiku about autumn.</span>
+              <span class="bub ai"><b><i></i>Claude Sonnet</b>Amber leaves waltz down<br>to meet the cooling earth,<br>summer's quiet bow.</span>
+              <span class="bub me">Now as one line.</span>
+              <span class="bub ai"><b><i></i>Claude Sonnet</b>Amber leaves waltz down to meet the cooling earth, summer's quiet bow.</span>
+            </div>
+          </div>
+          <div class="app-foot">
+            <span class="mchip">Claude ▾</span>
+            <span class="mchip ghost">🎤</span>
+            <span class="mbox">Message Malt…<span class="msend"></span></span>
+          </div>
+        </div>
+      </div>
+      <div class="mode-txt">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>Getting started</h3>
+        <p class="sub">Sign in, type, send. Swap the model mid-conversation whenever you feel like it.</p>
+        <ol>
+          <li>Create an account or sign in. You get a starter token balance automatically.</li>
+          <li>Type a message at the bottom and press Enter.</li>
+          <li>Pick which model answers from the selector above the input.</li>
+          <li>Tap the microphone to dictate instead, or toggle <b>Deep Thinking</b> and <b>Search</b>.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="what">
+    <div class="sec-head">
+      <h2>What else is inside</h2>
+      <p>The smaller things that make it worth keeping open.</p>
+    </div>
+    <div class="feats">
+      <article class="feat">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+        <h3>Every model, one chat</h3>
+        <p>Claude, GPT, Gemini, Grok, DeepSeek and more, without juggling tabs or API keys.</p>
+      </article>
+      <article class="feat">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.83 0L6 21"/></svg></span>
+        <h3>Generate images</h3>
+        <p>Ask for a picture and Malt routes it to an image model. The artwork appears right in your chat.</p>
+      </article>
+      <article class="feat">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/></svg></span>
+        <h3>Talk to it</h3>
+        <p>Dictate your prompt with built-in speech to text, on any device.</p>
+      </article>
+      <article class="feat">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/></svg></span>
+        <h3>Remembers you</h3>
+        <p>Malt quietly picks up facts you share and carries them across conversations.</p>
+      </article>
+      <article class="feat">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10.5h5M9.5 13.5h5"/></svg></span>
+        <h3>Pay for what you use</h3>
+        <p>Simple token bundles, metered from the model's actual reported usage. Nothing hidden.</p>
+      </article>
+      <article class="feat">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 20v-4M16 20v-4"/></svg></span>
+        <h3>Works on your phone</h3>
+        <p>Every mode works on mobile, where the sidebar becomes a slide-over drawer.</p>
+      </article>
+    </div>
+
+    <p class="note"><b>A note on cost.</b> Malt meters tokens from what the model actually reports back, not an estimate, and the key lives on the server rather than in your browser. You start with a free balance, so you can try every mode before deciding whether it is worth topping up.</p>
+  </section>
+
+  <footer class="foot wrap">
+    <span>Malt · one of Max's projects · <a href="https://www.malt.quest/" target="_blank" rel="noopener">malt.quest</a></span>
+    <span><a href="../index.html">← Back to the gallery</a></span>
+  </footer>
+</body>
+</html>

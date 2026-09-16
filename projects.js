@@ -202,5 +202,41 @@ window.PROJECTS = [
         <span class="sm-scale"><s></s><u>20 kly</u></span>
       </span>
       <span class="tab__open">Open the map →</span>`
+  },
+  {
+    slug: "malt",
+    title: "Malt",
+    year: "2026",
+    href: "projects/malt.html",
+    cls: "tab--malt",
+    tab: `
+      <div class="ml-left">
+        <p class="ml-kicker"><span>07 / Multi-model AI chat</span><span>2026 · real project</span></p>
+        <div class="ml-brand">
+          <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <rect width="32" height="32" rx="8" fill="url(#maltg)"/>
+            <rect x="5" y="7" width="14" height="11" rx="3" fill="rgba(255,255,255,0.35)"/>
+            <rect x="8" y="16" width="3" height="4" rx="1" fill="rgba(255,255,255,0.35)"/>
+            <rect x="13" y="12" width="14" height="11" rx="3" fill="rgba(255,255,255,0.9)"/>
+            <rect x="21" y="21" width="3" height="4" rx="1" fill="rgba(255,255,255,0.9)"/>
+            <circle cx="18" cy="17.5" r="1.2" fill="#C9975E" opacity=".5"/>
+            <circle cx="22" cy="17.5" r="1.2" fill="#C9975E" opacity=".5"/>
+            <circle cx="26" cy="17.5" r="1.2" fill="#C9975E" opacity=".5"/>
+            <defs><linearGradient id="maltg" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#C9975E"/><stop offset="1" stop-color="#B8864E"/></linearGradient></defs>
+          </svg>
+          <h3>Malt</h3>
+        </div>
+        <p class="ml-lead">Every AI model in one place. Ask Claude, GPT and Gemini the same question and read their answers side by side, chain them so each one improves the last one's draft, or sit them round a table until they agree.</p>
+        <div class="ml-modes"><span>Chat</span><span>Compare</span><span>Handoff</span><span>Round Table</span><span>Canvas</span></div>
+      </div>
+      <div class="ml-right" aria-hidden="true">
+        <div class="ml-panel">
+          <div class="ml-ask">Why is the sky blue?</div>
+          <div class="ml-ans"><span class="ml-who" style="--c:#D4A574"><i></i>Claude Sonnet</span><p>Sunlight scatters off air molecules, and blue light, being shorter in wavelength, scatters most.</p></div>
+          <div class="ml-ans"><span class="ml-who" style="--c:#10A37F"><i></i>GPT-5.4</span><p>Tiny gas molecules scatter the sun's shorter blue wavelengths far more than the longer reds.</p></div>
+          <div class="ml-ans"><span class="ml-who" style="--c:#4285F4"><i></i>Gemini 3.1</span><p>Because blue light's short wavelength gets bounced around the atmosphere in every direction.</p></div>
+        </div>
+      </div>
+      <span class="tab__open">Read how it works →</span>`
   }
 ];
