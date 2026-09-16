@@ -180,5 +180,27 @@ window.PROJECTS = [
       </div>
       <div class="mp-shot" aria-hidden="true"><img src="projects/media/maxphotos/hero.jpg" alt="" loading="lazy"></div>
       <span class="tab__open">View the gallery →</span>`
+  },
+  {
+    slug: "starmap",
+    title: "Starmap",
+    year: "2026",
+    href: "projects/starmap.html",
+    cls: "tab--starmap",
+    tab: `
+      <img class="sm-sky" src="projects/media/starmap/milkyway.jpg" alt="" loading="lazy" aria-hidden="true">
+      <span class="sm-veil" aria-hidden="true"></span>
+      <span class="sm-brand" aria-hidden="true">STARMAP<em>to scale · real data</em></span>
+      <div class="sm-body">
+        <p class="sm-kicker"><span>06 / To-scale 3D universe</span><span>2026 · real project</span></p>
+        <h3>Starmap</h3>
+        <p class="sm-lead">A navigable 3D map of the universe, built entirely from real catalogues. Every object sits at its measured position and is drawn at its real size, from the 109-metre ISS to the edge of the observable universe.</p>
+        <div class="sm-facts"><span>Three.js</span><span>1.1M Gaia stars</span><span>955k quasars</span><span>14,465 satellites, live</span></div>
+      </div>
+      <span class="sm-hud" aria-hidden="true">
+        <span class="sm-g"><i>orbit</i><b>Sgr A*</b><u>77.7 kly from Sun</u></span>
+        <span class="sm-scale"><s></s><u>20 kly</u></span>
+      </span>
+      <span class="tab__open">Open the map →</span>`
   }
 ];
