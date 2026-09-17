@@ -28,7 +28,7 @@
 }
 .tab:hover .tab__open { transform: translateX(6px); }
 
-/* ============ 01 MINEBRO — Minecraft night ============ */
+/* ============ 06 MINEBRO — Minecraft night ============ */
 .tab--minebro {
   --grass: #5d9c3a; --dirt: #79553a; --yellow: #ffff55; --aqua: #55ffff; --grey: #aaaaaa;
   --dirt-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%2379553a'/%3E%3Cg fill='%238a6644'%3E%3Crect x='1' y='0' width='1' height='1'/%3E%3Crect x='4' y='1' width='1' height='1'/%3E%3Crect x='6' y='2' width='1' height='1'/%3E%3Crect x='2' y='3' width='1' height='1'/%3E%3Crect x='0' y='5' width='1' height='1'/%3E%3Crect x='5' y='5' width='1' height='1'/%3E%3Crect x='3' y='6' width='1' height='1'/%3E%3Crect x='7' y='7' width='1' height='1'/%3E%3Crect x='6' y='6' width='1' height='1'/%3E%3C/g%3E%3Cg fill='%235e4027'%3E%3Crect x='3' y='0' width='1' height='1'/%3E%3Crect x='0' y='2' width='1' height='1'/%3E%3Crect x='5' y='3' width='1' height='1'/%3E%3Crect x='7' y='4' width='1' height='1'/%3E%3Crect x='2' y='5' width='1' height='1'/%3E%3Crect x='1' y='7' width='1' height='1'/%3E%3Crect x='4' y='7' width='1' height='1'/%3E%3Crect x='6' y='4' width='1' height='1'/%3E%3C/g%3E%3C/svg%3E");
@@ -112,7 +112,7 @@
 }
 .tab--minebro:hover .tab__open { background: #4aa032; }
 
-/* ============ 02 STOCK TRACKER — Night Desk, Factory style ============ */
+/* ============ 05 STOCK TRACKER — Night Desk, Factory style ============ */
 .tab--nightdesk {
   --canvas: #101010; --carbon: #1d1a18; --ash: #3d3a39; --warm: #8a8380; --stone: #b8b3b0; --bone: #eeeeee; --orange: #ee6018; --green: #a0ca92;
   background: var(--canvas); color: var(--bone);
@@ -171,7 +171,7 @@
 .tab--nightdesk:hover .nd-brand i { animation: nd-pulse 1.6s ease-in-out infinite; }
 @keyframes nd-pulse { 50% { opacity: .35; } }
 
-/* ============ 03 NOTEPAD — warm paper ============ */
+/* ============ 04 NOTEPAD — warm paper ============ */
 .tab--notepad {
   --ivory: #fffdf8; --ink: #0a0a0a; --rule: #e5e5e5; --smoke: #8c8c8c; --ash: #d1d1d1; --slate: #474747; --halo: #f9f9f9; --desk: #f4f1ea;
   --sepia: #512906; --violet: #242d64; --forest: #0c3b1a; --oxblood: #5e0831; --wash: rgba(255, 201, 52, 0.55);
@@ -230,7 +230,7 @@
 .tab--notepad .tab__open { right: 24px; bottom: 18px; font-family: var(--sans); text-transform: none; letter-spacing: 0.01em; font-size: 14px; padding: 7px 14px; border-radius: 10px; background: var(--sepia); color: var(--ivory); }
 .tab--notepad:hover .tab__open { background: #3d1e04; }
 
-/* ============ 04 ASTRAL CODER — dark console ============ */
+/* ============ 01 ASTRAL CODER — dark console ============ */
 .tab--astral {
   --bg: #141416; --bg-2: #19191c; --bg-3: #202024; --bg-4: #2a2a2f; --sidebar: #111113; --panel: #17171a; --card: #1c1c20;
   --fg: #ececec; --fg-2: #b4b4bb; --fg-3: #7e7e88; --fg-4: #55555e; --border: #26262b; --border-2: #303036;
@@ -321,7 +321,7 @@
 .tab--astral .tab__open { right: 24px; bottom: 18px; font-family: var(--sans); text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 999px; background: var(--fg); color: var(--bg); }
 .tab--astral:hover .tab__open { filter: brightness(1.15); }
 
-/* ============ 05 MAX PHOTOS — dark editorial gallery ============ */
+/* ============ 07 MAX PHOTOS — dark editorial gallery ============ */
 .tab--maxphotos {
   --ink: #0a0a0b; --ink-card: #101012;
   --ivory: #ece7df; --ivory-dim: #a8a29a; --ivory-faint: #6b6660;
@@ -384,7 +384,7 @@
 }
 .tab--maxphotos:hover .tab__open { color: var(--gold); border-bottom-color: var(--gold); }
 
-/* ============ 06 STARMAP — the real render, minimal chrome ============ */
+/* ============ 02 STARMAP — the real render, minimal chrome ============ */
 .tab--starmap {
   --panel-border: rgba(140, 170, 255, 0.16);
   --text: #dfe6f5; --dim: #8a94ad; --accent: #7fb2ff;
@@ -462,7 +462,7 @@
 }
 .tab--starmap:hover .tab__open { background: rgba(127,178,255,.45); }
 
-/* ============ 07 MALT — warm cream, one tan accent ============ */
+/* ============ 03 MALT — warm cream, one tan accent ============ */
 .tab--malt {
   --cream: #FFF8F0; --cream-deep: #F3EBE0; --surface: #FFFFFF;
   --primary: #C9975E; --primary-hover: #B8864E; --primary-soft: rgba(201, 151, 94, 0.10);
