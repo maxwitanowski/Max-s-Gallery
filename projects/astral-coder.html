@@ -108,6 +108,55 @@
     .install ul.spec { list-style: none; padding: 0; margin: 0; } .install ul.spec li { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 12px; padding: 9px 0; border-top: 1px solid var(--border); font-size: 13px; color: var(--fg-2); line-height: 1.55; } .install ul.spec b { color: var(--fg); font-weight: 600; }
     .foot { max-width: 1180px; margin: 0 auto; padding: 16px 28px 40px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--fg-3); border-top: 1px solid var(--border); }
 
+    /* ── phone section ── */
+    .phone { max-width: 1180px; margin: 0 auto; padding: 44px 28px 20px; border-top: 1px solid var(--border); }
+    .phone-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 46px; align-items: start; margin-top: 26px; }
+    .phone h2 { font-size: 28px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 6px; }
+    .phone .lead2 { margin: 0; color: var(--fg-2); font-size: 14.5px; line-height: 1.6; max-width: 720px; }
+    .steps2 { list-style: none; margin: 0; padding: 0; counter-reset: p; display: grid; gap: 12px; }
+    .steps2 li { counter-increment: p; position: relative; padding-left: 34px; font-size: 14px; line-height: 1.55; color: var(--fg-2); }
+    .steps2 li::before {
+      content: counter(p); position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 50%;
+      background: var(--accent-bg); color: var(--accent); display: grid; place-items: center;
+      font-family: var(--mono); font-size: 12px; font-weight: 600;
+    }
+    .steps2 b { color: var(--fg); font-weight: 600; }
+    .note2 { margin-top: 18px; display: grid; gap: 10px; }
+    .note2 div { border-left: 2px solid var(--border-2); padding: 2px 0 2px 14px; font-size: 13px; color: var(--fg-3); line-height: 1.55; }
+    .note2 b { color: var(--fg-2); font-weight: 600; }
+
+    /* the handset: Astral's own chat, one column */
+    .handset {
+      justify-self: center; width: 268px; border-radius: 34px; padding: 10px;
+      background: #17171a; border: 1px solid var(--border-2);
+      box-shadow: 0 30px 70px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+    .screen { background: var(--bg); border-radius: 26px; overflow: hidden; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 424px; }
+    .notch { height: 18px; display: grid; place-items: center; }
+    .notch i { width: 58px; height: 4px; border-radius: 999px; background: #2a2a2f; display: block; }
+    .ph-top { display: flex; align-items: center; gap: 8px; padding: 6px 13px 9px; border-bottom: 1px solid var(--border); }
+    .ph-top .ag { width: 15px; height: 15px; color: var(--claude); }
+    .ph-top .t { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ph-top .gear { color: var(--fg-3); font-size: 13px; }
+    .ph-body { padding: 12px 13px; overflow: hidden; display: grid; gap: 9px; align-content: start; }
+    .ph-user { justify-self: end; max-width: 82%; background: var(--bg-3); border-radius: 12px 12px 4px 12px; padding: 8px 11px; font-size: 12px; line-height: 1.45; }
+    .ph-ai { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 8px; font-size: 12px; line-height: 1.45; color: var(--fg-2); }
+    .ph-ai .ag { width: 14px; height: 14px; color: var(--claude); margin-top: 2px; }
+    .ph-step { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--fg-2); padding: 2px 0; }
+    .ph-step s { text-decoration: none; color: var(--fg-3); min-width: 30px; }
+    .ph-step b { font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ph-work { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--claude); }
+    .ph-work i { font-style: normal; font-size: 13px; }
+    .ph-foot { border-top: 1px solid var(--border); padding: 9px 11px 11px; display: grid; gap: 7px; background: var(--bg); }
+    .ph-chips { display: flex; gap: 5px; align-items: center; }
+    .ph-chips span { height: 21px; display: inline-flex; align-items: center; padding: 0 8px; border-radius: 999px; font-size: 10.5px; color: var(--fg-2); border: 1px solid transparent; background: var(--hover); white-space: nowrap; }
+    .ph-chips .plus { width: 21px; padding: 0; justify-content: center; color: var(--fg-3); }
+    .ph-bar { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-2); border-radius: 999px; padding: 6px 6px 6px 12px; background: var(--card); }
+    .ph-bar span { flex: 1; min-width: 0; color: var(--fg-3); font-size: 11.5px; }
+    .ph-bar i { width: 22px; height: 22px; border-radius: 50%; background: var(--primary); color: var(--primary-fg); display: grid; place-items: center; font-style: normal; font-size: 12px; flex: none; }
+    .pair { margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: var(--mono); font-size: 12px; color: var(--fg-3); }
+    .pair b { color: var(--fg); letter-spacing: .34em; background: var(--bg-3); border: 1px solid var(--border-2); border-radius: 6px; padding: 4px 6px 4px 10px; }
+
     /* ── the app shell (inside the frame) ── */
     #app { position: absolute; inset: 0; display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr) var(--panel-w); transition: grid-template-columns .18s cubic-bezier(.2,.8,.2,1); background: var(--bg); }
     #app.side-closed { grid-template-columns: 0px minmax(0, 1fr) var(--panel-w); } #app.panel-closed { grid-template-columns: var(--sidebar-w) minmax(0, 1fr) 0px; } #app.side-closed.panel-closed { grid-template-columns: 0px minmax(0, 1fr) 0px; }
@@ -286,6 +335,7 @@
     @media (max-width: 960px) {
       .phero { grid-template-columns: minmax(0, 1fr); } .agents { justify-items: start; } .agents .row { justify-content: flex-start; }
       .callouts { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .install { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+      .phone-grid { grid-template-columns: minmax(0, 1fr); gap: 30px; }
       :root { --panel-w: 0px; --sidebar-w: 0px; } .viewport { height: 660px; } .panel, .sidebar { display: none; } .main { grid-column: 2; }
       .gbar { height: auto; min-height: 44px; padding: 6px 20px; }
       .composer .hint { display: none; }
@@ -309,7 +359,7 @@
       <p class="eyebrow">05 / Desktop console for coding agents · 2026 · open source · Windows</p>
       <h1><img src="media/astral-mark.png" alt="" />Astral Coder</h1>
       <p class="phero-lead">One window for every coding agent. <b>Claude Code, Codex, Gemini CLI, Grok, Copilot, Aider</b> and local models each run untouched inside a real terminal, sorted into projects, workspaces and sessions. Claude Code also gets a proper chat: streamed replies, thinking, expandable tool calls, permission prompts, and the CLI's own sparkle while it works.</p>
-      <div class="phero-actions"><a class="btn primary" href="https://github.com/maxwitanowski/Astral-Coder" target="_blank" rel="noopener">Source on GitHub ↗</a><a class="btn" href="#preview">Play with it ↓</a><a class="btn" href="#install">Install it ↓</a></div>
+      <div class="phero-actions"><a class="btn primary" href="https://github.com/maxwitanowski/Astral-Coder" target="_blank" rel="noopener">Source on GitHub ↗</a><a class="btn" href="#preview">Play with it ↓</a><a class="btn" href="#phone">On your phone ↓</a><a class="btn" href="#install">Install it ↓</a></div>
       <div class="phero-meta"><span>Electron 44</span><span>Vite 8</span><span>vanilla JS, no framework</span><span>node-pty + xterm.js</span><span>git worktrees</span><span>GitHub CLI</span></div>
     </div>
     <div class="agents" aria-label="Agents Astral can host" id="agent-list"></div>
@@ -344,6 +394,56 @@
       <article class="feat"><span class="tag">Git</span><h3>Diff, PR and checks in the panel.</h3><p>Diff shows git status with line counts and lets you leave review comments that go to the agent. Checks shows the open PR, its CI, and a merge button. Commit and push, pull latest and create PR live in the … menu, and every git step runs in a visible shell in the drawer.</p><button class="btn" data-do="panel:diff">Open the diff</button></article>
       <article class="feat"><span class="tag">Resume</span><h3>Pick up any conversation.</h3><p>Chat history is saved, so a relaunch shows everything. Ctrl+Shift+R opens a resume picker that reads the transcripts Claude Code and Codex already write, including conversations started outside Astral, from any folder on the machine.</p><button class="btn" data-do="resume">Resume picker</button></article>
       <article class="feat"><span class="tag">Settings</span><h3>Agents, scripts, shortcuts.</h3><p>Settings lists every supported CLI with installed and latest versions and an install button that runs the vendor's own command in a visible terminal. Repositories get setup and run scripts (they become tabs). The full key list is under Shortcuts.</p><button class="btn" data-do="settings">Open settings</button></article>
+    </div>
+  </section>
+
+  <section class="phone" id="phone">
+    <h2>Run it from your phone</h2>
+    <p class="lead2">Astral can serve itself to your phone. Switch hosting on and the same conversations appear in one column on a handset: the same chat rendering, agent marks and working animations, the model, permission and effort chips, and a settings sheet behind the gear. Change a setting there and it applies on the PC too.</p>
+
+    <div class="phone-grid">
+      <div>
+        <ol class="steps2">
+          <li>Open <b>Settings → General → Phone</b> and press <b>Start hosting</b>.</li>
+          <li>Astral serves a small site from the PC and shows an address like <code>http://192.168.1.20:5175</code> along with a <b>4-digit code</b>.</li>
+          <li>Open that address on your phone and type the code. No account, and nothing to install.</li>
+        </ol>
+        <div class="note2">
+          <div><b>Away from home.</b> Turn on <b>Internet access (port forwarding)</b> in the same settings. Astral shows your public address, switches to an 8-character code, and lists the router steps for you. No outside service sits in the middle. If your ISP uses shared addressing, inbound connections are blocked and a private network like Tailscale is the way round it.</div>
+          <div><b>It keeps running.</b> While hosting, closing the window hides Astral to the system tray rather than quitting, so the chats and the phone site stay up until you stop hosting or the PC shuts down.</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="handset" aria-hidden="true">
+          <div class="screen">
+            <div>
+              <div class="notch"><i></i></div>
+              <div class="ph-top">
+                <span class="ag"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.94 14.34 12 20l2.06-5.66L20 12l-5.94-2.34L12 4 9.94 9.66 4 12z"/></svg></span>
+                <span class="t">Chart tooltip</span>
+                <span class="gear">⚙</span>
+              </div>
+            </div>
+            <div class="ph-body">
+              <div class="ph-user">Tighten that tooltip copy and push it.</div>
+              <div class="ph-ai">
+                <span class="ag"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.94 14.34 12 20l2.06-5.66L20 12l-5.94-2.34L12 4 9.94 9.66 4 12z"/></svg></span>
+                <div>
+                  <div class="ph-step"><s>Edit</s><b>CompareChart.jsx</b></div>
+                  <div class="ph-step"><s>Bash</s><b>git commit -am …</b></div>
+                  <div class="ph-work"><i>✳</i>Combobulating… (8s)</div>
+                </div>
+              </div>
+            </div>
+            <div class="ph-foot">
+              <div class="ph-chips"><span class="plus">+</span><span>Default</span><span>✓ Auto</span><span>Effort</span></div>
+              <div class="ph-bar"><span>Message Claude Code</span><i>↑</i></div>
+            </div>
+          </div>
+        </div>
+        <p class="pair">pairing code <b>4417</b></p>
+      </div>
     </div>
   </section>
 
